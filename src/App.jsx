@@ -1,0 +1,1256 @@
+import { useState, useRef, useEffect, useCallback } from "react";
+
+const G = `
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060606;--s1:#0a0a0a;--s2:#111111;--s3:#181818;--s4:#1f1f1f;
+  --bd:#252525;--bdh:#353535;--bd2:#404040;
+  --t:#ffffff;--t2:#ffffff;--t3:#aaaaaa;--t4:#666666;
+  --acc:#e8780a;--acc2:#ff9f43;--acg:rgba(232,120,10,.15);--acglow:rgba(232,120,10,.4);--acdim:rgba(232,120,10,.08);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;--disp:'Bebas Neue',sans-serif;--tech:'Space Grotesk',sans-serif;
+  --r:8px;--r2:12px;
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+}
+html,body{height:100%;background:var(--bg);color:var(--t);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--bdh)}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer;width:100%}
+input[type=range]::-webkit-slider-track{background:var(--s3);height:3px;border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;margin-top:-6.5px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+input[type=range]::-webkit-slider-thumb:hover{background:var(--acc)}
+textarea{font-family:var(--mono);font-size:13px;line-height:1.7;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);color:var(--t);padding:14px 16px;resize:vertical;width:100%;outline:none;transition:all .2s;min-height:80px}
+textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px var(--acdim)}
+textarea::placeholder{color:var(--t4)}
+.shell{min-height:100vh;padding-bottom:100px}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;background:rgba(6,6,6,.95);backdrop-filter:blur(20px);transition:all .3s}
+.nav.scrolled{border-bottom-color:var(--s2);background:rgba(6,6,6,.98)}
+.logo{font-family:var(--disp);font-size:20px;letter-spacing:6px;color:var(--t)}
+.ntabs{display:flex;gap:4px}
+.nt{font-size:12px;font-weight:600;letter-spacing:1px;padding:7px 18px;border-radius:var(--r);border:none;background:transparent;color:var(--t3);cursor:pointer;transition:all .2s var(--ease-out)}
+.nt:hover{color:var(--t);background:var(--s2)}
+.nt.on{background:var(--acc);color:#000;font-weight:700;box-shadow:0 4px 20px var(--acglow)}
+.page{max-width:1200px;margin:0 auto;padding:40px 24px 120px}
+.ph{text-align:center;margin-bottom:44px;position:relative}
+.ph::before{content:'';position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:60px;height:3px;background:var(--acc);border-radius:2px;opacity:.6}
+.pt{font-family:var(--disp);font-size:42px;letter-spacing:5px;margin-bottom:10px;line-height:1.1}
+.pt b{color:var(--acc)}
+.ps{font-size:14px;color:var(--t3);font-weight:400;line-height:1.6;max-width:600px;margin:0 auto}
+.pc{margin-top:12px;font-size:13px;font-weight:600;color:var(--t);display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:var(--s2);border:1px solid var(--bd);transition:all .3s}
+.pc.full{color:var(--acc);border-color:var(--acc);background:var(--acdim)}
+.sec{margin-bottom:36px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
+.st{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t3)}
+.sb{font-size:10px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:4px;background:var(--acc);color:#000;text-transform:uppercase}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+@media(max-width:900px){.grid3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.grid3{grid-template-columns:1fr}}
+.ac{display:flex;align-items:center;border-radius:var(--r);border:1px solid var(--bd);background:var(--s1);cursor:pointer;transition:all .15s;position:relative;user-select:none;overflow:hidden;min-height:44px}
+.ac:hover{border-color:var(--bdh);background:var(--s2)}
+.ac.sel{border-color:var(--acc);background:linear-gradient(135deg,var(--s2) 0%,var(--acdim) 100%);box-shadow:0 0 20px var(--acdim)}
+.ac.dim{opacity:.15;pointer-events:none}
+.abar{width:3px;min-height:44px;flex-shrink:0;background:transparent;transition:background .2s}
+.ac.sel .abar{background:var(--acc)}
+.an{font-size:12px;font-weight:400;padding:10px 14px;line-height:1.4;color:var(--t3);flex:1}
+.ac.sel .an{color:var(--t);font-weight:600}
+.anum{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:#000;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.rowpills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font-size:12px;font-weight:500;padding:8px 16px;border-radius:var(--r);border:1px solid var(--bd);background:var(--s1);color:var(--t);cursor:pointer;transition:all .15s;user-select:none;line-height:1}
+.pill:hover{border-color:var(--bdh);background:var(--s2)}
+.pill.sel{border-color:var(--acc);background:var(--acg);color:var(--acc);font-weight:600}
+.lens-row{display:flex;flex-wrap:wrap;gap:8px}
+.lc{display:flex;align-items:baseline;gap:8px;padding:10px 20px;border-radius:30px;border:1px solid var(--bd);background:var(--s1);cursor:pointer;transition:all .15s;user-select:none}
+.lc:hover{border-color:var(--bdh);background:var(--s2)}
+.lc.sel{border-color:var(--acc);background:var(--acg)}
+.lmm{font-family:var(--disp);font-size:18px;letter-spacing:1px;color:var(--t)}
+.lc.sel .lmm{color:var(--acc)}
+.llb{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:1px}
+.pbox{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:20px 22px;font-size:12px;line-height:1.9;color:var(--t);font-family:var(--mono);min-height:120px;white-space:pre-wrap;word-break:break-word;transition:all .2s;user-select:text;cursor:text}
+.pbox.live{border-color:var(--bd2);color:var(--t);background:var(--s2)}
+.pbox-empty{color:var(--t4);font-style:italic;font-size:13px;font-family:var(--font)}
+.bbar{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--bg) 0%,rgba(6,6,6,.95) 100%);border-top:1px solid var(--bd);padding:14px 28px;display:flex;align-items:center;justify-content:center;gap:12px;backdrop-filter:blur(20px);z-index:90}
+.btn{font-size:12px;font-weight:600;letter-spacing:1.5px;padding:11px 24px;border-radius:var(--r);border:1px solid var(--bd);background:var(--s2);color:var(--t);cursor:pointer;transition:all .15s;user-select:none;text-transform:uppercase}
+.btn:hover{border-color:var(--bdh);color:var(--t);background:var(--s3)}
+.btn:active{transform:translateY(0)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#000;box-shadow:0 0 30px var(--acglow)}
+.btn.pri:hover{background:var(--acc2);box-shadow:0 0 40px var(--acglow)}
+.btn:disabled{opacity:.3;pointer-events:none}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--acc);color:#000;font-size:11px;font-weight:800;letter-spacing:3px;padding:10px 24px;border-radius:6px;z-index:200;pointer-events:none;animation:ft 2.5s forwards;text-transform:uppercase}
+@keyframes ft{0%{opacity:0;transform:translateX(-50%) translateY(20px) scale(.9)}15%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}85%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}
+.divider{border:none;border-top:1px solid var(--bd);margin:32px 0}
+.scene-field{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:22px 24px;margin-bottom:28px;transition:all .2s}
+.scene-field:focus-within{border-color:var(--bd2)}
+.scene-hint{font-size:11px;color:var(--t4);margin-top:10px;line-height:1.6}
+.ctrl3d{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);overflow:hidden}
+.ctrl3d-body{display:grid;grid-template-columns:1fr 320px}
+@media(max-width:900px){.ctrl3d-body{grid-template-columns:1fr}}
+.ctrl3d-canvas-wrap{position:relative;min-height:320px;background:#040404;cursor:grab;overflow:hidden}
+.ctrl3d-canvas-wrap:active{cursor:grabbing}
+.ctrl3d-drag-hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--t4);pointer-events:none;white-space:nowrap;background:rgba(0,0,0,.6);padding:6px 14px;border-radius:20px;border:1px solid var(--bd)}
+.ctrl3d-panel{padding:22px 24px;border-left:1px solid var(--bd);display:flex;flex-direction:column;gap:20px;background:var(--s1)}
+@media(max-width:900px){.ctrl3d-panel{border-left:none;border-top:1px solid var(--bd)}}
+.sliders{display:flex;flex-direction:column;gap:16px}
+.slider-row{display:flex;flex-direction:column;gap:8px}
+.slider-hdr{display:flex;justify-content:space-between;align-items:center}
+.slider-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
+.slider-val{font-family:var(--mono);font-size:13px;color:var(--acc);font-weight:600;min-width:50px;text-align:right}
+.presets{display:flex;flex-direction:column;gap:8px}
+.preset-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
+.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.preset-btn{font-size:11px;font-weight:600;padding:7px 0;border-radius:6px;border:1px solid var(--bd);background:var(--s2);color:var(--t);cursor:pointer;transition:all .15s;text-align:center;text-transform:uppercase;letter-spacing:.5px}
+.preset-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acdim)}
+.angle-desc{font-size:11px;color:var(--t);line-height:1.6;padding:14px 16px;background:var(--s2);border-radius:8px;border:1px solid var(--bd);font-family:var(--font)}
+.av-sec{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:22px 24px;margin-bottom:14px;transition:all .2s}
+.av-sec:hover{border-color:var(--bdh)}
+.tab-strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.tab-p{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:7px 16px;border-radius:30px;border:1px solid var(--bd);background:transparent;color:var(--t3);cursor:pointer;transition:all .15s;position:relative}
+.tab-p:hover{color:var(--t);border-color:var(--bdh);background:var(--s2)}
+.tab-p.on{background:var(--acc);border-color:var(--acc);color:#000}
+.tab-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--acc);border:2px solid var(--s1)}
+.optbtns{display:flex;gap:8px;flex-wrap:wrap}
+.ob{font-size:12px;font-weight:500;padding:9px 18px;border-radius:var(--r);border:1px solid var(--bd);background:var(--s2);color:var(--t);cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.ob:hover{border-color:var(--bdh);color:var(--t);background:var(--s3)}
+.ob.sel{border-color:var(--acc);background:var(--acg);color:var(--acc);font-weight:600}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);margin-bottom:14px;cursor:pointer;transition:all .2s}
+.toggle-row:hover{border-color:var(--bdh);background:var(--s2)}
+.toggle-knob{width:44px;height:24px;border-radius:12px;position:relative;transition:all .2s;flex-shrink:0}
+.toggle-dot{position:absolute;top:4px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.quick-actions{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+.quick-btn{font-size:11px;padding:8px 16px;border-radius:20px;border:1px solid var(--bd);background:var(--s1);color:var(--t);cursor:pointer;transition:all .15s}
+.quick-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acdim)}
+.quick-btn.active{border-color:var(--acc);background:var(--acc);color:#000}
+.batch-size{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:16px 20px;background:var(--s1);border-radius:var(--r);border:1px solid var(--bd)}
+.batch-label{font-size:12px;font-weight:600;color:var(--t)}
+.batch-options{display:flex;gap:6px}
+.batch-opt{width:32px;height:32px;border-radius:50%;border:1px solid var(--bd);background:var(--s2);color:var(--t);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.batch-opt:hover{border-color:var(--bdh);color:var(--t)}
+.batch-opt.sel{border-color:var(--acc);background:var(--acc);color:#000}
+.history-panel{position:fixed;right:24px;top:80px;width:280px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r2);padding:20px;z-index:50;max-height:calc(100vh - 120px);overflow-y:auto;transform:translateX(320px);transition:transform .3s var(--ease-out);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.history-panel.open{transform:translateX(0)}
+.history-title{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.history-item{padding:12px;border-radius:6px;background:var(--s2);border:1px solid var(--bd);margin-bottom:8px;cursor:pointer;transition:all .15s;font-size:11px;color:var(--t);line-height:1.4;max-height:80px;overflow:hidden;position:relative}
+.history-item:hover{border-color:var(--acc);background:var(--acdim)}
+.history-item::after{content:'';position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(transparent,var(--s2))}
+.history-time{font-size:10px;color:var(--t4);margin-bottom:4px;font-family:var(--mono)}
+.floating-btn{position:fixed;right:24px;bottom:100px;width:48px;height:48px;border-radius:50%;background:var(--s1);border:1px solid var(--bd);color:var(--t);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:80;font-size:11px;font-weight:700;letter-spacing:1px}
+.floating-btn:hover{background:var(--acc);border-color:var(--acc);color:#000}
+.floating-btn.active{background:var(--acc);color:#000;border-color:var(--acc)}
+`;
+
+const ANGLES = [
+  {name:"Wide establishing shot",
+   desc:"ultra-wide frame, subjects occupy no more than 1/5 of frame height, environment fills remaining space. Place horizon line on upper third. Subjects centered or slightly off-axis. Full location readable in single frame. No cropping of environment edges."},
+  {name:"Medium eye-level shot",
+   desc:"camera at subject's eye height, frame subjects from waist up. 1–2 subjects fill center two-thirds of frame. Natural head-room above, equal side margins. Neutral conversational distance, no lens distortion."},
+  {name:"Low-angle hero shot",
+   desc:"camera at knee height or below, tilted upward. Subject's feet near bottom frame edge, head near top third. Sky or ceiling dominates upper half. Foreshortened legs, subject appears taller and more powerful. No ground visible below feet."},
+  {name:"Over-the-shoulder shot",
+   desc:"foreground character's shoulder and back-of-head occupy left or right third of frame, out of focus. Subject facing them fills opposite two-thirds, eyes on upper third line. Foreground shoulder anchors composition. Clear eyeline between characters."},
+  {name:"Close-up",
+   desc:"frame tightly on face: top of head just above frame, chin near bottom third. Eyes sit exactly on upper third line. Background fully blurred. No shoulders or neck below lower third. Subject fills frame edge to edge horizontally."},
+  {name:"High-angle shot",
+   desc:"camera elevated 45–60 degrees above scene looking down. Subjects appear smaller, ground plane visible around them. Horizon line pushed to upper quarter or off-frame entirely. Strong overhead perspective, subjects diminished within environment."},
+  {name:"Profile side shot",
+   desc:"camera 90 degrees to subject's side, subject facing frame edge not camera. Full silhouette visible, no facial features readable. Subject positioned on center vertical axis. Equal negative space in front of and behind subject. Clean background separation."},
+  {name:"Dutch tilt shot",
+   desc:"camera rotated 15–30 degrees on lens axis, horizon diagonal across frame. Vertical elements — walls, doors, figures — lean at angle. Subject placed on tilted rule-of-thirds intersection. Disorienting psychological unease. No horizon line is horizontal."},
+  {name:"Extreme wide master shot",
+   desc:"maximum field of view, subjects no larger than 1/8 of frame height. Full geography of location visible: foreground, midground, background all readable. Subjects integrated naturally into environment. Cinematic scale and proportion throughout."},
+  {name:"Bird's-eye vertical shot",
+   desc:"camera directly overhead, lens axis perpendicular to ground. Subjects seen as flat shapes from above. No vertical elements visible. Ground plane fills entire frame. Subjects centered or placed on grid intersection. Abstract overhead geometry."},
+  {name:"Ground-level worm's-eye shot",
+   desc:"camera at ground level, lens tilted sharply upward 60–80 degrees. Ground visible in bottom sliver only. Subjects' feet near bottom edge, heads near frame center. Sky or ceiling fills upper half. Extreme upward perspective, subjects tower over viewer."},
+  {name:"Three-quarter front angle",
+   desc:"camera 45 degrees off subject's front axis. Subject's nearer shoulder closer to camera, face at three-quarter turn. Depth visible between near and far shoulder. Subject placed on rule-of-thirds vertical line, looking toward frame center."},
+  {name:"Three-quarter rear angle",
+   desc:"camera 45 degrees off subject's rear axis, slightly behind and to one side. Back of head and near shoulder prominent. Destination or scene ahead of subject visible in front two-thirds of frame. Subject placed on rear third, scene opens ahead of them."},
+  {name:"Locked-off static frame",
+   desc:"completely static composition, no camera movement implied. Subjects move freely within fixed frame. Theatrical staging: full bodies visible, generous headroom. Frame holds before and after subjects enter or exit. Deliberate stillness, everything composed for the static hold."},
+  {name:"Long-lens compression shot",
+   desc:"200–400mm equivalent lens. Camera placed far from subject, background appears compressed and close. Depth of field razor-thin, background layers merge. Subject isolated against compressed background. Minimal perspective distortion, flattest possible spatial rendering."},
+  {name:"Foreground-obstructed shot",
+   desc:"partially obscuring foreground element — foliage, column, glass — occupies 20–30% of frame. Subject visible in gap or beyond obstruction. Foreground element out of focus, subject sharp. Layered depth: foreground blur, midground subject, background context."},
+  {name:"Reflected perspective shot",
+   desc:"subjects visible only via mirror, wet surface, window, or reflective object. Reflection fills most of frame. Actual subjects may or may not be partially visible at frame edge. Lighting in reflection matches scene logic. Optical realism maintained throughout."},
+  {name:"Silhouette backlit shot",
+   desc:"strong backlight source — sun, window, lamp — directly behind subjects. Subjects rendered as dark silhouettes with zero facial or costume detail visible. Background 2–3 stops brighter than subjects. Clean rim of light around silhouette edge. Pure form and contour composition."},
+  {name:"Center-punched symmetrical shot",
+   desc:"strict bilateral symmetry on vertical center axis. Single subject centered exactly or two subjects equidistant from center. Architecture or environment mirrors left-right. Horizon line precisely horizontal on center or lower third. Formal, graphic, static composition."},
+  {name:"Asymmetrical rule-of-thirds shot",
+   desc:"subject placed precisely on left or right vertical third line. Eyes or focal point on horizontal third intersection. Opposite two-thirds is negative space — sky, wall, environment. No centering of subject. Dynamic tension between subject and empty space."},
+  {name:"Hand-level perspective shot",
+   desc:"camera at 70–90cm from ground, approximately hand or table height. Low enough to see under furniture or see ground plane at angle. Objects at ground level prominent in foreground. Subjects' lower bodies visible, faces in upper portion of frame. Unusual grounded intimacy."},
+  {name:"Chest-height tracking angle",
+   desc:"camera at 120–140cm height, roughly chest level. Slightly below eye level, slight upward tilt. Natural following perspective for a walking observer. Subject fills center of frame. Intimate proximity, movement feels present and physical."},
+  {name:"Environmental frame-within-frame shot",
+   desc:"architectural element — doorway, arch, window, tunnel — forms visible inner frame within the camera frame. Subject positioned within this inner frame, surrounded by framing element. Two clear layers: outer frame edge and inner architectural frame. Subject never touches inner frame edges."},
+  {name:"Extreme close environment shot",
+   desc:"environmental texture or detail fills extreme foreground: bark, stone, water, grass — in sharp or soft focus. Subject visible in midground or background, contextualized but not dominant. Strong depth separation between foreground detail and background subject."},
+  {name:"Rear profile silhouette shot",
+   desc:"camera positioned at subject's rear quarter — 135 degrees behind, slightly to one side. Back of head and one shoulder prominent, face not visible. Subject's destination or scene ahead occupies front two-thirds of frame. Clean contour lighting separates subject from background."},
+  {name:"Shallow-focus foreground lead shot",
+   desc:"foreground element — hand, object, surface — in sharp focus occupies lower or side portion of frame. Subject visible beyond, slightly soft or equally sharp. Eye travels from foreground element toward subject. Controlled focus gradient guides visual path through frame."},
+  {name:"Deep-focus wide shot",
+   desc:"maximum depth of field, everything sharp from foreground to background. At least three distinct depth planes all in focus. Wide or standard lens. Subject in midground, foreground and background equally readable. No bokeh. Clinical spatial clarity throughout."},
+  {name:"Oblique corner angle shot",
+   desc:"camera placed at corner of room or space, looking diagonally across the scene. Two walls or two environmental planes visible in frame. Full diagonal of space readable from corner to far corner. Subjects integrated into diagonal geometry. No frontal or profile view."},
+  {name:"Eye-line match perspective shot",
+   desc:"camera placed at exact height and position of character's eyes, looking in the direction of their gaze. Viewer sees precisely what character sees. Subject's POV horizon matches their standing eye level. No tilt, no angle deviation from their actual sightline. Pure optical alignment."},
+  {name:"Environmental negative-space shot",
+   desc:"subjects occupy bottom quarter or single corner of frame. Sky, wall, or empty space fills remaining 60–75% of frame. Subjects appear isolated, small, overwhelmed by environment. No centering. Horizon placed high or low depending on emotional intent."},
+];
+const LIGHTING = [
+  {id:"golden",name:"Golden Hour",p:"golden hour lighting, warm raking side light, long soft shadows, rich amber and copper tones, magical atmospheric quality"},
+  {id:"midday",name:"Midday Sun",p:"harsh midday sun, strong overhead light, sharp hard shadows, high contrast, bleached highlights"},
+  {id:"bluehour",name:"Blue Hour",p:"blue hour twilight, cool indigo ambient light, balanced exposure, melancholic cinematic atmosphere"},
+  {id:"night",name:"Night",p:"nighttime scene, deep shadow, minimal ambient light, high-contrast pools of artificial light, dramatic chiaroscuro"},
+  {id:"overcast",name:"Overcast",p:"overcast flat lighting, soft diffused shadowless illumination, even exposure, naturalistic mood"},
+  {id:"sunrise",name:"Sunrise",p:"sunrise light, hazy pink and peach horizon glow, long warm diagonal shadows, morning mist"},
+  {id:"interior",name:"Interior Light",p:"interior practical lighting, tungsten warmth, motivated light spill from windows and practical lamps"},
+  {id:"storm",name:"Storm Light",p:"storm light, dark ominous sky, dramatic underlighting, greenish pre-storm cast, electric tension"},
+  {id:"fog",name:"Fog / Mist",p:"heavy atmospheric fog, diffused volumetric light, low visibility, soft ethereal depth haze"},
+  {id:"neon",name:"Neon Night",p:"neon-lit night scene, vibrant colored light spill, deep blacks, high-contrast cyberpunk illumination"},
+  {id:"fire",name:"Firelight",p:"warm firelight, flickering orange-amber glow, strong directional heat-source lighting, dancing shadows"},
+  {id:"moonlit",name:"Moonlit",p:"moonlit scene, cool silver-blue ambient light, long faint shadows, serene nocturnal atmosphere"},
+  {id:"studiokey",name:"Studio Key",p:"professional studio key lighting, softbox main with fill and rim, controlled three-point setup, polished commercial look"},
+  {id:"magic",name:"Magic Hour",p:"magic hour with lens flare, anamorphic light streaks, dreamlike halation, cinematic perfection"},
+];
+
+const BACKGROUNDS = [
+  {id:"scifi",name:"Sci-Fi Megacity",p:"futuristic sci-fi megacity, towering skyscrapers, neon signs, flying vehicles, advanced urban infrastructure"},
+  {id:"ancient",name:"Ancient Ruins",p:"ancient ruins, crumbling stone columns, overgrown with vines and moss, lost civilization architecture"},
+  {id:"retrofuture",name:"Retrofuturistic",p:"retrofuturistic environment, 1950s atomic-age aesthetics meets space-age technology, chrome and pastel surfaces"},
+  {id:"forest",name:"Dark Forest",p:"dense dark forest, twisted ancient trees, dappled light through canopy, mysterious primordial atmosphere"},
+  {id:"desert",name:"Desert Wasteland",p:"vast desert wasteland, endless dunes, bleached sky, heat haze distortion, desolate beauty"},
+  {id:"underwater",name:"Underwater Deep",p:"deep underwater environment, bioluminescent coral, shafts of filtered sunlight, ocean abyss"},
+  {id:"space",name:"Outer Space",p:"outer space background, distant nebulae, star fields, orbital space station or planetary surface"},
+  {id:"cyberpunk",name:"Cyberpunk Alley",p:"cyberpunk alley, rain-slicked streets reflecting neon, holographic advertisements, dense urban visual noise"},
+  {id:"medieval",name:"Medieval Castle",p:"medieval castle, stone fortress walls, torchlit corridors, feudal landscape at dusk"},
+  {id:"industrial",name:"Industrial Zone",p:"brutalist industrial environment, raw concrete and rusted metal, massive machinery, utilitarian architecture"},
+  {id:"arctic",name:"Arctic Tundra",p:"arctic tundra, frozen barren landscape, blizzard, glacial ice formations, desolate"},
+  {id:"jungle",name:"Jungle Temple",p:"jungle temple ruins, dense tropical foliage, ancient mossy stone, humid mist"},
+  {id:"studio",name:"White Studio",p:"plain neutral white studio background, professional photography environment, infinite white"},
+  {id:"tokyo",name:"Tokyo Streets",p:"dense Tokyo streets at night, neon signage, crowds, layered urban complexity, wet pavement reflections"},
+  {id:"cave",name:"Crystal Cave",p:"crystal cave, glowing bioluminescent crystal formations, underground otherworldly light, stalactites"},
+  {id:"western",name:"Wild West",p:"Wild West frontier town, dusty main street, wooden storefronts, arid canyon, golden dust in air"},
+  {id:"abstract",name:"Abstract Void",p:"abstract void space, floating geometric shapes, gradient backgrounds, surreal minimalist environment"},
+];
+
+const LENSES = [
+  {mm:"8mm",name:"Fisheye",p:"8mm fisheye lens, extreme spherical barrel distortion, hemispherical 180-degree field of view"},
+  {mm:"14mm",name:"Ultra-Wide",p:"14mm ultra-wide angle lens, expansive field of view, subtle edge distortion, strong environmental emphasis"},
+  {mm:"24mm",name:"Wide",p:"24mm wide-angle lens, cinematic wide framing, natural perspective, strong sense of space"},
+  {mm:"35mm",name:"Standard Wide",p:"35mm lens, classic cinematic perspective, balanced natural framing"},
+  {mm:"50mm",name:"Normal",p:"50mm standard lens, perspective closest to human vision, neutral optical character"},
+  {mm:"85mm",name:"Portrait",p:"85mm portrait lens, slight subject compression, flattering rendering, shallow depth of field"},
+  {mm:"135mm",name:"Short Tele",p:"135mm telephoto lens, noticeable background compression, strong subject isolation, smooth bokeh"},
+  {mm:"200mm",name:"Telephoto",p:"200mm telephoto lens, heavy background compression, extreme subject separation"},
+  {mm:"400mm",name:"Super Tele",p:"400mm super-telephoto lens, maximum compression, razor-thin focal plane, subject extracted from background"},
+];
+
+const FILM_STOCKS = [
+  {id:"kodak",name:"Kodak Vision3",p:"shot on Kodak Vision3 500T film, rich color saturation, fine grain structure, cinematic film emulsion"},
+  {id:"fuji",name:"Fuji Eterna",p:"Fuji Eterna 500T film stock, distinctive green shadow cast, creamy highlights, vintage Fuji look"},
+  {id:"ilford",name:"Ilford B&W",p:"Ilford HP5 Plus black and white film, high contrast monochrome, rich tonal range, documentary aesthetic"},
+  {id:"cinestill",name:"Cinestill 800T",p:"Cinestill 800T tungsten balanced film, halation highlights, red light sensitivity, night photography specialist"},
+  {id:"polaroid",name:"Polaroid",p:"Polaroid instant film aesthetic, soft focus, color drift, white frame border, nostalgic imperfection"},
+  {id:"digital",name:"Digital Clean",p:"high-end digital cinema camera, clean noise-free image, sharp detail, modern clinical precision"},
+  {id:"vintage",name:"Vintage 16mm",p:"16mm film grain, heavy organic texture, gate weave, light leaks, vintage documentary feel"},
+  {id:"anamorphic",name:"Anamorphic",p:"anamorphic lens characteristics, horizontal lens flares, oval bokeh, 2.39:1 widescreen aspect ratio"},
+];
+
+const COLOR_GRADES = [
+  {id:"teal",name:"Teal & Orange",p:"teal and orange color grading, complementary color scheme, cinematic blockbuster look, warm skin tones against cool shadows"},
+  {id:"matrix",name:"Matrix Green",p:"tinted green color grade, digital matrix aesthetic, sickly green shadows, cyberpunk computer world"},
+  {id:"noir",name:"Film Noir",p:"high contrast black and white, crushed blacks, blown highlights, dramatic noir lighting, classic Hollywood"},
+  {id:"sepia",name:"Sepia",p:"warm sepia tone grade, nostalgic antique look, brownish monochrome, historical photograph"},
+  {id:"cyber",name:"Cyberpunk Neon",p:"neon color grading, magenta and cyan split, saturated highlights, deep purple shadows"},
+  {id:"natural",name:"Naturalistic",p:"natural color science, accurate skin tones, subtle contrast, documentary realism"},
+  {id:"bleach",name:"Bleach Bypass",p:"bleach bypass film process, high contrast, desaturated colors, silver retention, gritty metallic look"},
+  {id:"warm",name:"Warm Vintage",p:"warm vintage color grade, lifted blacks, soft contrast, orange shadows, nostalgic film emulation"},
+];
+
+const ASPECT_RATIOS = [
+  {id:"16:9",name:"16:9 HD"},
+  {id:"2.39:1",name:"2.39:1 Cinemascope"},
+  {id:"4:3",name:"4:3 Academy"},
+  {id:"1:1",name:"1:1 Square"},
+  {id:"9:16",name:"9:16 Vertical"},
+];
+
+// ─── 3D MATH — rotating cube, fixed camera ─────────────────────────────────
+// Camera is fixed at [0,0,dist]. The CUBE rotates via azimuth (Y) + elevation (X).
+// FRONT face always "owns" the reference image.
+
+const VERTS=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+const EDGES=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+// Front verts 4,5,6,7 — in order: BL,BR,TR,TL (counter-clockwise from outside)
+const FACES=[
+  {name:"Front", fi:0, normal:[0,0,1],  verts:[4,5,6,7]},
+  {name:"Back",  fi:1, normal:[0,0,-1], verts:[1,0,3,2]},
+  {name:"Right", fi:2, normal:[1,0,0],  verts:[5,1,2,6]},
+  {name:"Left",  fi:3, normal:[-1,0,0], verts:[0,4,7,3]},
+  {name:"Top",   fi:4, normal:[0,1,0],  verts:[3,7,6,2]},
+  {name:"Bottom",fi:5, normal:[0,-1,0], verts:[4,0,1,5]},
+];
+
+// Rotation helpers
+const ry3=(v,a)=>{const[x,y,z]=v,c=Math.cos(a),s=Math.sin(a);return[x*c+z*s,y,-x*s+z*c]};
+const rx3=(v,a)=>{const[x,y,z]=v,c=Math.cos(a),s=Math.sin(a);return[x,y*c-z*s,y*s+z*c]};
+
+// Simple perspective projection — camera at [0,0,D] looking toward -Z
+function proj(v,cx,cy,fl,scale){
+  const[x,y,z]=v;
+  const dz=fl/(fl-z);  // z is negative in front of camera after rotation
+  return[cx+x*dz*scale, cy-y*dz*scale];
+}
+
+// Rotate cube vertex by azimuth (Y) then elevation (X)
+function rotVert(v,azDeg,elDeg){
+  const az=azDeg*Math.PI/180, el=elDeg*Math.PI/180;
+  return rx3(ry3(v,az),el);
+}
+
+// Face color palette
+const FACE_COLORS=[
+  {fill:"rgba(232,120,10,0.22)", edge:"rgba(232,120,10,0.7)", label:"FRONT", lc:"#f0922b", hatchAngle:Math.PI/4},
+  {fill:"rgba(80,140,230,0.16)", edge:"rgba(80,140,230,0.7)", label:"BACK",  lc:"#74b0ff", hatchAngle:-Math.PI/4},
+  {fill:"rgba(60,200,100,0.14)", edge:"rgba(60,200,100,0.7)", label:"RIGHT", lc:"#6ee09a", hatchAngle:Math.PI/3},
+  {fill:"rgba(210,70,70,0.14)",  edge:"rgba(210,70,70,0.7)",  label:"LEFT",  lc:"#f4827c", hatchAngle:-Math.PI/3},
+  {fill:"rgba(200,170,255,0.14)",edge:"rgba(200,170,255,0.7)",label:"TOP",   lc:"#c9b0ff", hatchAngle:Math.PI/2},
+  {fill:"rgba(255,220,80,0.12)", edge:"rgba(255,220,80,0.7)", label:"BOTTOM",lc:"#ffe680", hatchAngle:0},
+];
+
+function faceLabelAt(ctx, pts, text) {
+  // Compute projected face centroid
+  const cx = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+  const cy = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+  ctx.save();
+  ctx.font = "bold 11px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const tw = ctx.measureText(text).width;
+  const pw = tw+10, ph=16;
+  // Solid black bg
+  ctx.fillStyle = "rgba(0,0,0,0.88)";
+  ctx.fillRect(cx-pw/2, cy-ph/2, pw, ph);
+  // White border
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(cx-pw/2, cy-ph/2, pw, ph);
+  // Pure white text — always
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(text, cx, cy);
+  ctx.restore();
+}
+
+function clipPoly(ctx, pts) {
+  ctx.beginPath();
+  ctx.moveTo(...pts[0]);
+  pts.slice(1).forEach(p => ctx.lineTo(...p));
+  ctx.closePath();
+}
+
+// Affine texture-map a triangle from image-space to screen-space
+// d0,d1,d2 = screen dest pts; s0,s1,s2 = source image [u,v] pts
+function drawTriTex(ctx, img, IW, IH, d0, d1, d2, s0, s1, s2) {
+  const [x0,y0]=d0,[x1,y1]=d1,[x2,y2]=d2;
+  const [u0,v0]=s0,[u1,v1]=s1,[u2,v2]=s2;
+  const D=(u1-u0)*(v2-v0)-(u2-u0)*(v1-v0);
+  if(Math.abs(D)<0.001)return;
+  const a=((x1-x0)*(v2-v0)-(x2-x0)*(v1-v0))/D;
+  const b=((y1-y0)*(v2-v0)-(y2-y0)*(v1-v0))/D;
+  const c=((x2-x0)*(u1-u0)-(x1-x0)*(u2-u0))/D;
+  const d=((y2-y0)*(u1-u0)-(y1-y0)*(u2-u0))/D;
+  const e=x0-a*u0-c*v0;
+  const f=y0-b*u0-d*v0;
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.lineTo(x2,y2);ctx.closePath();ctx.clip();
+  ctx.transform(a,b,c,d,e,f);
+  ctx.drawImage(img,0,0,IW,IH);
+  ctx.restore();
+}
+
+// Map image onto quad p0=BL,p1=BR,p2=TR,p3=TL using two affine triangles
+function drawImageOnFace(ctx, img, pts) {
+  const [p0,p1,p2,p3]=pts; // BL BR TR TL (screen coords)
+  const IW=img.naturalWidth, IH=img.naturalHeight;
+  drawTriTex(ctx,img,IW,IH, p0,p1,p2, [0,IH],[IW,IH],[IW,0]);
+  drawTriTex(ctx,img,IW,IH, p0,p2,p3, [0,IH],[IW,0],[0,0]);
+}
+
+function draw3D(canvas,az,el,zoom){
+  const ctx=canvas.getContext("2d");
+  const DPR=window.devicePixelRatio||1;
+  const W=canvas.width/DPR,H=canvas.height/DPR;
+  ctx.save();ctx.scale(DPR,DPR);
+  ctx.clearRect(0,0,W,H);
+
+  // Background
+  ctx.fillStyle="#0a0a0a";ctx.fillRect(0,0,W,H);
+  const bgr=ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.85);
+  bgr.addColorStop(0,"#151515");bgr.addColorStop(1,"#060606");
+  ctx.fillStyle=bgr;ctx.fillRect(0,0,W,H);
+
+  const cx=W/2, cy=H/2+8;
+  const fl=300, sc=160/(1+zoom*0.07);
+
+  // Rotate verts — cube spins, camera fixed at +Z
+  const rv=VERTS.map(v=>rotVert(v,az,el));
+  const sv=rv.map(v=>proj(v,cx,cy,fl,sc));
+
+  // Subtle floor grid (screen-space vanishing lines, not rotating)
+  ctx.save();
+  const yf=cy+sc*1.05;
+  for(let i=-6;i<=6;i++){
+    const a=0.03-Math.abs(i)*0.003;
+    if(a<=0)continue;
+    ctx.strokeStyle=`rgba(255,255,255,${a})`;ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(cx+(i/6)*(W*0.5),yf);ctx.lineTo(cx+(i/6)*(W*1.1),H);ctx.stroke();
+  }
+  for(let j=0;j<6;j++){
+    const t=j/5, yy=yf+t*(H-yf);
+    ctx.strokeStyle=`rgba(255,255,255,${0.02+t*0.025})`;ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(cx-W*0.6,yy);ctx.lineTo(cx+W*0.6,yy);ctx.stroke();
+  }
+  ctx.restore();
+
+  // Sort faces back-to-front (painter's algorithm)
+  const faces=FACES.map((f,i)=>{
+    const n=rotVert(f.normal,az,el);
+    const visible=n[2]>0.0;
+    const avgZ=f.verts.reduce((s,vi)=>s+rv[vi][2],0)/4;
+    const pts=f.verts.map(vi=>sv[vi]);
+    return{...f,fi:i,n,visible,avgZ,pts};
+  }).sort((a,b)=>a.avgZ-b.avgZ);
+
+  // Per-face colors (fill + edge)
+  const PALETTE=[
+    {fill:"rgba(220,95,15,0.32)",  edge:"#e8780a", name:"FRONT"},
+    {fill:"rgba(40,110,210,0.26)", edge:"#4488dd", name:"BACK"},
+    {fill:"rgba(35,170,70,0.23)",  edge:"#33bb55", name:"RIGHT"},
+    {fill:"rgba(190,40,50,0.23)",  edge:"#dd3344", name:"LEFT"},
+    {fill:"rgba(140,85,225,0.23)", edge:"#9966ee", name:"TOP"},
+    {fill:"rgba(215,185,20,0.20)", edge:"#ccaa11", name:"BOTTOM"},
+  ];
+
+  faces.forEach(({fi,pts,visible,n})=>{
+    const pal=PALETTE[fi];
+    if(visible){
+      // 1 — Colored fill
+      ctx.save();clipPoly(ctx,pts);ctx.fillStyle=pal.fill;ctx.fill();ctx.restore();
+
+      // 3 — Edge outline
+      ctx.save();clipPoly(ctx,pts);
+      ctx.strokeStyle=pal.edge;ctx.lineWidth=2;ctx.stroke();
+      ctx.restore();
+
+      // 4 — WHITE label always stuck to face center, any visible angle
+      faceLabelAt(ctx,pts,pal.name);
+
+    } else {
+      // Hidden face — dashed dim outline only, no label
+      ctx.save();clipPoly(ctx,pts);
+      ctx.strokeStyle="rgba(255,255,255,0.05)";ctx.lineWidth=0.5;
+      ctx.setLineDash([2,5]);ctx.stroke();ctx.setLineDash([]);
+      ctx.restore();
+    }
+  });
+
+  ctx.restore();
+}
+
+
+function Viewport3D({azimuth,elevation,zoom,onChange,active}){
+  const canvasRef=useRef(null);
+  const wrapRef=useRef(null);
+  const drag=useRef(false);
+  const last=useRef({x:0,y:0});
+  const raf=useRef(null);
+
+  useEffect(()=>{
+    if(!active)return;
+    const canvas=canvasRef.current,wrap=wrapRef.current;
+    if(!canvas||!wrap)return;
+    const DPR=window.devicePixelRatio||1;
+    const W=wrap.clientWidth||580,H=320;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    canvas.style.width=W+"px";canvas.style.height=H+"px";
+    draw3D(canvas,azimuth,elevation,zoom);
+  },[azimuth,elevation,zoom,active]);
+
+  const start=e=>{
+    drag.current=true;
+    const cl=e.touches?e.touches[0]:e;
+    last.current={x:cl.clientX,y:cl.clientY};
+    e.preventDefault();
+  };
+  const move=useCallback(e=>{
+    if(!drag.current)return;
+    const cl=e.touches?e.touches[0]:e;
+    const dx=cl.clientX-last.current.x,dy=cl.clientY-last.current.y;
+    if(raf.current)cancelAnimationFrame(raf.current);
+    raf.current=requestAnimationFrame(()=>{
+      onChange(p=>({...p,
+        azimuth:((p.azimuth-dx*0.55)%360+360)%360,
+        elevation:Math.max(-89,Math.min(89,p.elevation+dy*0.35)),
+      }));
+    });
+    last.current={x:cl.clientX,y:cl.clientY};
+  },[onChange]);
+  const end=()=>{drag.current=false};
+  const wheel=e=>{
+    e.preventDefault();
+    onChange(p=>({...p,zoom:Math.max(1,Math.min(20,p.zoom+e.deltaY*0.012))}));
+  };
+
+  if(!active)return(
+    <div style={{minHeight:320,background:'var(--s2)',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:8,borderRadius:'var(--r)'}}>
+      <span style={{color:'var(--t4)',fontSize:13}}>3D disabled</span>
+      <span style={{color:'var(--t4)',fontSize:11}}>Enable toggle to activate viewport</span>
+    </div>
+  );
+
+  return(
+    <div ref={wrapRef} className="ctrl3d-canvas-wrap"
+      onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={end}
+      onTouchStart={start} onTouchMove={move} onTouchEnd={end} onWheel={wheel}>
+      <canvas ref={canvasRef} style={{display:"block"}}/>
+      <div className="ctrl3d-drag-hint">Drag to rotate · Scroll to zoom</div>
+    </div>
+  );
+}
+
+
+
+function describe3D(az,el,zoom){
+  const a=((az%360)+360)%360;
+  const side=a<22.5||a>337.5?"directly in front of the subject":
+    a<67.5?"45 degrees to the right of the original viewpoint, orbiting horizontally around the main subject":
+    a<112.5?"90 degrees to the right (right profile), orbiting horizontally around the main subject":
+    a<157.5?"135 degrees to the right (rear-right), orbiting horizontally around the main subject":
+    a<202.5?"directly behind the subject, orbiting horizontally":
+    a<247.5?"135 degrees to the left (rear-left), orbiting horizontally around the main subject":
+    a<292.5?"90 degrees to the left (left profile), orbiting horizontally around the main subject":
+    "45 degrees to the left of the original viewpoint, orbiting horizontally around the main subject";
+  const vert=el>60?"elevated 60+ degrees above the subject, looking steeply downward in a vertical arc":
+    el>30?"elevated "+Math.round(el)+" degrees above the subject, looking downward in a vertical arc":
+    el>5?"elevated "+Math.round(el)+" degrees above the subject, slight downward angle":
+    el>-5?"at eye level with the subject":
+    el>-30?"lowered "+Math.round(Math.abs(el))+" degrees below the subject, looking upward in a vertical arc":
+    "lowered "+Math.round(Math.abs(el))+" degrees below eye level, steep upward angle";
+  const dist=zoom<3?"moved 1-2 meters closer to the subject":
+    zoom<6?"moved 3-4 meters closer to the subject":
+    zoom<10?"positioned at medium distance, 5-6 meters from the subject":
+    zoom<16?"positioned at long distance, 8-10 meters from the subject":
+    "positioned at extreme distance, 15+ meters from the subject";
+  return "The camera is positioned "+side+".\nThe camera is "+vert+".\nThe camera is "+dist+".";
+}
+
+// ─── PROMPT BUILDER ───────────────────────────────────────────────────────────
+function buildPrompt({scene,selectedAngles,lighting,bg,lens,cam,use3D,custom,filmStock,colorGrade,aspectRatio,batchSize}){
+
+  const gridDims=(n)=>{
+    if(n===2)return[2,1];if(n===3)return[3,1];if(n===4)return[2,2];
+    if(n===5)return[3,2];if(n===6)return[3,2];if(n===7)return[4,2];
+    if(n===8)return[4,2];if(n===9)return[3,3];
+    return[Math.ceil(Math.sqrt(n)),Math.ceil(n/Math.ceil(Math.sqrt(n)))];
+  };
+  const n=selectedAngles.length;
+
+  const techParts=[];
+  if(bg)techParts.push(BACKGROUNDS.find(b=>b.id===bg)?.p);
+  if(lighting)techParts.push(LIGHTING.find(l=>l.id===lighting)?.p);
+  if(lens)techParts.push(LENSES.find(l=>l.mm===lens)?.p);
+  if(filmStock)techParts.push(FILM_STOCKS.find(f=>f.id===filmStock)?.p);
+  if(colorGrade)techParts.push(COLOR_GRADES.find(c=>c.id===colorGrade)?.p);
+  if(use3D&&n<=1)techParts.push(describe3D(cam.azimuth,cam.elevation,cam.zoom));
+  const techBlock=techParts.filter(Boolean).join(". ")+(techParts.length?".":"");
+
+  // ── NO ANGLES selected: preview only ────────────────────────────────────────
+  if(n===0){
+    const parts=[];
+    if(scene.trim())parts.push(scene.trim());
+    if(techBlock)parts.push(techBlock);
+    if(custom.trim())parts.push(custom.trim());
+    return parts.join("\n\n");
+  }
+
+  // ── SINGLE ANGLE: re-render ──────────────────────────────────────────────────
+  if(n===1){
+    const parts=[];
+    const angleObj=ANGLES[selectedAngles[0]];
+    const rerender="Re-render the same scene from a new camera position. Maintain the same subject, environment, lighting, mood, and time of day. Do not rotate or tilt the image in 2D. Generate a new physical camera viewpoint in 3D space with proper perspective and parallax.";
+    parts.push(rerender);
+    if(scene.trim())parts.push(scene.trim());
+    if(techBlock)parts.push(techBlock);
+    const camDesc=use3D?describe3D(cam.azimuth,cam.elevation,cam.zoom):"";
+    const camBlock=use3D
+      ?(camDesc+"\nEnsure realistic depth-based parallax: foreground shifts more than background. Do not rotate the subject or background layers. Do not apply 2D tilting or flat image warping.")
+      :("Camera angle: "+angleObj.name+" — "+angleObj.desc+".");
+    parts.push(camBlock);
+    parts.push("Output as a single cinematic image with sharp detail, physically plausible lighting, and no added characters.");
+    if(custom.trim())parts.push(custom.trim());
+    return parts.join("\n\n");
+  }
+
+  // ── MULTI ANGLE: grid ────────────────────────────────────────────────────────
+  const[cols,rows]=gridDims(n);
+  const gridLayout=n===2?"2-panel split":(cols+"x"+rows+" grid");
+
+  // ORDER: Goal → Scene → Settings → Angles → Rules → Output
+  const parts=[];
+
+  // 1. GOAL — must be first so AI knows immediately what it's doing
+  parts.push(
+    "Use the source image as the only reference and generate a single composite output arranged as a clean "+gridLayout+". "+
+    "Each cell must depict the exact same moment with identical characters, wardrobe, facial structure, lighting logic, and environment. "+
+    "Preserve strict character consistency and cinematic realism. "+
+    "Do not introduce any new people, creatures, or background characters in any frame. "+
+    "Do not alter identity, age, gender, body proportions, costume details, or character poses. "+
+    "Poses, gestures, head orientation, limb positions, and physical interactions must remain unchanged across all panels. "+
+    "Maintain continuity of props, time of day, color palette, and scene mood."
+  );
+
+  // 2. Scene description (user text)
+  if(scene.trim())parts.push(scene.trim());
+
+  // 3. Visual settings
+  if(techBlock)parts.push(techBlock);
+
+  // 4. Camera angles with full descriptions
+  parts.push(
+    "Create "+n+" clearly distinct camera angles from the same scene:\n"+
+    selectedAngles.map((i,idx)=>(idx+1)+". "+ANGLES[i].name+" — "+ANGLES[i].desc).join("\n")
+  );
+
+  // 5. Aspect ratio rules
+  parts.push(
+    "Aspect ratio rules: every panel must use the exact same aspect ratio"+(aspectRatio?" ("+aspectRatio+")":"")+". "+
+    "Identical framing proportions and consistent crop logic. "+
+    "No panel may be taller, wider, zoomed differently, or padded differently than the others. "+
+    "Maintain uniform composition boundaries across the entire grid. "+
+    "The final composite grid image must also retain the same aspect ratio as the original reference image."
+  );
+
+  // 6. Labeling rules
+  parts.push(
+    "Labeling rules: each panel must include a clear, unobtrusive numeric label in the top-left corner: "+
+    selectedAngles.map((_,i)=>'"'+(i+1)+'"').join(", ")+". "+
+    "Use a clean, minimal sans-serif font, small size, white or neutral color with subtle contrast for legibility. "+
+    "Labels must not overlap faces, key actions, or important visual elements."
+  );
+
+  // 7. Film coverage consistency
+  parts.push(
+    "All "+n+" angles must feel like coverage from the same film production: "+
+    "coherent lens language, realistic camera physics, consistent shadows, reflections, and exposure. "+
+    "Avoid stylization drift. Avoid duplicating compositions. "+
+    "Avoid mirrored or slightly rotated versions of the same shot. "+
+    "Each angle must be compositionally and perspectively unique."
+  );
+
+  // 8. Output spec
+  parts.push(
+    "Output as a single "+gridLayout+" image with "+n+" panels, identical aspect ratios, "+
+    "cinematic color grading, sharp detail, physically plausible lighting, and no added characters."
+  );
+
+  // 9. Custom additions (always last)
+  if(custom.trim())parts.push(custom.trim());
+
+  return parts.join("\n\n");
+}
+
+async function copyText(text){
+  // Try modern clipboard API first
+  if(navigator.clipboard&&window.isSecureContext){
+    try{await navigator.clipboard.writeText(text);return true;}catch(_){}
+  }
+  // Fallback: create visible-but-offscreen textarea, select all, execCommand
+  const ta=document.createElement("textarea");
+  ta.value=text;
+  ta.style.cssText="position:fixed;top:0;left:0;width:2em;height:2em;padding:0;border:none;outline:none;box-shadow:none;background:transparent;";
+  document.body.appendChild(ta);
+  ta.focus();ta.select();
+  ta.setSelectionRange(0,99999);
+  let ok=false;
+  try{ok=document.execCommand("copy");}catch(_){}
+  document.body.removeChild(ta);
+  return ok;
+}
+
+// ─── ANGLES PAGE ──────────────────────────────────────────────────────────────
+function AnglesPage(){
+  const[scene,setScene]=useState("");
+  const[sel,setSel]=useState([]);
+  const[light,setLight]=useState(null);
+  const[bg,setBg]=useState(null);
+  const[lens,setLens]=useState(null);
+  const[filmStock,setFilmStock]=useState(null);
+  const[colorGrade,setColorGrade]=useState(null);
+  const[aspectRatio,setAspectRatio]=useState("16:9");
+  const[batchSize,setBatchSize]=useState(1);
+  const[use3D,setUse3D]=useState(false);
+  const[cam,setCam]=useState({azimuth:0,elevation:0,zoom:5});
+
+  const[custom,setCustom]=useState("");
+  const[toast,setToast]=useState("");
+  const[history,setHistory]=useState([]);
+  const[showHistory,setShowHistory]=useState(false);
+  const MAX=9;
+
+  const tog=(i)=>setSel(p=>p.includes(i)?p.filter(x=>x!==i):p.length>=MAX?p:[...p,i]);
+  const tog1=(setter,id)=>setter(p=>p===id?null:id);
+  const prompt=buildPrompt({scene,selectedAngles:sel,lighting:light,bg,lens,cam,use3D,custom,filmStock,colorGrade,aspectRatio,batchSize});
+  const hasAny=!!(scene.trim()||sel.length||light||bg||lens||filmStock||colorGrade||use3D||custom.trim());
+
+  const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
+  const copy=async()=>{
+    if(!hasAny)return;
+    const ok=await copyText(prompt);
+    setHistory(p=>[{prompt,date:new Date().toLocaleTimeString()},...p].slice(0,20));
+    doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY");
+  };
+  const reset=()=>{
+    setScene("");setSel([]);setLight(null);setBg(null);setLens(null);
+    setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setBatchSize(1);
+    setUse3D(false);setCam({azimuth:0,elevation:0,zoom:5});setCustom("");
+    doToast("RESET COMPLETE");
+  };
+  const random=()=>{
+    const count=Math.floor(Math.random()*4)+2;
+    setSel([...Array(ANGLES.length).keys()].sort(()=>Math.random()-.5).slice(0,count));
+    setLight(LIGHTING[~~(Math.random()*LIGHTING.length)].id);
+    setBg(BACKGROUNDS[~~(Math.random()*BACKGROUNDS.length)].id);
+    setLens(LENSES[~~(Math.random()*LENSES.length)].mm);
+    setFilmStock(FILM_STOCKS[~~(Math.random()*FILM_STOCKS.length)].id);
+    setColorGrade(COLOR_GRADES[~~(Math.random()*COLOR_GRADES.length)].id);
+    doToast("RANDOM CONFIGURATION");
+  };
+  const quickSet=(type)=>{
+    if(type==='portrait'){setSel([4,6,5]);setLens("85mm");setLight("studiokey");setAspectRatio("4:3")}
+    else if(type==='landscape'){setSel([0,8,11]);setLens("24mm");setLight("golden");setAspectRatio("16:9")}
+    else if(type==='action'){setSel([2,21,14]);setLens("35mm");setLight("midday");setFilmStock("kodak")}
+    else if(type==='noir'){setSel([17,18,24]);setLens("50mm");setLight("night");setColorGrade("noir");setFilmStock("ilford")}
+    doToast(`LOADED ${type.toUpperCase()} PRESET`);
+  };
+
+  const PRESETS=[
+    {label:"Front",az:0,el:0},{label:"Right",az:90,el:0},{label:"Back",az:180,el:0},{label:"Left",az:270,el:0},
+    {label:"Top",az:0,el:85},{label:"Low",az:0,el:-45},{label:"Dutch",az:45,el:15},{label:"Bird",az:0,el:70},
+  ];
+
+  return(
+    <div className="page">
+      <div className="ph">
+        <div className="pt">Camera <b>Angles</b></div>
+        <div className="ps">Professional prompt engineering for multi-angle cinematic composition. Select up to 9 angles with precise 3D camera control.</div>
+        <div className={`pc${sel.length===MAX?" full":""}`}>
+          <span>{sel.length} / {MAX} angles</span>
+          {batchSize>1&&<span>· {batchSize}x batch</span>}
+          <span>· {aspectRatio}</span>
+        </div>
+      </div>
+
+      <div className="quick-actions">
+        {[["portrait","Portrait Set"],["landscape","Landscape Set"],["action","Action Set"],["noir","Noir Set"]].map(([type,label])=>(
+          <button key={type} className="quick-btn" onClick={()=>quickSet(type)}>{label}</button>
+        ))}
+      </div>
+
+      <div className="scene-field">
+        <div className="sh"><span className="st">Scene Description</span><span className="sb">PROMPT INTRO</span></div>
+        <textarea rows={4} value={scene} onChange={e=>setScene(e.target.value)} placeholder="Describe your scene or subject. This appears first in the generated prompt — use it to set context, paste a reference prompt, or describe the character and environment. The more specific, the better."/>
+        <div className="scene-hint">This is the foundation of your prompt. Include character details, actions, environment mood, and key visual elements you want preserved across all frames.</div>
+      </div>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Camera Angles</span>{sel.length>0&&<span className="sb">{sel.length} SELECTED</span>}</div>
+        <div className="grid3">
+          {ANGLES.map((angle,i)=>{
+            const ord=sel.indexOf(i);const isSel=ord!==-1;
+            return(
+              <div key={i} className={`ac${isSel?" sel":""}${!isSel&&sel.length>=MAX?" dim":""}`} onClick={()=>tog(i)} title={angle.desc}>
+                <div className="abar"/>
+                <span className="an">{angle.name}</span>
+                {isSel&&<div className="anum">{ord+1}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="batch-size">
+        <span className="batch-label">Batch Variations:</span>
+        <div className="batch-options">
+          {[1,2,3,4].map(n=>(
+            <button key={n} className={`batch-opt${batchSize===n?" sel":""}`} onClick={()=>setBatchSize(n)}>{n}</button>
+          ))}
+        </div>
+        <span style={{fontSize:11,color:'var(--t4)',marginLeft:8}}>Generate multiple prompt variations</span>
+      </div>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Lighting & Atmosphere</span></div>
+        <div className="rowpills">
+          {LIGHTING.map(l=><div key={l.id} className={`pill${light===l.id?" sel":""}`} onClick={()=>tog1(setLight,l.id)}>{l.name}</div>)}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Environment / Background</span></div>
+        <div className="rowpills">
+          {BACKGROUNDS.map(b=><div key={b.id} className={`pill${bg===b.id?" sel":""}`} onClick={()=>tog1(setBg,b.id)}>{b.name}</div>)}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Lens / Focal Length</span></div>
+        <div className="lens-row">
+          {LENSES.map(l=>(
+            <div key={l.mm} className={`lc${lens===l.mm?" sel":""}`} onClick={()=>tog1(setLens,l.mm)}>
+              <span className="lmm">{l.mm}</span>
+              <span className="llb">{l.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Film Stock & Color Grade</span></div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:20}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:'uppercase',color:'var(--t3)',marginBottom:10}}>Film Stock</div>
+            <div className="rowpills">
+              {FILM_STOCKS.map(f=><div key={f.id} className={`pill${filmStock===f.id?" sel":""}`} onClick={()=>tog1(setFilmStock,f.id)}>{f.name}</div>)}
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:'uppercase',color:'var(--t3)',marginBottom:10}}>Color Grade</div>
+            <div className="rowpills">
+              {COLOR_GRADES.map(c=><div key={c.id} className={`pill${colorGrade===c.id?" sel":""}`} onClick={()=>tog1(setColorGrade,c.id)}>{c.name}</div>)}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Aspect Ratio</span></div>
+        <div className="rowpills">
+          {ASPECT_RATIOS.map(ar=><div key={ar.id} className={`pill${aspectRatio===ar.id?" sel":""}`} onClick={()=>setAspectRatio(ar.id)}>{ar.name}</div>)}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="sec">
+        <div className="sh">
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span className="st">3D Camera Control</span>
+            <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,padding:"2px 7px",borderRadius:3,border:"1px solid var(--bd)",color:"var(--t3)"}}>BETA</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:11,color:use3D?"var(--acc)":"var(--t4)"}}>{use3D?"Active — added to prompt":"Disabled"}</span>
+            <div onClick={()=>setUse3D(v=>!v)} style={{width:44,height:24,borderRadius:12,cursor:"pointer",position:"relative",background:use3D?"#e8780a":"var(--s3)",border:"1px solid "+(use3D?"#e8780a":"var(--bd)"),transition:"all .2s"}}>
+              <div style={{position:"absolute",top:4,left:use3D?24:4,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+            </div>
+          </div>
+        </div>
+
+        <div className="ctrl3d">
+          <div className="ctrl3d-body">
+            <Viewport3D azimuth={cam.azimuth} elevation={cam.elevation} zoom={cam.zoom} onChange={setCam} active={use3D}/>
+            <div className="ctrl3d-panel">
+              <div className="presets">
+                <div className="preset-label">Quick Presets</div>
+                <div className="preset-grid">
+                  {PRESETS.map(pr=>(
+                    <button key={pr.label} className="preset-btn" onClick={()=>setCam(p=>({...p,azimuth:pr.az,elevation:pr.el}))}>
+                      {pr.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="sliders">
+                {[
+                  {label:"Rotation",key:"azimuth",min:-180,max:180,unit:"°",get:p=>Math.round(((p.azimuth+180)%360)-180)},
+                  {label:"Tilt",key:"elevation",min:-90,max:90,unit:"°",get:p=>Math.round(p.elevation)},
+                  {label:"Distance",key:"zoom",min:1,max:25,unit:"m",get:p=>Math.round(p.zoom)},
+                ].map(sl=>(
+                  <div key={sl.key} className="slider-row">
+                    <div className="slider-hdr">
+                      <span className="slider-label">{sl.label}</span>
+                      <span className="slider-val">{sl.get(cam)>0&&sl.key!=="zoom"?"+":""}{sl.get(cam)}{sl.unit}</span>
+                    </div>
+                    <input type="range" min={sl.min} max={sl.max} step={1}
+                      value={sl.get(cam)}
+                      onChange={e=>{const v=Number(e.target.value);setCam(p=>({...p,[sl.key]:sl.key==="azimuth"?((v+360)%360):v}));}}/>
+                  </div>
+                ))}
+              </div>
+              {use3D&&<div className="angle-desc">{describe3D(cam.azimuth,cam.elevation,cam.zoom)}</div>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      <div className="scene-field">
+        <div className="sh"><span className="st">Custom Additions</span><span className="sb">APPENDED</span></div>
+        <textarea rows={3} value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Add extra instructions, negative prompts, style notes, or specific technical requirements. This is appended after the auto-generated content."/>
+      </div>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Generated Prompt</span>{hasAny&&<span className="sb">LIVE</span>}</div>
+        <div className={`pbox${hasAny?" live":""}`}>
+          {hasAny?prompt:<span className="pbox-empty">Fill fields above to generate your prompt in real time.</span>}
+        </div>
+      </div>
+
+      <div className="bbar">
+        <button className="btn" onClick={reset}>Reset</button>
+        <button className="btn" onClick={random}>Random</button>
+        <button className={`btn${hasAny?" pri":""}`} onClick={copy} disabled={!hasAny}>Copy Prompt</button>
+      </div>
+
+      {toast&&<div className="toast">{toast}</div>}
+
+      <button className={`floating-btn${showHistory?" active":""}`} onClick={()=>setShowHistory(v=>!v)}>
+        {showHistory?"×":"HST"}
+      </button>
+
+      <div className={`history-panel${showHistory?" open":""}`}>
+        <div className="history-title">
+          <span>History</span>
+          <button onClick={()=>setHistory([])} style={{fontSize:10,background:'transparent',border:'none',color:'var(--t4)',cursor:'pointer'}}>Clear</button>
+        </div>
+        {history.length===0&&<div style={{color:'var(--t4)',fontSize:11,textAlign:'center',padding:20}}>No history yet. Copy a prompt to save it.</div>}
+        {history.map((h,i)=>(
+          <div key={i} className="history-item" onClick={()=>{copyText(h.prompt);setToast("RESTORED");setTimeout(()=>setToast(""),2500);}}>
+            <div className="history-time">{h.date}</div>
+            <div>{h.prompt.substring(0,120)}...</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── AVATAR DATA ──────────────────────────────────────────────────────────────
+const AV_FIELDS={
+  universe:[
+    {id:"realism",l:"Photorealism",desc:"Ultra-detailed photography",color:"#1a2332"},
+    {id:"anime",l:"Anime",desc:"Japanese animation style",color:"#2d1b4e"},
+    {id:"3d",l:"3D Render",desc:"CGI stylized",color:"#1a2f1a"},
+    {id:"2d",l:"Vector Art",desc:"Flat illustration",color:"#3d2818"},
+    {id:"pixel",l:"Pixel Art",desc:"Retro 8/16-bit",color:"#2d1b2d"},
+    {id:"oil",l:"Oil Painting",desc:"Classical fine art",color:"#2d2518"},
+  ],
+  race:["Human","Elf","Dwarf","Orc","Fairy","Demon","Angel","Robot","Alien","Beastkin","Vampire","Merfolk","Dragonkin","Cyborg","Ghost","Elemental"],
+  gender:["Female","Male","Non-binary","Androgynous","Gender-fluid","Masculine","Feminine"],
+  region:["Northern European","Mediterranean","East Asian","South Asian","Sub-Saharan African","North African","Middle Eastern","Latin American","Indigenous American","Polynesian","Slavic","Nordic","Celtic","Mixed Heritage"],
+  eyeColor:["Amber","Blue","Brown","Green","Grey","Hazel","Violet","Red","Black","White","Heterochromia","Glowing","Blind/Clouded"],
+  age:["Infant","Child","Teen","Young Adult","Adult","Middle Aged","Elder","Ancient","Ageless"],
+  skinColor:["Porcelain","Fair","Light","Olive","Tan","Brown","Dark","Ebony","Grey","Blue","Green","Gold","Silver","Transparent"],
+  skinTraits:["None","Freckles","Vitiligo","Scars","Tattoos","Branding","Piercings","Bioluminescence","Fur","Scales","Feathers","Cracked Stone","Metallic"],
+  hair:["Bald","Buzz Cut","Short","Medium","Long","Very Long","Afro","Dreadlocks","Braided","Ponytail","Bun","Mohawk","Spiky","Wavy","Curly","Coily","Undercut","Pompadour","Mullet"],
+  eyeType:["Human","Almond","Round","Hooded","Monolid","Deep-set","Cat-like","Snake-like","Insect compound","One-eyed","Third eye","Glowing","Blindfolded"],
+  lips:["Thin","Medium","Full","Heart-shaped","Wide","Cleft lip","No lips"],
+  markings:["None","Freckles","Beauty marks","Birthmarks","Scars","Tribal tattoos","Geometric tattoos","Floral tattoos","Piercings","Scarification","Cybernetic implants","Magic runes"],
+  horns:["None","Small nubs","Medium curved","Large curled","Ram horns","Antlers","Unicorn","Multiple","Broken","Decorated","Glowing"],
+  bodyType:["Slim","Athletic","Soft","Muscular","Curvy","Skinny","Stocky","Tall","Short","Proportioned"],
+  arm:["Natural","Prosthetic (steampunk)","Prosthetic (cybernetic)","No arm","Extra arms","Tentacles","Animal (furry)","Animal (scaly)","Ghostly","Mechanical claws"],
+  leg:["Natural","Prosthetic","Digitigrade (animal)","No legs (floating)","Snake tail","Mermaid tail","Extra legs","Wheels","Mechanical","Hooves"],
+  wings:["None","Feathered (bird)","Leathery (bat)","Butterfly","Dragonfly","Energy/Abstract","Mechanical","Small (decorative)","Multiple pairs","Broken/tattered"],
+  tail:["None","Cat","Wolf","Reptile","Demon (spade)","Fish","Fox (fluffy)","Dragon","Scorpion","Feathered","Energy","Mechanical"],
+  ears:["Human","Pointed (elf)","Cat","Dog","Rabbit","Long (elf)","Broad (orc)","Fin (merfolk)","Multiple","Cyborg","Decorated"],
+  expression:["Neutral","Confident","Mysterious","Fierce","Gentle","Smiling","Serious","Melancholy","Determined"],
+  clothing:[
+    "Neutral (studio reference)",
+    "Modern Casual",
+    "Formal / Business",
+    "Fantasy Armor",
+    "Sci-Fi Suit",
+    "Traditional / Cultural",
+    "Streetwear",
+    "Robes / Wizard",
+    "Military / Tactical",
+    "None",
+  ],
+};
+const UNI_STYLE={
+  realism:"Photorealistic professional studio photography, ultra high resolution, realistic skin texture with pore detail, accurate light physics and subsurface scattering",
+  anime:"High quality anime illustration, clean sharp line art with variable weight, cel shading with soft gradients, vibrant color palette, detailed eyes with multiple highlights",
+  "3d":"Stylized 3D animated film character render, subsurface skin scattering, global illumination, physically based rendering, smooth subdivision surfaces",
+  "2d":"Flat 2D vector illustration, bold thick outlines, simplified geometric shapes, limited color palette, graphic design aesthetic",
+  pixel:"Detailed pixel art, dithering techniques, limited but expressive color palette, 16-bit era inspired, anti-aliased edges",
+  oil:"Classical oil painting technique, visible brushstrokes, impasto texture, chiaroscuro lighting, Dutch Golden Age composition"
+};
+const AV_DEF={
+  universe:"realism",race:"Human",gender:"Female",region:"Northern European",eyeColor:"Blue",age:"Young Adult",
+  skinColor:"Fair",skinTraits:"None",hair:"Long",eyeType:"Human",lips:"Medium",markings:"None",expression:"Neutral",
+  horns:"None",bodyType:"Athletic",lArm:"Natural",rArm:"Natural",lLeg:"Natural",rLeg:"Natural",
+  wings:"None",tail:"None",ears:"Human",clothing:"Neutral (studio reference)",details:""
+};
+
+// ─── AVATAR PAGE ──────────────────────────────────────────────────────────────
+function AvatarsPage(){
+  const[c,setC]=useState(AV_DEF);
+  const[advanced,setAdvanced]=useState(false);
+  const[iTab,setITab]=useState("universe");
+  const[fTab,setFTab]=useState("hair");
+  const[bTab,setBTab]=useState("bodyType");
+  const[toast,setToast]=useState("");
+  const set=(k,v)=>setC(p=>({...p,[k]:v}));
+
+  const buildAvPrompt=()=>{
+    const style=UNI_STYLE[c.universe]||UNI_STYLE.realism;
+    const faceAdv=advanced?` Eye type: ${c.eyeType.toLowerCase()}. Lips: ${c.lips.toLowerCase()}. Face markings: ${c.markings.toLowerCase()}. Horns: ${c.horns.toLowerCase()}.`:"";
+    const traits=c.skinTraits!=="None"?` Surface traits: ${c.skinTraits.toLowerCase()}.`:"";
+    const clothesParts=c.clothing;
+    const clothesPrompt=c.clothing==="Neutral (studio reference)"?"Wearing a minimal neutral black fitted top and black shorts, studio reference attire, no branding. Barefoot.":c.clothing==="None"?"Nude figure, tasteful artistic reference pose, professional studio photography.":"Wearing "+c.clothing.toLowerCase()+" attire appropriate to the character's anatomy, age, body type, race, and universe style.";
+    const parts=[];
+
+    // 1. GOAL — what AI must produce, format first
+    parts.push(
+      "Generate a single composite character reference sheet arranged as a clean 1x3 grid with three panels. "+
+      "All three panels must depict the exact same character with identical anatomy, skin color, surface traits, facial structure, wardrobe, and physical proportions. "+
+      "Do not alter identity, age, gender, body type, costume details, or non-human features between panels. "+
+      "Maintain strict character consistency across all three frames."
+    );
+
+    // 2. Panel layout instructions — what each panel contains
+    parts.push(
+      "Panel layout:\n"+
+      "1. Front-facing close-up portrait — head and shoulders only, face centered, camera at eye level, neutral expression, even studio lighting, no shadows obscuring features.\n"+
+      "2. Side profile close-up — pure 90-degree lateral view, head and shoulders, full silhouette of face and hair readable, same lighting as panel 1.\n"+
+      "3. Full body reference shot — complete head-to-toe figure, arms slightly away from body, relaxed natural stance, full anatomy and costume visible, camera at eye level, no cropping of feet or top of head."
+    );
+
+    // 3. Universe / art style
+    parts.push(style+".");
+
+    // 4. Character identity
+    parts.push(
+      "Character: "+c.race.toLowerCase()+", "+c.gender.toLowerCase()+", "+c.region.toLowerCase()+" heritage, "+c.age.toLowerCase()+". "+
+      "Facial expression: "+c.expression.toLowerCase()+"."
+    );
+
+    // 5. Body structure
+    parts.push(
+      "Body structure: Body type: "+c.bodyType.toLowerCase()+". "+
+      "Left arm: "+c.lArm.toLowerCase()+". Right arm: "+c.rArm.toLowerCase()+". "+
+      "Left leg: "+c.lLeg.toLowerCase()+". Right leg: "+c.rLeg.toLowerCase()+". "+
+      "Wings: "+c.wings.toLowerCase()+". Tail: "+c.tail.toLowerCase()+". Ears: "+c.ears.toLowerCase()+"."
+    );
+
+    // 6. Skin and surface
+    parts.push("Skin and surface: "+c.skinColor.toLowerCase()+" skin."+traits);
+
+    // 7. Facial features
+    parts.push("Facial features: "+c.hair.toLowerCase()+" hair. "+c.eyeColor.toLowerCase()+" eyes."+faceAdv);
+
+    // 8. Clothing
+    parts.push(clothesPrompt);
+
+    // 9. Additional details
+    if(c.details)parts.push("Additional details: "+c.details);
+
+    // 10. Technical output spec
+    parts.push(
+      "Background: plain neutral grey studio background across all three panels. "+
+      "Lighting: soft even professional studio lighting, consistent across all panels. "+
+      "Output as a single 1x3 grid image. Ultra high resolution, sharp focus, physically accurate anatomy. "+
+      "No text, captions, labels, UI elements, branding, or watermarks in any panel."
+    );
+
+    return parts.join("\n\n");
+  };
+
+  const prompt=buildAvPrompt();
+  const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2200)};
+  const copy=async()=>{const ok=await copyText(prompt);doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY")};
+  const surprise=()=>{
+    const pick=a=>a[~~(Math.random()*a.length)];
+    const pickId=a=>pick(a).id;
+    setC({
+      universe:pickId(AV_FIELDS.universe),race:pick(AV_FIELDS.race),gender:pick(AV_FIELDS.gender),
+      region:pick(AV_FIELDS.region),eyeColor:pick(AV_FIELDS.eyeColor),age:pick(AV_FIELDS.age),
+      skinColor:pick(AV_FIELDS.skinColor),skinTraits:pick(AV_FIELDS.skinTraits),hair:pick(AV_FIELDS.hair),
+      eyeType:pick(AV_FIELDS.eyeType),lips:pick(AV_FIELDS.lips),markings:pick(AV_FIELDS.markings),
+      horns:pick(AV_FIELDS.horns),bodyType:pick(AV_FIELDS.bodyType),lArm:pick(AV_FIELDS.arm),
+      rArm:pick(AV_FIELDS.arm),lLeg:pick(AV_FIELDS.leg),rLeg:pick(AV_FIELDS.leg),
+      wings:pick(AV_FIELDS.wings),tail:pick(AV_FIELDS.tail),ears:pick(AV_FIELDS.ears),
+      expression:pick(AV_FIELDS.expression),clothing:pick(AV_FIELDS.clothing),details:""
+    });
+    doToast("RANDOM CHARACTER GENERATED");
+  };
+
+  const isDirty=k=>{
+    const nd={skinTraits:"None",markings:"None",horns:"None",wings:"None",tail:"None",eyeType:"Human",ears:"Human"};
+    const def=nd[k]!==undefined?nd[k]:AV_DEF[k];
+    return c[k]&&c[k]!==def;
+  };
+
+  // ── FIXED: using children instead of ch prop ──
+  const Sec=({title,children,badge})=>(
+    <div className="av-sec">
+      <div className="sh" style={{marginBottom:14}}>
+        <span className="st">{title}</span>
+        {badge&&<span className="sb">{badge}</span>}
+      </div>
+      {children}
+    </div>
+  );
+
+  const Opts=({opts,stateKey})=>(
+    <div className="optbtns">
+      {opts.map(o=>(
+        <button key={o} className={`ob${c[stateKey]===o?" sel":""}`} onClick={()=>set(stateKey,o)}>{o}</button>
+      ))}
+    </div>
+  );
+
+  return(
+    <div className="page">
+      <div className="ph">
+        <div className="pt">Avatar <b>Builder</b></div>
+        <div className="ps">Character reference sheet prompt builder with detailed anatomy and style controls</div>
+      </div>
+
+      <Sec title="Identity">
+        <div className="tab-strip">
+          {[["universe","Universe"],["race","Race"],["gender","Gender"],["region","Region"],["eyeColor","Eye Color"],["age","Age"],["skinColor","Skin Color"],["skinTraits","Skin Traits"],["expression","Expression"]].map(([k,l])=>(
+            <button key={k} className={`tab-p${iTab===k?" on":""}`} onClick={()=>setITab(k)}>
+              {l}{isDirty(k)&&<span className="tab-dot"/>}
+            </button>
+          ))}
+        </div>
+        {iTab==="universe"?(
+          <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            {AV_FIELDS.universe.map(u=>(
+              <div key={u.id} onClick={()=>set("universe",u.id)} style={{width:100,cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(c.universe===u.id?"#e8780a":"var(--bd)"),boxShadow:c.universe===u.id?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s"}}>
+                <div style={{height:70,background:u.color,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{width:32,height:32,borderRadius:"50%",background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.2)"}}/>
+                </div>
+                <div style={{padding:"6px 4px",textAlign:"center",fontSize:11,fontWeight:600,color:c.universe===u.id?"#e8780a":"var(--t)"}}>{u.l}</div>
+                <div style={{fontSize:9,color:"var(--t4)",textAlign:"center",paddingBottom:8,padding:"0 4px 8px"}}>{u.desc}</div>
+              </div>
+            ))}
+          </div>
+        ):iTab==="race"?<Opts opts={AV_FIELDS.race} stateKey="race"/>
+        :iTab==="gender"?<Opts opts={AV_FIELDS.gender} stateKey="gender"/>
+        :iTab==="region"?<Opts opts={AV_FIELDS.region} stateKey="region"/>
+        :iTab==="eyeColor"?<Opts opts={AV_FIELDS.eyeColor} stateKey="eyeColor"/>
+        :iTab==="age"?<Opts opts={AV_FIELDS.age} stateKey="age"/>
+        :iTab==="skinColor"?<Opts opts={AV_FIELDS.skinColor} stateKey="skinColor"/>
+        :iTab==="expression"?<Opts opts={AV_FIELDS.expression} stateKey="expression"/>
+        :<Opts opts={AV_FIELDS.skinTraits} stateKey="skinTraits"/>}
+      </Sec>
+
+      <div className="toggle-row" onClick={()=>setAdvanced(v=>!v)}>
+        <span style={{fontSize:11,fontWeight:700,letterSpacing:2,color:advanced?"var(--t)":"var(--t3)"}}>ADVANCED FACE OPTIONS</span>
+        <div className="toggle-knob" style={{background:advanced?"#e8780a":"var(--s3)",border:"1px solid "+(advanced?"#e8780a":"var(--bd)")}}>
+          <div className="toggle-dot" style={{left:advanced?24:4}}/>
+        </div>
+      </div>
+
+      {advanced&&(
+        <Sec title="Face Details">
+          <div className="tab-strip">
+            {[["hair","Hair"],["eyeType","Eye Type"],["lips","Lips"],["markings","Markings"],["horns","Horns"]].map(([k,l])=>(
+              <button key={k} className={`tab-p${fTab===k?" on":""}`} onClick={()=>setFTab(k)}>
+                {l}{isDirty(k)&&<span className="tab-dot"/>}
+              </button>
+            ))}
+          </div>
+          {fTab==="hair"?<Opts opts={AV_FIELDS.hair} stateKey="hair"/>
+          :fTab==="eyeType"?<Opts opts={AV_FIELDS.eyeType} stateKey="eyeType"/>
+          :fTab==="lips"?<Opts opts={AV_FIELDS.lips} stateKey="lips"/>
+          :fTab==="markings"?<Opts opts={AV_FIELDS.markings} stateKey="markings"/>
+          :<Opts opts={AV_FIELDS.horns} stateKey="horns"/>}
+        </Sec>
+      )}
+
+      <Sec title="Body Structure">
+        <div className="tab-strip">
+          {[["bodyType","Body Type"],["lArm","L Arm"],["rArm","R Arm"],["lLeg","L Leg"],["rLeg","R Leg"],["wings","Wings"],["tail","Tail"],["ears","Ears"]].map(([k,l])=>(
+            <button key={k} className={`tab-p${bTab===k?" on":""}`} onClick={()=>setBTab(k)}>
+              {l}{isDirty(k)&&<span className="tab-dot"/>}
+            </button>
+          ))}
+        </div>
+        {bTab==="bodyType"?<Opts opts={AV_FIELDS.bodyType} stateKey="bodyType"/>
+        :bTab==="lArm"?<Opts opts={AV_FIELDS.arm} stateKey="lArm"/>
+        :bTab==="rArm"?<Opts opts={AV_FIELDS.arm} stateKey="rArm"/>
+        :bTab==="lLeg"?<Opts opts={AV_FIELDS.leg} stateKey="lLeg"/>
+        :bTab==="rLeg"?<Opts opts={AV_FIELDS.leg} stateKey="rLeg"/>
+        :bTab==="wings"?<Opts opts={AV_FIELDS.wings} stateKey="wings"/>
+        :bTab==="tail"?<Opts opts={AV_FIELDS.tail} stateKey="tail"/>
+        :<Opts opts={AV_FIELDS.ears} stateKey="ears"/>}
+      </Sec>
+
+      <Sec title="Clothing">
+        <div className="optbtns">
+          {AV_FIELDS.clothing.map(cl=>(
+            <button key={cl} className={`ob${c.clothing===cl?" sel":""}`} onClick={()=>set("clothing",cl)}>{cl}</button>
+          ))}
+        </div>
+      </Sec>
+
+      <Sec title="Additional Details" badge="OPTIONAL">
+        <textarea rows={3} value={c.details} onChange={e=>set("details",e.target.value)} placeholder="Accessories, personality traits, scars, lore details, special features — anything extra is appended to the prompt."/>
+      </Sec>
+
+      <div className="sec">
+        <div className="sh"><span className="st">Generated Prompt</span><span className="sb">LIVE</span></div>
+        <div className="pbox live" style={{fontSize:11}}>{prompt}</div>
+      </div>
+
+      <div className="bbar">
+        <button className="btn" onClick={()=>setC(AV_DEF)}>Reset</button>
+        <button className="btn" onClick={surprise}>Surprise Me</button>
+        <button className="btn pri" onClick={copy}>Copy Prompt</button>
+      </div>
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+// ─── ROOT ──────────────────────────────────────────────────────────────────────
+export default function App(){
+  const[page,setPage]=useState("angles");
+  const[scrolled,setScrolled]=useState(false);
+  useEffect(()=>{
+    const onScroll=()=>setScrolled(window.scrollY>50);
+    window.addEventListener('scroll',onScroll);
+    return()=>window.removeEventListener('scroll',onScroll);
+  },[]);
+  return(
+    <>
+      <style>{G}</style>
+      <div className="shell">
+        <nav className={`nav${scrolled?" scrolled":""}`}>
+          <div className="logo">CINEMATIC</div>
+          <div className="ntabs">
+            <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Camera Angles</button>
+            <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Avatar Builder</button>
+          </div>
+        </nav>
+        {page==="angles"?<AnglesPage/>:<AvatarsPage/>}
+      </div>
+    </>
+  );
+}
