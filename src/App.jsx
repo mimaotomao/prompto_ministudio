@@ -942,7 +942,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px 0px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:aspectRatio===r.id?"#e8780a":"var(--t)"}}>{r.id}</div>
+                color:aspectRatio===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
             </div>
           ))}
         </div>
@@ -1045,118 +1045,37 @@ function AnglesPage(){
 }
 
 // ─── AVATAR DATA ──────────────────────────────────────────────────────────────
-const COLOR_SPRITES=[
-  {id:"teal", sx:0, sy:0},
-  {id:"matrix", sx:-150, sy:0},
-  {id:"noir", sx:-300, sy:0},
-  {id:"sepia", sx:-450, sy:0},
-  {id:"cyber", sx:0, sy:-167},
-  {id:"natural", sx:-150, sy:-167},
-  {id:"bleach", sx:-300, sy:-167},
-  {id:"warm", sx:-450, sy:-167},
+
+
+
+
+
+
+
+
+const LARM_SPRITES=[
+  {name:"Natural",sx:-400,sy:0},
+  {name:"Prosthetic (steampunk)",sx:0,sy:0},
+  {name:"Prosthetic (cybernetic)",sx:-200,sy:0},
+  {name:"Extra arms",sx:0,sy:-100},
+  {name:"Tentacles",sx:-200,sy:-100},
+  {name:"Animal (furry)",sx:-400,sy:-100},
+  {name:"Animal (scaly)",sx:0,sy:-200},
+  {name:"Ghostly",sx:-200,sy:-200},
+  {name:"Mechanical claws",sx:-400,sy:-200},
+  {name:"No arm",sx:0,sy:-300},
 ];
-const LENS_SPRITES=[
-  {mm:"8mm", sx:0, sy:0},
-  {mm:"14mm", sx:-150, sy:0},
-  {mm:"24mm", sx:-300, sy:0},
-  {mm:"35mm", sx:-450, sy:0},
-  {mm:"50mm", sx:0, sy:-84},
-  {mm:"85mm", sx:-150, sy:-84},
-  {mm:"135mm", sx:-300, sy:-84},
-  {mm:"200mm", sx:-450, sy:-84},
-  {mm:"400mm", sx:0, sy:-168},
-];
-const FILM_SPRITES=[
-  {id:"kodak", sx:0, sy:0},
-  {id:"fuji", sx:-150, sy:0},
-  {id:"ilford", sx:-300, sy:0},
-  {id:"cinestill", sx:-450, sy:0},
-  {id:"polaroid", sx:0, sy:-84},
-  {id:"digital", sx:-150, sy:-84},
-  {id:"vintage", sx:-300, sy:-84},
-  {id:"anamorphic", sx:-450, sy:-84},
-];
-const LIGHT_SPRITES=[
-  {id:"golden", sx:0, sy:0},
-  {id:"midday", sx:-150, sy:0},
-  {id:"bluehour", sx:-300, sy:0},
-  {id:"night", sx:-450, sy:0},
-  {id:"overcast", sx:-600, sy:0},
-  {id:"sunrise", sx:0, sy:-105},
-  {id:"interior", sx:-150, sy:-105},
-  {id:"storm", sx:-300, sy:-105},
-  {id:"fog", sx:-450, sy:-105},
-  {id:"neon", sx:-600, sy:-105},
-  {id:"fire", sx:0, sy:-210},
-  {id:"moonlit", sx:-150, sy:-210},
-  {id:"studiokey", sx:-300, sy:-210},
-  {id:"magic", sx:-450, sy:-210},
-];
-const ENV_SPRITES=[
-  {id:"scifi", sx:0, sy:0},
-  {id:"ancient", sx:-150, sy:0},
-  {id:"retrofuture", sx:-300, sy:0},
-  {id:"forest", sx:-450, sy:0},
-  {id:"desert", sx:-600, sy:0},
-  {id:"underwater", sx:-750, sy:0},
-  {id:"space", sx:0, sy:-126},
-  {id:"cyberpunk", sx:-150, sy:-126},
-  {id:"medieval", sx:-300, sy:-126},
-  {id:"industrial", sx:-450, sy:-126},
-  {id:"arctic", sx:-600, sy:-126},
-  {id:"jungle", sx:-750, sy:-126},
-  {id:"studio", sx:0, sy:-252},
-  {id:"tokyo", sx:-150, sy:-252},
-  {id:"cave", sx:-300, sy:-252},
-  {id:"western", sx:-450, sy:-252},
-  {id:"abstract", sx:-600, sy:-252},
-];
-const ANGLE_SPRITES=[
-  {name:"Wide establishing shot", sx:0, sy:0},
-  {name:"Medium eye-level shot", sx:-100, sy:0},
-  {name:"Low-angle hero shot", sx:-200, sy:0},
-  {name:"Over-the-shoulder shot", sx:-300, sy:0},
-  {name:"Close-up", sx:-400, sy:0},
-  {name:"High-angle shot", sx:-500, sy:0},
-  {name:"Profile side shot", sx:-600, sy:0},
-  {name:"Dutch tilt shot", sx:-700, sy:0},
-  {name:"Extreme wide master shot", sx:-800, sy:0},
-  {name:"Bird's-eye vertical shot", sx:-900, sy:0},
-  {name:"Ground-level worm's-eye shot", sx:0, sy:-140},
-  {name:"Three-quarter front angle", sx:-100, sy:-140},
-  {name:"Three-quarter rear angle", sx:-200, sy:-140},
-  {name:"Locked-off static frame", sx:-300, sy:-140},
-  {name:"Long-lens compression shot", sx:-400, sy:-140},
-  {name:"Foreground-obstructed shot", sx:-500, sy:-140},
-  {name:"Reflected perspective shot", sx:-600, sy:-140},
-  {name:"Silhouette backlit shot", sx:-700, sy:-140},
-  {name:"Center-punched symmetrical shot", sx:-800, sy:-140},
-  {name:"Asymmetrical rule-of-thirds shot", sx:-900, sy:-140},
-  {name:"Hand-level perspective shot", sx:0, sy:-280},
-  {name:"Chest-height tracking angle", sx:-100, sy:-280},
-  {name:"Environmental frame-within-frame shot", sx:-200, sy:-280},
-  {name:"Extreme close environment shot", sx:-300, sy:-280},
-  {name:"Rear profile silhouette shot", sx:-400, sy:-280},
-  {name:"Shallow-focus foreground lead shot", sx:-500, sy:-280},
-  {name:"Deep-focus wide shot", sx:-600, sy:-280},
-  {name:"Oblique corner angle shot", sx:-700, sy:-280},
-  {name:"Eye-line match perspective shot", sx:-800, sy:-280},
-  {name:"Environmental negative-space shot", sx:-900, sy:-280},
-];
-const UNIVERSE_SPRITES=[
-  {id:"realism", name:"Photorealism", sx:0, sy:0},
-  {id:"anime", name:"Anime", sx:-100, sy:0},
-  {id:"3d", name:"3D Render", sx:-200, sy:0},
-  {id:"2d", name:"Vector Art", sx:-300, sy:0},
-  {id:"pixel", name:"Pixel Art", sx:-400, sy:0},
-  {id:"oil", name:"Oil Painting", sx:-500, sy:0},
-];
-const FORMAT_SPRITES=[
-  {id:"16:9", sx:0, sy:0},
-  {id:"9:16", sx:-100, sy:0},
-  {id:"2.39:1", sx:-200, sy:0},
-  {id:"4:3", sx:-300, sy:0},
-  {id:"1:1", sx:-400, sy:0},
+const RARM_SPRITES=[
+  {name:"Natural",sx:-500,sy:0},
+  {name:"Prosthetic (steampunk)",sx:-100,sy:0},
+  {name:"Prosthetic (cybernetic)",sx:-300,sy:0},
+  {name:"Extra arms",sx:-100,sy:-100},
+  {name:"Tentacles",sx:-300,sy:-100},
+  {name:"Animal (furry)",sx:-500,sy:-100},
+  {name:"Animal (scaly)",sx:-100,sy:-200},
+  {name:"Ghostly",sx:-300,sy:-200},
+  {name:"Mechanical claws",sx:-500,sy:-200},
+  {name:"No arm",sx:-100,sy:-300},
 ];
 const WINGS_SPRITES=[
   {name:"None", sx:0, sy:0},
@@ -1839,8 +1758,40 @@ function AvatarsPage(){
             ))}
           </div>
         )
-        :bTab==="lArm"?<Opts opts={AV_FIELDS.arm} stateKey="lArm"/>
-        :bTab==="rArm"?<Opts opts={AV_FIELDS.arm} stateKey="rArm"/>
+        :bTab==="lArm"?<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {LARM_SPRITES.map(r=>(
+            <div key={r.name} onClick={()=>set("lArm",r.name)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(c.lArm===r.name?"#e8780a":"var(--bd)"),
+                boxShadow:c.lArm===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:100}}>
+              <div style={{width:100,height:100,
+                backgroundImage:"url(/arms.png)",
+                backgroundSize:"600px 600px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
+                color:c.lArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}>{r.name}</div>
+            </div>
+          ))}
+        </div>
+        :bTab==="rArm"?<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {RARM_SPRITES.map(r=>(
+            <div key={r.name} onClick={()=>set("rArm",r.name)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(c.rArm===r.name?"#e8780a":"var(--bd)"),
+                boxShadow:c.rArm===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:100}}>
+              <div style={{width:100,height:100,
+                backgroundImage:"url(/arms.png)",
+                backgroundSize:"600px 600px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
+                color:c.rArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}>{r.name}</div>
+            </div>
+          ))}
+        </div>
         :bTab==="lLeg"?<Opts opts={AV_FIELDS.leg} stateKey="lLeg"/>
         :bTab==="rLeg"?<Opts opts={AV_FIELDS.leg} stateKey="rLeg"/>
         :bTab==="wings"?(
@@ -1902,9 +1853,21 @@ function AvatarsPage(){
       </Sec>
 
       <Sec title="Clothing">
-        <div className="optbtns">
-          {AV_FIELDS.clothing.map(cl=>(
-            <button key={cl} className={`ob${c.clothing===cl?" sel":""}`} onClick={()=>set("clothing",cl)}>{cl}</button>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {CLOTHING_SPRITES.map(r=>(
+            <div key={r.id} onClick={()=>set("clothing",r.id)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(c.clothing===r.id?"#e8780a":"var(--bd)"),
+                boxShadow:c.clothing===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:120}}>
+              <div style={{width:120,height:167,
+                backgroundImage:"url(/clothing.png)",
+                backgroundSize:"600px 240px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                color:c.clothing===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+            </div>
           ))}
         </div>
       </Sec>
