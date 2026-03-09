@@ -949,6 +949,36 @@ function AnglesPage(){
 }
 
 // ─── AVATAR DATA ──────────────────────────────────────────────────────────────
+const WINGS_SPRITES=[
+  {name:"None", sx:0, sy:0},
+  {name:"Angel", sx:-100, sy:0},
+  {name:"Dark Angel", sx:-200, sy:0},
+  {name:"Dragon", sx:-300, sy:0},
+  {name:"Bat", sx:-400, sy:0},
+  {name:"Fairy", sx:-500, sy:0},
+  {name:"Butterfly", sx:-600, sy:0},
+  {name:"Eagle", sx:0, sy:-100},
+  {name:"Fire", sx:-100, sy:-100},
+  {name:"Ice", sx:-200, sy:-100},
+  {name:"Shadow", sx:-300, sy:-100},
+  {name:"Mechanical", sx:-400, sy:-100},
+  {name:"Peacock", sx:-500, sy:-100},
+];
+const TAIL_SPRITES=[
+  {name:"None", sx:0, sy:0},
+  {name:"Cat", sx:-100, sy:0},
+  {name:"Fox", sx:-200, sy:0},
+  {name:"Wolf", sx:-300, sy:0},
+  {name:"Dragon", sx:-400, sy:0},
+  {name:"Demon", sx:-500, sy:0},
+  {name:"Mermaid", sx:-600, sy:0},
+  {name:"Scorpion", sx:0, sy:-100},
+  {name:"Feathered", sx:-100, sy:-100},
+  {name:"Tentacle", sx:-200, sy:-100},
+  {name:"Bone", sx:-300, sy:-100},
+  {name:"Crystal", sx:-400, sy:-100},
+  {name:"Fire", sx:-500, sy:-100},
+];
 const REGION_SPRITES=[
   {name:"N.European", sx:0, sy:0},{name:"Mediterranean", sx:-100, sy:0},
   {name:"East Asian", sx:-200, sy:0},{name:"S.Asian", sx:-300, sy:0},
@@ -1607,8 +1637,44 @@ function AvatarsPage(){
         :bTab==="rArm"?<Opts opts={AV_FIELDS.arm} stateKey="rArm"/>
         :bTab==="lLeg"?<Opts opts={AV_FIELDS.leg} stateKey="lLeg"/>
         :bTab==="rLeg"?<Opts opts={AV_FIELDS.leg} stateKey="rLeg"/>
-        :bTab==="wings"?<Opts opts={AV_FIELDS.wings} stateKey="wings"/>
-        :bTab==="tail"?<Opts opts={AV_FIELDS.tail} stateKey="tail"/>
+        :bTab==="wings"?(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {WINGS_SPRITES.map(r=>(
+              <div key={r.name} onClick={()=>set("wings",r.name)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.wings===r.name?"#e8780a":"var(--bd)"),
+                  boxShadow:c.wings===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:100}}>
+                <div style={{width:100,height:100,
+                  backgroundImage:"url(/wings.png)",
+                  backgroundSize:"701px 200px",
+                  backgroundPosition:r.sx+"px "+r.sy+"px",
+                  backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                  color:c.wings===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
+        )
+        :bTab==="tail"?(
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {TAIL_SPRITES.map(r=>(
+              <div key={r.name} onClick={()=>set("tail",r.name)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.tail===r.name?"#e8780a":"var(--bd)"),
+                  boxShadow:c.tail===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:100}}>
+                <div style={{width:100,height:100,
+                  backgroundImage:"url(/tail.png)",
+                  backgroundSize:"701px 200px",
+                  backgroundPosition:r.sx+"px "+r.sy+"px",
+                  backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                  color:c.tail===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
+        )
         :(<div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
             {EARS_SPRITES.map(r=>(
               <div key={r.name} onClick={()=>set("ears",r.name)}
