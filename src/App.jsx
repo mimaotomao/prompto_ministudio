@@ -773,13 +773,13 @@ function AnglesPage(){
             const col=i%10, row=Math.floor(i/10);
             return(
               <div key={i}
-                onClick={()=>toggleAngle(i)}
+                onClick={()=>tog(i)}
                 style={{cursor:"pointer",borderRadius:8,overflow:"hidden",position:"relative",
                   border:"2px solid "+(isSel?"#e8780a":"var(--bd)"),
                   boxShadow:isSel?"0 0 14px rgba(232,120,10,.4)":"none",
                   opacity:!isSel&&sel.length>=MAX?0.4:1,
-                  transition:"all .15s",width:100,flexShrink:0}}>
-                <div style={{width:100,height:140,
+                  transition:"all .15s",width:200,flexShrink:0}}>
+                <div style={{width:200,height:70,
                   backgroundImage:"url(/angles.png)",
                   backgroundSize:"1000px 420px",
                   backgroundPosition:(-col*100)+"px "+(-row*140)+"px",
@@ -871,7 +871,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:lens===r.mm?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:lens===r.mm?"#e8780a":"var(--t)"}}>{r.mm}</div>
             </div>
           ))}
         </div>
@@ -1136,35 +1136,35 @@ const UNIVERSE_SPRITES=[
 ];
 const ANGLE_SPRITES=[
   {name:"Wide establishing shot",sx:0,sy:0},
-  {name:"Medium eye-level shot",sx:-100,sy:0},
-  {name:"Low-angle hero shot",sx:-200,sy:0},
-  {name:"Over-the-shoulder shot",sx:-300,sy:0},
-  {name:"Close-up",sx:-400,sy:0},
-  {name:"High-angle shot",sx:-500,sy:0},
-  {name:"Profile side shot",sx:-600,sy:0},
-  {name:"Dutch tilt shot",sx:-700,sy:0},
-  {name:"Extreme wide master shot",sx:-800,sy:0},
-  {name:"Bird's-eye vertical shot",sx:-900,sy:0},
+  {name:"Medium eye-level shot",sx:-200,sy:0},
+  {name:"Low-angle hero shot",sx:-400,sy:0},
+  {name:"Over-the-shoulder shot",sx:-600,sy:0},
+  {name:"Close-up",sx:-800,sy:0},
+  {name:"High-angle shot",sx:0,sy:-70},
+  {name:"Profile side shot",sx:-200,sy:-70},
+  {name:"Dutch tilt shot",sx:-400,sy:-70},
+  {name:"Extreme wide master shot",sx:-600,sy:-70},
+  {name:"Bird's-eye vertical shot",sx:-800,sy:-70},
   {name:"Ground-level worm's-eye shot",sx:0,sy:-140},
-  {name:"Three-quarter front angle",sx:-100,sy:-140},
-  {name:"Three-quarter rear angle",sx:-200,sy:-140},
-  {name:"Locked-off static frame",sx:-300,sy:-140},
-  {name:"Long-lens compression shot",sx:-400,sy:-140},
-  {name:"Foreground-obstructed shot",sx:-500,sy:-140},
-  {name:"Reflected perspective shot",sx:-600,sy:-140},
-  {name:"Silhouette backlit shot",sx:-700,sy:-140},
-  {name:"Center-punched symmetrical shot",sx:-800,sy:-140},
-  {name:"Asymmetrical rule-of-thirds shot",sx:-900,sy:-140},
+  {name:"Three-quarter front angle",sx:-200,sy:-140},
+  {name:"Three-quarter rear angle",sx:-400,sy:-140},
+  {name:"Locked-off static frame",sx:-600,sy:-140},
+  {name:"Long-lens compression shot",sx:-800,sy:-140},
+  {name:"Foreground-obstructed shot",sx:0,sy:-210},
+  {name:"Reflected perspective shot",sx:-200,sy:-210},
+  {name:"Silhouette backlit shot",sx:-400,sy:-210},
+  {name:"Center-punched symmetrical shot",sx:-600,sy:-210},
+  {name:"Asymmetrical rule-of-thirds shot",sx:-800,sy:-210},
   {name:"Hand-level perspective shot",sx:0,sy:-280},
-  {name:"Chest-height tracking angle",sx:-100,sy:-280},
-  {name:"Environmental frame-within-frame shot",sx:-200,sy:-280},
-  {name:"Extreme close environment shot",sx:-300,sy:-280},
-  {name:"Rear profile silhouette shot",sx:-400,sy:-280},
-  {name:"Shallow-focus foreground lead shot",sx:-500,sy:-280},
-  {name:"Deep-focus wide shot",sx:-600,sy:-280},
-  {name:"Oblique corner angle shot",sx:-700,sy:-280},
-  {name:"Eye-line match perspective shot",sx:-800,sy:-280},
-  {name:"Environmental negative-space shot",sx:-900,sy:-280},
+  {name:"Chest-height tracking angle",sx:-200,sy:-280},
+  {name:"Environmental frame-within-frame shot",sx:-400,sy:-280},
+  {name:"Extreme close environment shot",sx:-600,sy:-280},
+  {name:"Rear profile silhouette shot",sx:-800,sy:-280},
+  {name:"Shallow-focus foreground lead shot",sx:0,sy:-350},
+  {name:"Deep-focus wide shot",sx:-200,sy:-350},
+  {name:"Oblique corner angle shot",sx:-400,sy:-350},
+  {name:"Eye-line match perspective shot",sx:-600,sy:-350},
+  {name:"Environmental negative-space shot",sx:-800,sy:-350},
 ];
 const CLOTHING_SPRITES=[
   {id:"Neutral (studio reference)",name:"Neutral",sx:0,sy:0},
@@ -1443,7 +1443,7 @@ function AvatarsPage(){
     const faceAdv=` Eye type: ${c.eyeType.toLowerCase()}. Lips: ${c.lips.toLowerCase()}. Face markings: ${c.markings.toLowerCase()}. Horns: ${c.horns.toLowerCase()}.`;
     const traits=c.skinTraits!=="None"?` Surface traits: ${c.skinTraits.toLowerCase()}.`:"";
     const clothesParts=c.clothing;
-    const clothesPrompt=c.clothing==="Neutral (studio reference)"?"Wearing a minimal neutral black fitted top and black shorts, studio reference attire, no branding. Barefoot.":c.clothing==="None"?"Nude figure, tasteful artistic reference pose, professional studio photography.":"Wearing "+c.clothing.toLowerCase()+" attire appropriate to the character's anatomy, age, body type, race, and universe style.";
+    const clothesPrompt=c.clothing==="Neutral (studio reference)"?"Wearing a minimal neutral black fitted top and black shorts, studio reference attire, no branding. Barefoot.":c.clothing==="None"?"Wearing a minimal swimsuit, tasteful studio reference pose, professional photography.":"Wearing "+c.clothing.toLowerCase()+" attire appropriate to the character's anatomy, age, body type, race, and universe style.";
     const parts=[];
 
     // 1. GOAL — what AI must produce, format first
@@ -1987,7 +1987,7 @@ function AvatarsPage(){
                 transition:"all .15s",width:120}}>
               <div style={{width:120,height:167,
                 backgroundImage:"url(/clothing.png)",
-                backgroundSize:"600px 240px",
+                backgroundSize:"600px 335px",
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
