@@ -1487,10 +1487,29 @@ const AV_DEF={
   universe:"realism",race:"Human",gender:"Female",region:"Northern European",eyeColor:"Blue",age:"Young Adult",
   skinColor:"Fair",skinTraits:"None",hair:"Long",eyeType:"Human",lips:"Medium",markings:"None",expression:"Neutral",
   horns:"None",bodyType:"Athletic",lArm:"Natural",rArm:"Natural",lLeg:"Natural",rLeg:"Natural",
-  wings:"None",tail:"None",ears:"Human",clothing:"Neutral (studio reference)",details:""
+  wings:"None",tail:"None",ears:"Human",clothing:"Neutral (studio reference)",details:"",
+  avLight:"",avEnv:"",avLens:"",avAspect:"16:9"
 };
 
 // ─── AVATAR PAGE ──────────────────────────────────────────────────────────────
+const Sec=({title,children,badge})=>(
+  <div className="av-sec">
+    <div className="sh" style={{marginBottom:14}}>
+      <span className="st">{title}</span>
+      {badge&&<span className="sb">{badge}</span>}
+    </div>
+    {children}
+  </div>
+);
+
+const Opts=({opts,stateKey,val,onSet})=>(
+  <div className="optbtns">
+    {opts.map(o=>(
+      <button key={o} className={`ob${val===o?" sel":""}`} onClick={()=>onSet(stateKey,o)}>{o}</button>
+    ))}
+  </div>
+);
+
 function AvatarsPage(){
   const[c,setC]=useState(AV_DEF);
     const[iTab,setITab]=useState("universe");
@@ -1558,9 +1577,12 @@ function AvatarsPage(){
     if(c.details)parts.push("Additional details: "+c.details);
 
     // 10. Technical output spec
+    const avLightStr=c.avLight?"Lighting: "+c.avLight+".":"Lighting: soft even professional studio lighting, consistent across all panels.";
+    const avEnvStr=c.avEnv?"Background/Environment: "+c.avEnv+".":"Background: plain neutral grey studio background across all three panels.";
+    const avLensStr=c.avLens?"Lens: "+c.avLens+".":"";
+    const avAspectStr=c.avAspect&&c.avAspect!=="16:9"?"Aspect ratio: "+c.avAspect+".":"";
     parts.push(
-      "Background: plain neutral grey studio background across all three panels. "+
-      "Lighting: soft even professional studio lighting, consistent across all panels. "+
+      [avEnvStr,avLightStr,avLensStr,avAspectStr].filter(Boolean).join(" ")+"\n"+
       "Output as a single 1x3 grid image. Ultra high resolution, sharp focus, physically accurate anatomy. "+
       "No text, captions, labels, UI elements, branding, or watermarks in any panel."
     );
@@ -1594,23 +1616,7 @@ function AvatarsPage(){
   };
 
   // ── FIXED: using children instead of ch prop ──
-  const Sec=({title,children,badge})=>(
-    <div className="av-sec">
-      <div className="sh" style={{marginBottom:14}}>
-        <span className="st">{title}</span>
-        {badge&&<span className="sb">{badge}</span>}
-      </div>
-      {children}
-    </div>
-  );
 
-  const Opts=({opts,stateKey})=>(
-    <div className="optbtns">
-      {opts.map(o=>(
-        <button key={o} className={`ob${c[stateKey]===o?" sel":""}`} onClick={()=>set(stateKey,o)}>{o}</button>
-      ))}
-    </div>
-  );
 
   return(
     <div className="page">
@@ -2100,6 +2106,72 @@ function AvatarsPage(){
                 color:c.clothing===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
             </div>
           ))}
+        </div>
+      </Sec>
+
+
+      <Sec title="Background &amp; Lighting" badge="OPTIONAL">
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:8,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>Lighting</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {LIGHT_SPRITES.map(r=>(
+              <div key={r.name} onClick={()=>set("avLight",c.avLight===r.name?"":r.name)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.avLight===r.name?"#e8780a":"var(--bd)"),
+                  boxShadow:c.avLight===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:150}}>
+                <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLight===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:8,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>Environment / Background</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {ENV_SPRITES.map(r=>(
+              <div key={r.name} onClick={()=>set("avEnv",c.avEnv===r.name?"":r.name)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.avEnv===r.name?"#e8780a":"var(--bd)"),
+                  boxShadow:c.avEnv===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:133}}>
+                <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avEnv===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:8,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>Lens / Focal Length</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {LENS_SPRITES.map(r=>(
+              <div key={r.name} onClick={()=>set("avLens",c.avLens===r.name?"":r.name)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.avLens===r.name?"#e8780a":"var(--bd)"),
+                  boxShadow:c.avLens===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:150}}>
+                <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLens===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:8,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>Aspect Ratio</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+            {FORMAT_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>set("avAspect",r.id)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                  border:"2px solid "+(c.avAspect===r.id?"#e8780a":"var(--bd)"),
+                  boxShadow:c.avAspect===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"all .15s",width:r.fw,
+                  display:"flex",flexDirection:"column",alignItems:"center",
+                  padding:"10px 8px",background:"var(--s1)",gap:6}}>
+                <div style={{width:80,height:80,flexShrink:0,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{fontSize:11,fontWeight:600,color:c.avAspect===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </Sec>
 
