@@ -1551,7 +1551,7 @@ function AvatarsPage(){
     // 1. GOAL — what AI must produce, format first
     const goalPrefix=mode==="photo"
       ?"Use the attached reference photo as the identity base for this character. Extract and preserve the exact face structure, skin tone, and distinctive facial features from the photo. Apply the selected traits below as modifications or additions on top of this reference identity. Do not change the face — only apply the style, body, and trait modifications."
-      :"Generate a completely original character from scratch based only on the selections below. Do not base this on any real person.";
+      :"Generate a completely original character from scratch based only on the selections below.";
     const layoutObj=LAYOUT_SPRITES.find(l=>l.name===c.avLayout)||LAYOUT_SPRITES[0];
     const consistencyText=isMultiPanel
       ?" All panels must depict the exact same character with identical anatomy, skin color, surface traits, facial structure, wardrobe, and physical proportions. Do not alter identity, age, gender, body type, costume details, or non-human features between panels. Maintain strict character consistency across all frames."
