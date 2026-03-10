@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, createContext } from "react";
 
 const G = `
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
@@ -135,7 +135,119 @@ textarea::placeholder{color:var(--t4)}
 .floating-btn{position:fixed;right:24px;bottom:100px;width:48px;height:48px;border-radius:50%;background:var(--s1);border:1px solid var(--bd);color:var(--t);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;z-index:80;font-size:11px;font-weight:700;letter-spacing:1px}
 .floating-btn:hover{background:var(--acc);border-color:var(--acc);color:#000}
 .floating-btn.active{background:var(--acc);color:#000;border-color:var(--acc)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:36px 32px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:20px;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.modal-title{font-family:var(--disp);font-size:28px;letter-spacing:4px;text-align:center}
+.modal-title b{color:var(--acc)}
+.modal-sub{font-size:13px;color:var(--t3);text-align:center;line-height:1.6}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;padding:13px 20px;border-radius:var(--r);border:1px solid var(--bd);background:#fff;color:#222;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;width:100%}
+.gbtn:hover{box-shadow:0 4px 20px rgba(255,255,255,.15);transform:translateY(-1px)}
+.modal-divider{display:flex;align-items:center;gap:12px;color:var(--t4);font-size:11px;font-weight:600;letter-spacing:2px}
+.modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--bd)}
+.modal-skip{font-size:12px;color:var(--t4);text-align:center;cursor:pointer;padding:4px;transition:color .2s}
+.modal-skip:hover{color:var(--t)}
+.user-chip{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;background:var(--s2);border:1px solid var(--bd);font-size:11px;color:var(--t3);cursor:pointer;transition:all .2s}
+.user-chip:hover{border-color:var(--bdh);color:var(--t)}
+.user-chip img{width:20px;height:20px;border-radius:50%}
+.genwith{display:flex;align-items:center;gap:8px;padding:10px 28px 0;flex-wrap:wrap}
+.genwith-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--t4);text-transform:uppercase;white-space:nowrap}
+.genwith-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid var(--bd);background:var(--s2);color:var(--t3);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap}
+.genwith-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acdim);transform:translateY(-1px)}
 `;
+
+// ─── GOOGLE AUTH ──────────────────────────────────────────────────────────────
+const CLIENT_ID="730553596086-s59f1v381pocjk3gr992m8u18s3724k2.apps.googleusercontent.com";
+
+function useGoogleAuth(){
+  const[user,setUser]=useState(null);
+  const[ready,setReady]=useState(false);
+  useEffect(()=>{
+    const script=document.createElement("script");
+    script.src="https://accounts.google.com/gsi/client";
+    script.async=true;
+    script.defer=true;
+    script.onload=()=>{
+      window.google.accounts.id.initialize({
+        client_id:CLIENT_ID,
+        callback:(resp)=>{
+          const payload=JSON.parse(atob(resp.credential.split(".")[1]));
+          setUser({name:payload.name,email:payload.email,picture:payload.picture,idToken:resp.credential});
+        },
+        auto_select:false,
+      });
+      setReady(true);
+    };
+    document.head.appendChild(script);
+    return()=>{document.head.removeChild(script)};
+  },[]);
+  const signIn=(cb)=>{
+    if(!ready)return;
+    window.google.accounts.id.prompt((n)=>{
+      if(n.isSkippedMoment()||n.isDismissedMoment())cb&&cb(null);
+    });
+  };
+  const signOut=()=>{
+    if(window.google)window.google.accounts.id.disableAutoSelect();
+    setUser(null);
+  };
+  return{user,ready,signIn,signOut};
+}
+
+// ─── ENHANCE API CALL ─────────────────────────────────────────────────────────
+async function callEnhance(prompt, instructions, idToken){
+  const resp=await fetch("/api/enhance",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({prompt,instructions,idToken})
+  });
+  const data=await resp.json();
+  if(!resp.ok)throw new Error(data.error||"API error");
+  return data.result||"";
+}
+
+const AuthCtx=React.createContext({user:null,ready:false,signIn:()=>{},signOut:()=>{}});
+
+// ─── AUTH MODAL ───────────────────────────────────────────────────────────────
+function AuthModal({onClose}){
+  const{signIn}=React.useContext(AuthCtx);
+  return(
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">✦ <b>Enhance</b></div>
+        <div className="modal-sub">Sign in with Google to use AI-powered prompt enhancement — free, no credit card required.</div>
+        <button className="gbtn" onClick={()=>{signIn();onClose();}}>
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+          Continue with Google
+        </button>
+        <div className="modal-skip" onClick={onClose}>✕ Cancel</div>
+      </div>
+    </div>
+  );
+}
+
+// ─── GENERATE WITH LINKS ─────────────────────────────────────────────────────
+const GEN_TARGETS=[
+  {label:"Grok Imagine",url:"https://grok.com/imagine",icon:"✦"},
+  {label:"Gemini",url:"https://gemini.google.com",icon:"◈"},
+  {label:"Arena.ai",url:"https://arena.ai/?mode=direct&chat-modality=image",icon:"⊕"},
+];
+function GenWithLinks({getPrompt,onCopy}){
+  const handle=async(url)=>{
+    await copyText(getPrompt());
+    onCopy&&onCopy();
+    window.open(url,"_blank","noopener,noreferrer");
+  };
+  return(
+    <div className="genwith">
+      <span className="genwith-label">Generate with</span>
+      {GEN_TARGETS.map(t=>(
+        <button key={t.label} className="genwith-btn" onClick={()=>handle(t.url)}>
+          <span>{t.icon}</span>{t.label} ↗
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const ANGLES = [
   {name:"Wide establishing shot",
@@ -720,6 +832,10 @@ function AnglesPage(){
   const[toast,setToast]=useState("");
   const[history,setHistory]=useState([]);
   const[showHistory,setShowHistory]=useState(false);
+  const[enhancing,setEnhancing]=useState(false);
+  const[enhanced,setEnhanced]=useState("");
+  const[showAuthModal,setShowAuthModal]=useState(false);
+  const{user}=React.useContext(AuthCtx);
   const MAX=9;
 
   const tog=(i)=>setSel(p=>p.includes(i)?p.filter(x=>x!==i):p.length>=MAX?p:[...p,i]);
@@ -730,9 +846,20 @@ function AnglesPage(){
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
   const copy=async()=>{
     if(!hasAny)return;
-    const ok=await copyText(prompt);
-    setHistory(p=>[{prompt,date:new Date().toLocaleTimeString()},...p].slice(0,20));
+    const ok=await copyText(enhanced||prompt);
+    setHistory(p=>[{prompt:enhanced||prompt,date:new Date().toLocaleTimeString()},...p].slice(0,20));
     doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY");
+  };
+  const enhance=async()=>{
+    if(!hasAny)return;
+    if(!user){setShowAuthModal(true);return;}
+    setEnhancing(true);setEnhanced("");
+    try{
+      const result=await callEnhance(prompt,custom,user.idToken,null);
+      setEnhanced(result);
+      doToast("✦ ENHANCED BY GEMINI");
+    }catch(e){doToast("ERROR: "+e.message);}
+    setEnhancing(false);
   };
   const reset=()=>{
     setScene("");setSel([]);setLight(null);setBg(null);setLens(null);
@@ -1043,16 +1170,28 @@ function AnglesPage(){
       <div className="sec">
         <div className="sh"><span className="st">Generated Prompt</span>{hasAny&&<span className="sb">LIVE</span>}</div>
         <div className={`pbox${hasAny?" live":""}`}>
-          {hasAny?prompt:<span className="pbox-empty">Fill fields above to generate your prompt in real time.</span>}
+          {hasAny?(enhanced||prompt):<span className="pbox-empty">Fill fields above to generate your prompt in real time.</span>}
         </div>
+        {enhanced&&(
+          <div style={{marginTop:8,fontSize:11,color:"var(--acc)",fontWeight:600,letterSpacing:1}}>
+            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"var(--t4)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert to original</button>
+          </div>
+        )}
       </div>
+      {hasAny&&<GenWithLinks getPrompt={()=>enhanced||prompt} onCopy={()=>doToast("PROMPT COPIED — PASTE IN TARGET APP")}/> }
+
 
       <div className="bbar">
         <button className="btn" onClick={reset}>Reset</button>
         <button className="btn" onClick={random}>Random</button>
+        <button className="btn" onClick={enhance} disabled={!hasAny||enhancing}
+          style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"var(--t4)":"var(--acc)",background:"var(--acdim)"}}>
+          {enhancing?"ENHANCING…":"✦ Enhance"}
+        </button>
         <button className={`btn${hasAny?" pri":""}`} onClick={copy} disabled={!hasAny}>Copy Prompt</button>
       </div>
 
+      {showAuthModal&&<AuthModal onClose={()=>setShowAuthModal(false)} />}
       {toast&&<div className="toast">{toast}</div>}
 
       <button className={`floating-btn${showHistory?" active":""}`} onClick={()=>setShowHistory(v=>!v)}>
@@ -1317,15 +1456,15 @@ const EXPRESSION_SPRITES=[
 ];
 const LAYOUT_SPRITES=[
   {name:"Style Sheet",sx:0,sy:0,p:"Generate a single composite character reference sheet arranged as a clean 1x3 grid with three panels. Panel layout:\n1. Front-facing close-up portrait — head and shoulders only, face centered, camera at eye level, even studio lighting.\n2. Side profile close-up — pure 90-degree lateral view, head and shoulders, full silhouette readable.\n3. Full body reference shot — complete head-to-toe figure, arms slightly away from body, relaxed natural stance, full anatomy and costume visible."},
-  {name:"Headshot",sx:-140,sy:0,p:"Generate a single headshot portrait — head and shoulders only, face centered, camera at eye level, professional studio framing. Clean single-panel output."},
-  {name:"Half Body",sx:0,sy:-200,p:"Generate a single half-body shot — framed from the waist up, arms visible, clean studio framing. Single panel output."},
-  {name:"Full Body Front",sx:-140,sy:-200,p:"Generate a single full-body front view — complete head-to-toe figure, arms slightly away from body, relaxed natural stance, camera at eye level. Single panel output."},
-  {name:"Bust",sx:0,sy:-400,p:"Generate a single bust portrait — framed from the chest up, close and intimate, face and upper chest visible. Single panel output."},
-  {name:"Full Body Walking",sx:-140,sy:-400,p:"Generate a single full-body dynamic walking pose — mid-stride, natural gait, full head-to-toe visible, slight forward motion implied. Single panel output."},
-  {name:"Action Stance",sx:0,sy:-600,p:"Generate a single full-body action stance — wide combat-ready pose, knees slightly bent, arms engaged, dynamic energy. Single panel output."},
-  {name:"Side Seated",sx:-140,sy:-600,p:"Generate a single side-profile seated pose — 90-degree lateral view, character seated, full silhouette readable, composed posture. Single panel output."},
-  {name:"Back View",sx:0,sy:-800,p:"Generate a single full-body rear view — character facing away from camera, complete back silhouette visible from head to toe, natural stance. Single panel output."},
-  {name:"Face Close-up",sx:-140,sy:-800,p:"Generate a single extreme face close-up — tight framing on the face only, from chin to top of forehead, no shoulders visible, maximum facial detail. Single panel output."},
+  {name:"Headshot",sx:-105,sy:0,p:"Generate a single headshot portrait — head and shoulders only, face centered, camera at eye level, professional studio framing. Clean single-panel output."},
+  {name:"Half Body",sx:0,sy:-150,p:"Generate a single half-body shot — framed from the waist up, arms visible, clean studio framing. Single panel output."},
+  {name:"Full Body Front",sx:-105,sy:-150,p:"Generate a single full-body front view — complete head-to-toe figure, arms slightly away from body, relaxed natural stance, camera at eye level. Single panel output."},
+  {name:"Bust",sx:0,sy:-300,p:"Generate a single bust portrait — framed from the chest up, close and intimate, face and upper chest visible. Single panel output."},
+  {name:"Full Body Walking",sx:-105,sy:-300,p:"Generate a single full-body dynamic walking pose — mid-stride, natural gait, full head-to-toe visible, slight forward motion implied. Single panel output."},
+  {name:"Action Stance",sx:0,sy:-450,p:"Generate a single full-body action stance — wide combat-ready pose, knees slightly bent, arms engaged, dynamic energy. Single panel output."},
+  {name:"Side Seated",sx:-105,sy:-450,p:"Generate a single side-profile seated pose — 90-degree lateral view, character seated, full silhouette readable, composed posture. Single panel output."},
+  {name:"Back View",sx:0,sy:-600,p:"Generate a single full-body rear view — character facing away from camera, complete back silhouette visible from head to toe, natural stance. Single panel output."},
+  {name:"Face Close-up",sx:-105,sy:-600,p:"Generate a single extreme face close-up — tight framing on the face only, from chin to top of forehead, no shoulders visible, maximum facial detail. Single panel output."},
 ];
 const EYETYPE_SPRITES=[
   {name:"Human",sx:0,sy:0},{name:"Almond",sx:-100,sy:0},{name:"Wide",sx:-200,sy:0},
@@ -1538,6 +1677,11 @@ function AvatarsPage(){
   const[toast,setToast]=useState("");
   const[mode,setMode]=useState("scratch"); // "scratch" | "photo"
   const set=(k,v)=>setC(p=>({...p,[k]:v}));
+  const[enhancing,setEnhancing]=useState(false);
+  const[enhanced,setEnhanced]=useState("");
+  const[showAuthModal,setShowAuthModal]=useState(false);
+  
+  const{user}=React.useContext(AuthCtx);
 
   const buildAvPrompt=()=>{
     const style=UNI_STYLE[c.universe]||UNI_STYLE.realism;
@@ -1604,7 +1748,17 @@ function AvatarsPage(){
 
   const prompt=buildAvPrompt();
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2200)};
-  const copy=async()=>{const ok=await copyText(prompt);doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY")};
+  const copy=async()=>{const ok=await copyText(enhanced||prompt);doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY")};
+  const enhance=async()=>{
+    if(!user){setShowAuthModal(true);return;}
+    setEnhancing(true);setEnhanced("");
+    try{
+      const result=await callEnhance(prompt,c.details,user.idToken,null);
+      setEnhanced(result);
+      doToast("✦ ENHANCED BY GEMINI");
+    }catch(e){doToast("ERROR: "+e.message);}
+    setEnhancing(false);
+  };
   const surprise=()=>{
     const pick=a=>a[~~(Math.random()*a.length)];
     const pickId=a=>pick(a).id;
@@ -2128,10 +2282,10 @@ function AvatarsPage(){
               style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                 border:"2px solid "+(c.avLayout===r.name?"#e8780a":"var(--bd)"),
                 boxShadow:c.avLayout===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
-                transition:"all .15s",width:140}}>
-              <div style={{width:140,height:200,
+                transition:"all .15s",width:105}}>
+              <div style={{width:105,height:150,
                 backgroundImage:"url(/layout.png)",
-                backgroundSize:"281px 1000px",
+                backgroundSize:"211px 750px",
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
@@ -2207,19 +2361,183 @@ function AvatarsPage(){
       </Sec>
 
       <Sec title="Additional Details" badge="OPTIONAL">
-        <textarea rows={3} value={c.details} onChange={e=>set("details",e.target.value)} placeholder="Accessories, personality traits, scars, lore details, special features — anything extra is appended to the prompt."/>
+        <textarea rows={3} value={c.details} onChange={e=>{set("details",e.target.value);setEnhanced("");}} placeholder="Enhancement hints for Gemini AI — e.g. 'more dramatic lighting', 'add forest background', 'make it dark fantasy'. Also appended to base prompt as-is."/>
       </Sec>
 
       <div className="sec">
         <div className="sh"><span className="st">Generated Prompt</span><span className="sb">LIVE</span></div>
-        <div className="pbox live" style={{fontSize:11}}>{prompt}</div>
+        <div className="pbox live" style={{fontSize:11}}>{enhanced||prompt}</div>
+        {enhanced&&(
+          <div style={{marginTop:8,fontSize:11,color:"var(--acc)",fontWeight:600,letterSpacing:1}}>
+            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"var(--t4)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert to original</button>
+          </div>
+        )}
       </div>
 
+      <GenWithLinks getPrompt={()=>enhanced||prompt} onCopy={()=>doToast("PROMPT COPIED — PASTE IN TARGET APP")}/>
+
       <div className="bbar">
-        <button className="btn" onClick={()=>setC(AV_DEF)}>Reset</button>
+        <button className="btn" onClick={()=>{setC(AV_DEF);setEnhanced("");}}>Reset</button>
         <button className="btn" onClick={surprise}>Surprise Me</button>
+        <button className="btn" onClick={enhance} disabled={enhancing}
+          style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"var(--t4)":"var(--acc)",background:"var(--acdim)"}}>
+          {enhancing?"ENHANCING…":"✦ Enhance"}
+        </button>
         <button className="btn pri" onClick={copy}>Copy Prompt</button>
       </div>
+      {showAuthModal&&<AuthModal onClose={()=>setShowAuthModal(false)} />}
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+// ─── VIDEO PROMPT PAGE ────────────────────────────────────────────────────────
+const VP_STYLES=["Simple","Cinematic","Documentary","Commercial","Abstract","Horror","Action","Romance","Sci-Fi","Fantasy"];
+const VP_CAMERA_STYLES=["None","Handheld","Steadicam","Drone","Dolly","Gimbal","POV","Static Tripod","360° Rotating"];
+const VP_CAMERA_DIR=["None","Push In","Pull Out","Pan Left","Pan Right","Tilt Up","Tilt Down","Orbit","Crane Up","Crane Down"];
+const VP_PACING=["None","Slow & Deliberate","Normal","Fast Cuts","Hyper Edit","Rhythmic","Montage"];
+const VP_FX=["None","Lens Flare","Bokeh","Rack Focus","Depth of Field","Motion Blur","Light Leaks","Film Grain","Anamorphic Flare"];
+const VP_LENGTH=["Short","Medium","Long","Extended"];
+const VP_MODELS=["claude-sonnet-4-20250514"];
+
+function VideoPromptPage(){
+  const[concept,setConcept]=useState("");
+  const[style,setStyle]=useState("Simple");
+  const[camStyle,setCamStyle]=useState("None");
+  const[camDir,setCamDir]=useState("None");
+  const[pacing,setPacing]=useState("None");
+  const[fx,setFx]=useState("None");
+  const[length,setLength]=useState("Medium");
+  const[custom,setCustom]=useState("");
+  const[result,setResult]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[toast,setToast]=useState("");
+  const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
+
+  const generate=async()=>{
+    if(!concept.trim()){doToast("ENTER A CONCEPT FIRST");return;}
+    setLoading(true);setResult("");
+    const parts=[];
+    parts.push("Concept: "+concept.trim());
+    parts.push("Style: "+style);
+    if(camStyle!=="None")parts.push("Camera style: "+camStyle);
+    if(camDir!=="None")parts.push("Camera direction: "+camDir);
+    if(pacing!=="None")parts.push("Pacing: "+pacing);
+    if(fx!=="None")parts.push("Special effects: "+fx);
+    parts.push("Prompt length: "+length);
+    if(custom.trim())parts.push("Custom elements: "+custom.trim());
+    const userMsg=parts.join("\n");
+
+    const systemPrompt=`You are a professional video prompt engineer specializing in AI video generation (Sora, Runway, Kling, Pika, Luma).
+
+Generate a single, ready-to-use video generation prompt based on the user's parameters. The prompt must:
+- Be written as a direct, vivid scene description (not instructions)
+- Include precise camera movement, framing, and visual details
+- Match the requested style, pacing, and effects naturally woven into the prose
+- Be ${length==="Short"?"1-2 sentences":length==="Medium"?"3-4 sentences":length==="Long"?"5-6 sentences":"7-9 sentences"} long
+- Use cinematic language: focal length, lens quality, color grading, atmosphere
+- End with a technical spec line: [style | camera | aspect ratio | mood]
+
+Output ONLY the prompt. No preamble, no explanation, no quotes.`;
+
+    try{
+      const resp=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          system:systemPrompt,
+          messages:[{role:"user",content:userMsg}]
+        })
+      });
+      const data=await resp.json();
+      const text=data.content?.find(b=>b.type==="text")?.text||"";
+      setResult(text);
+    }catch(e){
+      doToast("API ERROR — CHECK CONSOLE");
+      console.error(e);
+    }
+    setLoading(false);
+  };
+
+  const copy=async()=>{
+    if(!result)return;
+    const ok=await copyText(result);
+    doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED");
+  };
+
+  const Row=({label,children})=>(
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t4)"}}>{label}</div>
+      {children}
+    </div>
+  );
+
+  const Sel=({val,opts,onChange})=>(
+    <select value={val} onChange={e=>onChange(e.target.value)}
+      style={{background:"var(--s2)",border:"1px solid var(--bd)",borderRadius:"var(--r)",
+        color:"var(--t)",fontSize:13,padding:"10px 14px",outline:"none",cursor:"pointer",
+        fontFamily:"var(--font)",appearance:"none",
+        backgroundImage:"url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8L0 0h12z'/%3E%3C/svg%3E\")",
+        backgroundRepeat:"no-repeat",backgroundPosition:"right 14px center",paddingRight:36,
+        transition:"all .15s"}}>
+      {opts.map(o=><option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+
+  return(
+    <div className="page" style={{maxWidth:720}}>
+      <div className="ph">
+        <div className="pt">Video <b>Prompt</b></div>
+        <div className="ps">AI-powered video prompt generator. Describe your concept, set camera and style parameters — Claude writes the cinematic prompt for Sora, Runway, Kling, Pika.</div>
+      </div>
+
+      <div style={{background:"var(--s1)",border:"1px solid var(--bd)",borderRadius:"var(--r2)",padding:"28px 28px 24px",display:"flex",flexDirection:"column",gap:20}}>
+
+        <Row label="Input Concept">
+          <textarea rows={4} value={concept} onChange={e=>setConcept(e.target.value)}
+            placeholder="e.g., A lone astronaut walking through an abandoned space station at dawn..."/>
+        </Row>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+          <Row label="Style"><Sel val={style} opts={VP_STYLES} onChange={setStyle}/></Row>
+          <Row label="Prompt Length"><Sel val={length} opts={VP_LENGTH} onChange={setLength}/></Row>
+          <Row label="Camera Style"><Sel val={camStyle} opts={VP_CAMERA_STYLES} onChange={setCamStyle}/></Row>
+          <Row label="Camera Direction"><Sel val={camDir} opts={VP_CAMERA_DIR} onChange={setCamDir}/></Row>
+          <Row label="Pacing"><Sel val={pacing} opts={VP_PACING} onChange={setPacing}/></Row>
+          <Row label="Special Effects"><Sel val={fx} opts={VP_FX} onChange={setFx}/></Row>
+        </div>
+
+        <Row label="Custom Elements (Optional)">
+          <textarea rows={2} value={custom} onChange={e=>setCustom(e.target.value)}
+            placeholder="e.g., neon signs, rain, specific props, color palette..."/>
+        </Row>
+
+        <button onClick={generate} disabled={loading}
+          style={{padding:"14px 0",fontSize:13,fontWeight:700,letterSpacing:2,textTransform:"uppercase",
+            background:loading?"var(--s3)":"var(--acc)",border:"none",borderRadius:"var(--r)",
+            color:loading?"var(--t4)":"#000",cursor:loading?"not-allowed":"pointer",
+            transition:"all .2s",boxShadow:loading?"none":"0 0 30px var(--acglow)"}}>
+          {loading?"GENERATING…":"GENERATE VIDEO PROMPT"}
+        </button>
+
+        {result&&(
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t4)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span>Generated Prompt</span>
+              <button onClick={copy}
+                style={{fontSize:11,fontWeight:700,letterSpacing:1,padding:"5px 14px",
+                  borderRadius:4,border:"1px solid var(--acc)",background:"var(--acdim)",
+                  color:"var(--acc)",cursor:"pointer",textTransform:"uppercase"}}>
+                Copy ↗
+              </button>
+            </div>
+            <div className="pbox live" style={{fontSize:12}}>{result}</div>
+          </div>
+        )}
+      </div>
+
       {toast&&<div className="toast">{toast}</div>}
     </div>
   );
@@ -2229,13 +2547,14 @@ function AvatarsPage(){
 export default function App(){
   const[page,setPage]=useState("angles");
   const[scrolled,setScrolled]=useState(false);
+  const auth=useGoogleAuth();
   useEffect(()=>{
     const onScroll=()=>setScrolled(window.scrollY>50);
     window.addEventListener('scroll',onScroll);
     return()=>window.removeEventListener('scroll',onScroll);
   },[]);
   return(
-    <>
+    <AuthCtx.Provider value={auth}>
       <style>{G}</style>
       <div className="shell">
         <nav className={`nav${scrolled?" scrolled":""}`}>
@@ -2243,11 +2562,21 @@ export default function App(){
           <div className="ntabs">
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Multi-Shot</button>
             <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Character Sheet</button>
+            <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video Prompt</button>
             <a href="https://github.com/mimaotomao/prompto_ministudio" target="_blank" rel="noopener noreferrer" className="nt" style={{textDecoration:"none"}}>GitHub ↗</a>
           </div>
+          {auth.user?(
+            <button className="user-chip" onClick={auth.signOut} title="Sign out">
+              <img src={auth.user.picture} alt=""/>
+              <span>{auth.user.name.split(" ")[0]}</span>
+              <span style={{color:"var(--t4)"}}>✕</span>
+            </button>
+          ):(
+            <button className="nt" onClick={()=>auth.signIn()} style={{fontSize:11,opacity:.6}}>Sign in</button>
+          )}
         </nav>
-        {page==="angles"?<AnglesPage/>:<AvatarsPage/>}
+        {page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:<VideoPromptPage/>}
       </div>
-    </>
+    </AuthCtx.Provider>
   );
 }
