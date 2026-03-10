@@ -2009,7 +2009,14 @@ function AvatarsPage(){
     const faceAdv=` Eye type: ${c.eyeType.toLowerCase()}. Lips: ${c.lips.toLowerCase()}. Face markings: ${c.markings.toLowerCase()}. Horns: ${c.horns.toLowerCase()}.`;
     const traits=c.skinTraits!=="None"?` Surface traits: ${c.skinTraits.toLowerCase()}.`:"";
     const clothesParts=c.clothing;
-    const clothesPrompt=c.clothing==="Neutral (studio reference)"?"Wearing a minimal neutral black fitted top and black shorts, studio reference attire, no branding. Barefoot.":c.clothing==="None"?"Wearing a minimal swimsuit, tasteful studio reference pose, professional photography.":"Wearing "+c.clothing.toLowerCase()+" attire appropriate to the character's anatomy, age, body type, race, and universe style.";
+    const isMinor=["child","teenager","teen","kid"].some(a=>c.age.toLowerCase().includes(a));
+    const clothesPrompt=c.clothing==="Neutral (studio reference)"
+      ?"Wearing a minimal neutral black fitted top and black shorts, studio reference attire, no branding. Barefoot."
+      :c.clothing==="None"
+        ?(isMinor
+          ?"Wearing age-appropriate casual clothes — simple t-shirt and shorts or similar comfortable attire."
+          :"Wearing a minimal form-fitting bodysuit, tasteful studio reference pose, professional photography.")
+        :"Wearing "+c.clothing.toLowerCase()+" attire appropriate to the character's anatomy, age, body type, race, and universe style.";
     const parts=[];
     const isMultiPanel=c.avLayout==="Style Sheet";
 
