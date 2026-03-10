@@ -2784,40 +2784,99 @@ const FRAME_GEN_TARGETS=[
   {label:"Arena.ai",url:"https://arena.ai/?mode=direct&chat-modality=image",icon:"⊕"},
 ];
 
-function buildVideoPrompt({scene,firstFrame,lastFrame,camMove,pacing,duration,sound,lighting,colorGrade,lens,filmStock,style,custom}){
+function buildVideoPrompt({scene,firstFrame,lastFrame,camMove,pacing,duration,sound,lighting,colorGrade,lens,filmStock,style,custom,videoMode}){
   if(!scene.trim()&&!firstFrame.trim()&&!lastFrame.trim())return"";
+
+  const getLighting=()=>{const l=LIGHTING.find(x=>x.id===lighting);return l?l.p:null;};
+  const getColor=()=>{const c=COLOR_GRADES.find(x=>x.id===colorGrade);return c?c.p:null;};
+  const getFilm=()=>{const f=FILM_STOCKS.find(x=>x.id===filmStock);return f?f.p:null;};
+  const getLens=()=>lens?lens+" focal length lens":null;
+
+  const styleMap={
+    "Cinematic":"cinematic film quality",
+    "Documentary":"documentary realism, handheld feel",
+    "Commercial":"polished commercial production",
+    "Music Video":"music video aesthetic, stylized",
+    "Short Film":"short film narrative quality",
+    "Animation":"animated film style",
+  };
+
+  const camMoveMap={
+    "Static":"static locked-off camera",
+    "Slow Push In":"slow push-in toward subject",
+    "Pull Back":"slow pull-back reveal",
+    "Pan Left":"smooth pan left",
+    "Pan Right":"smooth pan right",
+    "Tilt Up":"slow tilt up",
+    "Tilt Down":"slow tilt down",
+    "Orbit":"orbital camera movement around subject",
+    "Crane Up":"crane shot rising upward",
+    "Handheld":"natural handheld camera",
+    "Tracking":"tracking shot following subject",
+    "Drone":"aerial drone camera",
+  };
+
   const parts=[];
-  if(scene.trim())parts.push(scene.trim()+".");
-  if(firstFrame.trim())parts.push(`Opens on: ${firstFrame.trim()}.`);
-  if(lastFrame.trim())parts.push(`Ends with: ${lastFrame.trim()}.`);
-  const cam=[];
-  if(camMove&&camMove!=="Static")cam.push(camMove.toLowerCase()+" camera movement");
-  if(lens){const l=LENSES.find(x=>x.mm===lens);if(l)cam.push(l.mm+" lens");}
-  if(cam.length)parts.push("Camera: "+cam.join(", ")+".");
-  const vis=[];
-  if(lighting){const l=LIGHTING.find(x=>x.id===lighting);if(l)vis.push(l.name.toLowerCase()+" lighting");}
-  if(colorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)vis.push(c.name.toLowerCase()+" color grade");}
-  if(filmStock){const f=FILM_STOCKS.find(x=>x.id===filmStock);if(f)vis.push(f.name.toLowerCase()+" film stock");}
-  if(vis.length)parts.push("Visual: "+vis.join(", ")+".");
-  const rhythm=[];
-  if(pacing)rhythm.push(pacing.toLowerCase()+" pacing");
-  if(duration)rhythm.push(duration+" duration");
-  if(sound&&sound!=="Silent")rhythm.push(sound.toLowerCase());
-  if(rhythm.length)parts.push("Rhythm: "+rhythm.join(", ")+".");
-  if(style)parts.push("Style: "+style.toLowerCase()+".");
+
+  // Opening sentence — what to make
+  const styleLabel=(styleMap[style]||"cinematic").split(",")[0];
+  const durLabel=duration||"";
+  if(videoMode==="img2vid"){
+    parts.push(`Create a ${durLabel} ${styleLabel} video animating the provided reference image.`);
+  } else if(videoMode==="frames"){
+    parts.push(`Create a ${durLabel} ${styleLabel} video transitioning between the provided first and last frame images.`);
+  } else if(scene.trim()){
+    parts.push(`Create a ${durLabel} ${styleLabel} video of: ${scene.trim()+(scene.trim().endsWith(".")?"":", ")}`)
+  }
+
+  // Camera
+  const camParts=[];
+  if(camMove&&camMove!=="Static"&&camMoveMap[camMove])camParts.push(camMoveMap[camMove]);
+  if(lens)camParts.push(getLens());
+  if(camParts.length)parts.push("Camera: "+camParts.join(", ")+".");
+
+  // Visual atmosphere
+  const visParts=[getLighting(),getColor(),getFilm()].filter(Boolean);
+  if(visParts.length)parts.push(visParts.join(". ")+".");
+
+  // Timing
+  const timeParts=[];
+  if(duration)timeParts.push(duration+" duration");
+  if(pacing&&pacing!=="Normal Flow"){
+    const pacingMap={"Slow Motion":"slow motion","Fast Cut":"fast-cut editing","Time Lapse":"time-lapse","Match Cut":"match-cut transitions"};
+    if(pacingMap[pacing])timeParts.push(pacingMap[pacing]);
+  }
+  if(sound&&sound!=="Silent"&&sound!=="Ambient Sound"){
+    const soundMap={"Dialogue":"with dialogue","Music Score":"with music score","Sound Effects":"with sound effects","No Sound":"no audio"};
+    if(soundMap[sound])timeParts.push(soundMap[sound]);
+  }
+  if(timeParts.length)parts.push(timeParts.join(", ")+".");
+
+  // Frames
+  if(firstFrame.trim())parts.push("Opening frame: "+firstFrame.trim()+".");
+  if(lastFrame.trim())parts.push("Closing frame: "+lastFrame.trim()+".");
+
+  // Custom
   if(custom.trim())parts.push(custom.trim());
+
+  // Output spec
+  parts.push("Ultra high resolution, smooth motion, no artifacts, no text or watermarks.");
+
   return parts.join(" ");
 }
 
 function buildFramePrompt(frameDesc,{lighting,colorGrade,lens,filmStock,style}){
   if(!frameDesc.trim())return"";
-  const vis=[];
-  if(lighting){const l=LIGHTING.find(x=>x.id===lighting);if(l)vis.push(l.name.toLowerCase()+" lighting");}
-  if(colorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)vis.push(c.name.toLowerCase()+" color");}
-  if(filmStock){const f=FILM_STOCKS.find(x=>x.id===filmStock);if(f)vis.push(f.name.toLowerCase()+" film look");}
-  if(lens)vis.push(lens+" lens");
-  if(style)vis.push(style.toLowerCase()+" style");
-  return frameDesc.trim()+(vis.length?". "+vis.join(", ")+".":"");
+  const getLighting=()=>{const l=LIGHTING.find(x=>x.id===lighting);return l?l.p:null;};
+  const getColor=()=>{const c=COLOR_GRADES.find(x=>x.id===colorGrade);return c?c.p:null;};
+  const getFilm=()=>{const f=FILM_STOCKS.find(x=>x.id===filmStock);return f?f.p:null;};
+  const parts=[frameDesc.trim()];
+  const vis=[getLighting(),getColor(),getFilm()].filter(Boolean);
+  if(vis.length)parts.push(vis.join(". ")+".");
+  if(lens)parts.push(lens+" focal length lens.");
+  const styleMap={"Cinematic":"cinematic film quality, professional cinematography","Documentary":"documentary realism","Commercial":"polished commercial photography","Music Video":"stylized music video aesthetic"};
+  parts.push((styleMap[style]||"cinematic quality")+", ultra high resolution, sharp focus, no text or watermarks.");
+  return parts.join(" ");
 }
 
 function VideoPromptPage(){
@@ -2838,7 +2897,7 @@ function VideoPromptPage(){
   const[toast,setToast]=useState("");
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
 
-  const vparams={scene,firstFrame,lastFrame,camMove,pacing,duration,sound,lighting,colorGrade,lens,filmStock,style,custom};
+  const vparams={scene,firstFrame,lastFrame,camMove,pacing,duration,sound,lighting,colorGrade,lens,filmStock,style,custom,videoMode};
   const prompt=buildVideoPrompt(vparams);
   const hasAny=!!(scene.trim()||firstFrame.trim()||lastFrame.trim());
 
