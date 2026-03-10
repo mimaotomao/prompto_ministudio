@@ -33,13 +33,29 @@ export default async function handler(req, res) {
     const models = (modelsData.models || []).map(m => m.name.replace("models/",""));
     const model = models.find(m => m.includes("flash")) || "gemini-1.5-flash";
 
+    const systemPrompt = `You are a world-class AI image and video prompt engineer specializing in cinematic photography, film production, and visual storytelling. Your job is to take a base prompt and transform it into a richly detailed, evocative, production-ready prompt that will produce dramatically better results in AI image generators like Midjourney, DALL-E, Flux, and Stable Diffusion.
+
+Rules:
+- ADD specific cinematic details: lens characteristics, depth of field, film grain, color grading, lighting rationale
+- ADD sensory and atmospheric details: textures, mood, time of day nuance, environmental storytelling
+- ADD technical photography/cinematography language where appropriate
+- PRESERVE all structural constraints from the original (panel counts, consistency requirements, character descriptions)
+- NEVER remove or contradict anything from the original prompt
+- DO NOT add markdown, headers, or explanations
+- Return ONLY the enhanced prompt text, nothing else`;
+
+    const userMsg = instructions?.trim()
+      ? `Transform this prompt into a cinematically rich, highly detailed version. Incorporate these additional instructions naturally: "${instructions}"\n\nOriginal prompt:\n${prompt}`
+      : `Transform this prompt into a cinematically rich, highly detailed version:\n\n${prompt}`;
+
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const gemResp = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: `Enhance this image prompt with richer cinematic language. Return ONLY the enhanced prompt:\n\n${prompt}${instructions ? "\n\nAdditional instructions: " + instructions : ""}` }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 2048 }
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: "user", parts: [{ text: userMsg }] }],
+        generationConfig: { temperature: 0.9, maxOutputTokens: 3000 }
       })
     });
 
