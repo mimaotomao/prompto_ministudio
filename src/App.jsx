@@ -2735,7 +2735,7 @@ function AvatarsPage(){
         <WorkflowPanel
           getPrompt={()=>enhanced||prompt}
           onCopy={()=>doToast("PROMPT COPIED — PASTE IN TARGET APP")}
-          sel={[]} scene={""} onToast={doToast} isPhoto={true}
+          sel={[]} scene={""} onToast={doToast} isPhoto={mode==="photo"}
         />
       </div>
 
