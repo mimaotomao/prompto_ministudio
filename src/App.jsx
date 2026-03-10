@@ -292,7 +292,7 @@ function EnhancingIndicator(){
 }
 const GEN_TARGETS=[
   {label:"Grok Imagine",url:"https://grok.com/imagine",icon:"✦"},
-  {label:"Gemini",url:"https://gemini.google.com",icon:"◈"},
+  {label:"Gemini",url:"https://gemini.google.com",icon:"◈",warn:"Gemini (Imagen) may truncate long prompts — grid consistency is limited. Best for short/single-shot."},
   {label:"Arena.ai",url:"https://arena.ai/?mode=direct&chat-modality=image",icon:"⊕"},
 ];
 function GenWithLinks({getPrompt,onCopy,targets}){
@@ -408,9 +408,14 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
         </div>
         <div style={{padding:"12px 16px",display:"flex",flexWrap:"wrap",gap:8,alignItems:"center"}} translate="no">
           {targets.map(t=>(
-            <button key={t.label} className="genwith-btn" onClick={()=>handleGenerateClick(t.url)}>
-              <span>{t.icon}</span>{t.label} ↗
-            </button>
+            <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+              <button className="genwith-btn" onClick={()=>handleGenerateClick(t.url)}>
+                <span>{t.icon}</span>{t.label} ↗
+              </button>
+              {t.warn&&(
+                <span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7,lineHeight:1}}>⚠️</span>
+              )}
+            </div>
           ))}
           <span style={{fontSize:11,color:"var(--t)",opacity:.5,marginLeft:4}}>— copies prompt on click</span>
         </div>
