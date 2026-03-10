@@ -319,12 +319,21 @@ function GenWithLinks({getPrompt,onCopy,targets}){
 function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmStock, colorGrade, aspectRatio, mode, onToast, isPhoto}){
   const targets = GEN_TARGETS;
   const[expanded, setExpanded] = useState(false);
+  const[showPhotoTip, setShowPhotoTip] = useState(false);
   const hasGrid = sel && sel.length >= 2;
 
   const handleGenerate = async(url)=>{
     await copyText(getPrompt());
     onCopy && onCopy();
     window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleGenerateClick = (url)=>{
+    if(isPhoto){
+      setShowPhotoTip(url); // store url to open after confirm
+    } else {
+      handleGenerate(url);
+    }
   };
 
   const handleExpand = async(panelNum, angleIdx, url)=>{
@@ -357,6 +366,30 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
   return(
     <div style={{marginTop:8}}>
 
+      {/* PHOTO REMINDER MODAL */}
+      {showPhotoTip&&(
+        <div className="modal-overlay" onClick={()=>setShowPhotoTip(false)}>
+          <div className="modal" onClick={e=>e.stopPropagation()} style={{maxWidth:380}}>
+            <div style={{fontSize:28,marginBottom:12,textAlign:"center"}}>📎</div>
+            <div className="modal-title" style={{fontSize:16}}>Attach your reference photo</div>
+            <div className="modal-sub" style={{lineHeight:1.7}}>
+              Before generating, <strong>attach your character reference photo</strong> to the message in the AI generator.<br/><br/>
+              The prompt will use it as the identity base — without it, the AI generates a random character.
+            </div>
+            <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20,flexWrap:"wrap"}}>
+              <button
+                onClick={()=>{handleGenerate(showPhotoTip);setShowPhotoTip(false);}}
+                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}
+              >Got it — open generator ↗</button>
+              <button
+                onClick={()=>setShowPhotoTip(false)}
+                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--bdh)",background:"transparent",color:"var(--t)",fontSize:13,cursor:"pointer"}}
+              >Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* STEP 1 */}
       <div style={stepStyle}>
         <div style={stepHeadStyle}>
@@ -367,25 +400,19 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
             </div>
             <div style={{fontSize:11,color:"var(--t)",opacity:.6,marginTop:1}}>
               {isPhoto
-                ? "Attach your reference photo, then open a generator"
+                ? "📎 Attach your reference photo, then open a generator"
                 : "Open a generator and paste the prompt"}
             </div>
           </div>
         </div>
         <div style={{padding:"12px 16px",display:"flex",flexWrap:"wrap",gap:8,alignItems:"center"}}>
           {targets.map(t=>(
-            <button key={t.label} className="genwith-btn" onClick={()=>handleGenerate(t.url)}>
+            <button key={t.label} className="genwith-btn" onClick={()=>handleGenerateClick(t.url)}>
               <span>{t.icon}</span>{t.label} ↗
             </button>
           ))}
           <span style={{fontSize:11,color:"var(--t)",opacity:.5,marginLeft:4}}>— copies prompt on click</span>
         </div>
-        {isPhoto&&(
-          <div style={{margin:"0 16px 12px",padding:"8px 12px",borderRadius:6,background:"rgba(255,180,0,.07)",border:"1px solid rgba(255,180,0,.2)",fontSize:11,color:"var(--t)",lineHeight:1.6}}>
-            📎 <strong style={{color:"rgba(255,200,80,.9)"}}>Attach your reference photo</strong> — this prompt generates variations of that subject/scene.
-            {" "}No reference? Switch mode to <strong style={{color:"var(--acc)"}}>Create from scratch</strong> above.
-          </div>
-        )}
       </div>
 
       {/* STEP 2 — only when grid has multiple panels */}
@@ -2059,6 +2086,15 @@ function AvatarsPage(){
   const surprise=()=>{
     try{
     const pick=a=>a[~~(Math.random()*a.length)];
+    // natural-only limb pools
+    const naturalArms=["Natural"];
+    const naturalLegs=["Natural","Natural Alt"];
+    // organic non-human options (no robotics/prosthetics)
+    const organicArms=LARM_SPRITES.filter(x=>!["Steampunk Prosthetic","Cybernetic Prosthetic","Mechanical Claws","Extra Arms"].includes(x.name));
+    const organicLegs=LLEG_SPRITES.filter(x=>!["Prosthetic Blade","Mechanical"].includes(x.name));
+    // 80% chance natural limbs, 20% organic fantasy
+    const rndArm=()=>Math.random()<.8?"Natural":pick(organicArms).name;
+    const rndLeg=()=>Math.random()<.8?"Natural":pick(organicLegs).name;
     setC({
       universe:pick(AV_FIELDS.universe).id,
       race:pick(AV_FIELDS.race).name,
@@ -2072,18 +2108,18 @@ function AvatarsPage(){
       eyeType:pick(EYETYPE_SPRITES).name,
       lips:pick(LIPS_SPRITES).name,
       markings:pick(MARKINGS_SPRITES).name,
-      horns:pick(HORNS_SPRITES).name,
+      horns:"None",
       bodyType:pick(BODY_SPRITES).name,
-      lArm:pick(LARM_SPRITES).name,
-      rArm:pick(RARM_SPRITES).name,
-      lLeg:pick(LLEG_SPRITES).name,
-      rLeg:pick(RLEG_SPRITES).name,
-      wings:pick(WINGS_SPRITES).name,
-      tail:pick(TAIL_SPRITES).name,
-      ears:pick(EARS_SPRITES).name,
+      lArm:rndArm(),
+      rArm:rndArm(),
+      lLeg:rndLeg(),
+      rLeg:rndLeg(),
+      wings:"None",
+      tail:Math.random()<.3?pick(TAIL_SPRITES.filter(x=>x.name!=="None")).name:"None",
+      ears:Math.random()<.4?pick(EARS_SPRITES.filter(x=>x.name!=="Human")).name:"Human",
       expression:pick(EXPRESSION_SPRITES).name,
       clothing:pick(CLOTHING_SPRITES).id,
-      details:"",avLight:"",avEnv:"",avLens:"",avAspect:"16:9",avLayout:"Style Sheet"
+      details:"",avLight:pick(LIGHTING).id,avEnv:"",avLens:pick(LENSES).mm,avAspect:"16:9",avLayout:pick(LAYOUT_SPRITES).name
     });
     doToast("SURPRISE CHARACTER GENERATED");
     }catch(err){doToast("ERROR: "+err.message);}
@@ -3161,8 +3197,8 @@ export default function App(){
           </div>
           <div className="ntabs" style={{position:"static",transform:"none",borderTop:"1px solid var(--bd)",paddingTop:2,paddingBottom:2,width:"100%",justifyContent:"center"}}>
             <button className={`nt${page==="how"?" on":""}`} onClick={()=>setPage("how")}>How it works</button>
-            <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Multi-Shot</button>
             <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Character Sheet</button>
+            <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Multi-Shot</button>
             <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>🚧 Video</button>
             <a href="https://github.com/mimaotomao/prompto_ministudio" target="_blank" rel="noopener noreferrer" className="nt" style={{textDecoration:"none"}}>GitHub ↗</a>
           </div>
