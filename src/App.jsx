@@ -25,8 +25,8 @@ textarea::placeholder{color:var(--t4)}
 .shell{min-height:100vh;padding-bottom:100px}
 .nav{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100;background:rgba(6,6,6,.95);backdrop-filter:blur(20px);transition:all .3s}
 .nav.scrolled{border-bottom-color:var(--s2);background:rgba(6,6,6,.98)}
-.logo{font-family:var(--font);font-size:13px;font-weight:700;letter-spacing:1px;color:var(--t);line-height:1.2;white-space:nowrap}
-.logo span{color:var(--acc);font-weight:400}
+.logo{font-family:var(--font);font-size:52px;font-weight:800;letter-spacing:0px;color:var(--t);line-height:1.1;white-space:nowrap}
+.logo span{color:var(--acc);font-weight:300;font-size:44px}
 .ntabs{display:flex;gap:4px;position:absolute;left:50%;transform:translateX(-50%)}
 .nt{font-size:12px;font-weight:600;letter-spacing:1px;padding:7px 18px;border-radius:var(--r);border:none;background:transparent;color:var(--t3);cursor:pointer;transition:all .2s var(--ease-out)}
 .nt:hover{color:var(--t);background:var(--s2)}
@@ -151,10 +151,10 @@ textarea::placeholder{color:var(--t4)}
 .user-chip{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:20px;background:var(--s2);border:1px solid var(--bd);font-size:11px;color:var(--t3);cursor:pointer;transition:all .2s}
 .user-chip:hover{border-color:var(--bdh);color:var(--t)}
 .user-chip img{width:20px;height:20px;border-radius:50%}
-.genwith{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
-.genwith-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--t4);text-transform:uppercase;white-space:nowrap}
-.genwith-note{font-size:10px;color:var(--t4);font-style:italic;margin-left:4px}
-.genwith-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid var(--bd);background:var(--s2);color:var(--t3);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap}
+.genwith{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:20px;border-top:1px solid var(--bdh)}
+.genwith-label{font-size:14px;font-weight:800;letter-spacing:1.5px;color:var(--t);text-transform:uppercase;white-space:nowrap}
+.genwith-note{font-size:12px;color:var(--t);margin-left:4px;font-weight:500}
+.genwith-btn{display:flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--r);border:1px solid var(--bd);background:var(--s2);color:var(--t);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap}
 .genwith-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acdim);transform:translateY(-1px)}
 `;
 
@@ -186,8 +186,9 @@ function useGoogleAuth(){
         context:"signin",
         itp_support:true,
       });
-      // auto-prompt — will silently sign in if already consented
-      window.google.accounts.id.prompt();
+      // only auto-prompt if user NOT already saved (first visit)
+      const saved=localStorage.getItem(AUTH_KEY);
+      if(!saved) window.google.accounts.id.prompt();
       setReady(true);
     };
     document.head.appendChild(script);
@@ -212,6 +213,7 @@ async function callEnhance(prompt, instructions, idToken){
     body:JSON.stringify({prompt,instructions,idToken})
   });
   const data=await resp.json();
+  if(resp.status===401){const e=new Error(data.error||"Unauthorized");e.status=401;throw e;}
   if(!resp.ok)throw new Error(data.error||"API error");
   return data.result||"";
 }
@@ -848,7 +850,7 @@ function AnglesPage(){
   const[enhancing,setEnhancing]=useState(false);
   const[enhanced,setEnhanced]=useState("");
   const[showAuthModal,setShowAuthModal]=useState(false);
-  const{user}=React.useContext(AuthCtx);
+  const{user,signIn}=React.useContext(AuthCtx);
   const MAX=9;
 
   const tog=(i)=>setSel(p=>p.includes(i)?p.filter(x=>x!==i):p.length>=MAX?p:[...p,i]);
@@ -865,13 +867,16 @@ function AnglesPage(){
   };
   const enhance=async()=>{
     if(!hasAny)return;
-    if(!user){setShowAuthModal(true);return;}
+    if(!user){signIn();doToast("PLEASE SIGN IN WITH GOOGLE TO USE ENHANCE");return;}
     setEnhancing(true);setEnhanced("");
     try{
       const result=await callEnhance(prompt,custom,user.idToken,null);
       setEnhanced(result);
       doToast("✦ ENHANCED BY GEMINI");
-    }catch(e){doToast("ERROR: "+e.message);}
+    }catch(e){
+      if(e.status===401){signIn();doToast("SESSION EXPIRED — PLEASE SIGN IN AGAIN");}
+      else doToast("ERROR: "+e.message);
+    }
     setEnhancing(false);
   };
   const reset=()=>{
@@ -906,7 +911,7 @@ function AnglesPage(){
   return(
     <div className="page">
       <div className="ph">
-        <div className="pt">PrompTo <b>miniStudio</b></div>
+        <div className="pt">Multi-<b>Shot</b></div>
         <div className="ps">Multi-Shot Prompt Builder — Design cinematic angle sets (up to 9 views) with perfect subject &amp; lighting consistency. Real-time 3D camera orbit &amp; zoom.</div>
         <div className={`pc${sel.length===MAX?" full":""}`}>
           <span>{sel.length} / {MAX} angles</span>
@@ -1653,8 +1658,9 @@ const UNI_STYLE={
   pixel:"Detailed pixel art, dithering techniques, limited but expressive color palette, 16-bit era inspired, anti-aliased edges",
   oil:"Classical oil painting technique, visible brushstrokes, impasto texture, chiaroscuro lighting, Dutch Golden Age composition"
 };
+const REGION_FULL={"N.European":"Northern European","Mediterranean":"Mediterranean","East Asian":"East Asian","S.Asian":"South Asian","African":"Sub-Saharan African","N.African":"North African","Middle Eastern":"Middle Eastern","Latin American":"Latin American","Indigenous":"Indigenous American","Polynesian":"Polynesian","Slavic":"Slavic","Nordic":"Nordic","Celtic":"Celtic","Mixed":"Mixed Heritage"};
 const AV_DEF={
-  universe:"realism",race:"Human",gender:"Female",region:"Northern European",eyeColor:"Blue",age:"Young Adult",
+  universe:"realism",race:"Human",gender:"Female",region:"N.European",eyeColor:"Blue",age:"Adult",
   skinColor:"Fair",skinTraits:"None",hair:"Long",eyeType:"Human",lips:"Medium",markings:"None",expression:"Neutral",
   horns:"None",bodyType:"Athletic",lArm:"Natural",rArm:"Natural",lLeg:"Natural",rLeg:"Natural",
   wings:"None",tail:"None",ears:"Human",clothing:"Neutral (studio reference)",details:"",
@@ -1692,7 +1698,7 @@ function AvatarsPage(){
   const[enhanced,setEnhanced]=useState("");
   const[showAuthModal,setShowAuthModal]=useState(false);
   
-  const{user}=React.useContext(AuthCtx);
+  const{user,signIn}=React.useContext(AuthCtx);
 
   const buildAvPrompt=()=>{
     const style=UNI_STYLE[c.universe]||UNI_STYLE.realism;
@@ -1718,7 +1724,7 @@ function AvatarsPage(){
 
     // 4. Character identity
     parts.push(
-      "Character: "+c.race.toLowerCase()+", "+c.gender.toLowerCase()+", "+c.region.toLowerCase()+" heritage, "+c.age.toLowerCase()+". "+
+      "Character: "+c.race.toLowerCase()+", "+c.gender.toLowerCase()+", "+(REGION_FULL[c.region]||c.region).toLowerCase()+" heritage, "+c.age.toLowerCase()+". "+
       "Facial expression: "+c.expression.toLowerCase()+"."
     );
 
@@ -1761,29 +1767,49 @@ function AvatarsPage(){
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2200)};
   const copy=async()=>{const ok=await copyText(enhanced||prompt);doToast(ok?"COPIED TO CLIPBOARD":"COPY FAILED — SELECT MANUALLY")};
   const enhance=async()=>{
-    if(!user){setShowAuthModal(true);return;}
+    if(!user){signIn();doToast("PLEASE SIGN IN WITH GOOGLE TO USE ENHANCE");return;}
     setEnhancing(true);setEnhanced("");
     try{
       const result=await callEnhance(prompt,c.details,user.idToken,null);
       setEnhanced(result);
       doToast("✦ ENHANCED BY GEMINI");
-    }catch(e){doToast("ERROR: "+e.message);}
+    }catch(e){
+      if(e.status===401){signIn();doToast("SESSION EXPIRED — PLEASE SIGN IN AGAIN");}
+      else doToast("ERROR: "+e.message);
+    }
     setEnhancing(false);
   };
   const surprise=()=>{
+    try{
     const pick=a=>a[~~(Math.random()*a.length)];
-    const pickId=a=>pick(a).id;
     setC({
-      universe:pickId(AV_FIELDS.universe),race:pick(AV_FIELDS.race),gender:pick(AV_FIELDS.gender),
-      region:pick(AV_FIELDS.region),eyeColor:pick(AV_FIELDS.eyeColor),age:pick(AV_FIELDS.age),
-      skinColor:pick(AV_FIELDS.skinColor),skinTraits:pick(AV_FIELDS.skinTraits),hair:pick(AV_FIELDS.hair),
-      eyeType:pick(AV_FIELDS.eyeType),lips:pick(AV_FIELDS.lips),markings:pick(AV_FIELDS.markings),
-      horns:pick(AV_FIELDS.horns),bodyType:pick(AV_FIELDS.bodyType),lArm:pick(AV_FIELDS.arm),
-      rArm:pick(AV_FIELDS.arm),lLeg:pick(AV_FIELDS.leg),rLeg:pick(AV_FIELDS.leg),
-      wings:pick(AV_FIELDS.wings),tail:pick(AV_FIELDS.tail),ears:pick(AV_FIELDS.ears),
-      expression:pick(AV_FIELDS.expression),clothing:pick(AV_FIELDS.clothing),details:""
+      universe:pick(AV_FIELDS.universe).id,
+      race:pick(AV_FIELDS.race).name,
+      gender:pick(GENDER_SPRITES).name,
+      region:pick(REGION_SPRITES).name,
+      eyeColor:pick(EYE_SPRITES).name,
+      age:pick(AGE_SPRITES).name,
+      skinColor:pick(SKIN_SPRITES).name,
+      skinTraits:pick(SKINTRAIT_SPRITES).name,
+      hair:pick(HAIR_SPRITES).name,
+      eyeType:pick(EYETYPE_SPRITES).name,
+      lips:pick(LIPS_SPRITES).name,
+      markings:pick(MARKINGS_SPRITES).name,
+      horns:pick(HORNS_SPRITES).name,
+      bodyType:pick(BODY_SPRITES).name,
+      lArm:pick(LARM_SPRITES).name,
+      rArm:pick(RARM_SPRITES).name,
+      lLeg:pick(LLEG_SPRITES).name,
+      rLeg:pick(RLEG_SPRITES).name,
+      wings:pick(WINGS_SPRITES).name,
+      tail:pick(TAIL_SPRITES).name,
+      ears:pick(EARS_SPRITES).name,
+      expression:pick(EXPRESSION_SPRITES).name,
+      clothing:pick(CLOTHING_SPRITES).id,
+      details:"",avLight:"",avEnv:"",avLens:"",avAspect:"16:9",avLayout:"Style Sheet"
     });
-    doToast("RANDOM CHARACTER GENERATED");
+    doToast("SURPRISE CHARACTER GENERATED");
+    }catch(err){doToast("ERROR: "+err.message);}
   };
 
   const isDirty=k=>{
@@ -1798,7 +1824,7 @@ function AvatarsPage(){
   return(
     <div className="page">
       <div className="ph">
-        <div className="pt">Avatar <b>Builder</b></div>
+        <div className="pt">Character <b>Sheet</b></div>
         <div className="ps">Character reference sheet prompt builder with detailed anatomy and style controls</div>
       </div>
 
@@ -2384,7 +2410,7 @@ function AvatarsPage(){
           </div>
         )}
         <div className="pbar">
-          <button className="btn" onClick={()=>{setC(AV_DEF);setEnhanced("");}}>Reset</button>
+          <button className="btn" onClick={()=>{setC(AV_DEF);setEnhanced("");setITab("universe");setFTab("hair");setBTab("bodyType");doToast("RESET");}}>Reset</button>
           <button className="btn" onClick={surprise}>Surprise Me</button>
           <button className="btn" onClick={enhance} disabled={enhancing}
             style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"var(--t4)":"var(--acc)",background:"var(--acdim)"}}>
@@ -2502,7 +2528,7 @@ function VideoPromptPage(){
   return(
     <div className="page">
       <div className="ph">
-        <div className="pt">Video <b>Prompt</b></div>
+        <div className="pt">🚧 Under <b>Construction</b></div>
         <div className="ps">Build cinematic video prompts for Sora, Runway, Kling and Pika. Define your scene, set first and last frames, pick visual style — generate separately.</div>
       </div>
 
@@ -2651,23 +2677,27 @@ export default function App(){
     <AuthCtx.Provider value={auth}>
       <style>{G}</style>
       <div className="shell">
-        <nav className={`nav${scrolled?" scrolled":""}`}>
-          <div className="logo">PrompTo <span>miniStudio</span></div>
-          <div className="ntabs">
+        <nav className={`nav${scrolled?" scrolled":""}`} style={{flexDirection:"column",height:"auto",padding:"12px 28px 0",gap:0}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",paddingBottom:10}}>
+            <div className="logo">PrompTo <span>miniStudio</span></div>
+            <div style={{display:"flex",justifyContent:"flex-end"}}>
+              {auth.user?(
+                <button className="user-chip" onClick={auth.signOut} title="Sign out">
+                  <img src={auth.user.picture} alt=""/>
+                  <span>{auth.user.name.split(" ")[0]}</span>
+                  <span style={{color:"var(--t4)"}}>✕</span>
+                </button>
+              ):(
+                <button className="nt" onClick={()=>auth.signIn()} style={{fontSize:11,opacity:.6}}>Sign in</button>
+              )}
+            </div>
+          </div>
+          <div className="ntabs" style={{position:"static",transform:"none",borderTop:"1px solid var(--bd)",paddingTop:2,paddingBottom:2,width:"100%",justifyContent:"center"}}>
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Multi-Shot</button>
             <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Character Sheet</button>
-            <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video Prompt</button>
+            <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>🚧 Under Construction</button>
             <a href="https://github.com/mimaotomao/prompto_ministudio" target="_blank" rel="noopener noreferrer" className="nt" style={{textDecoration:"none"}}>GitHub ↗</a>
           </div>
-          {auth.user?(
-            <button className="user-chip" onClick={auth.signOut} title="Sign out">
-              <img src={auth.user.picture} alt=""/>
-              <span>{auth.user.name.split(" ")[0]}</span>
-              <span style={{color:"var(--t4)"}}>✕</span>
-            </button>
-          ):(
-            <button className="nt" onClick={()=>auth.signIn()} style={{fontSize:11,opacity:.6}}>Sign in</button>
-          )}
         </nav>
         {page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:<VideoPromptPage/>}
       </div>
