@@ -2946,6 +2946,49 @@ function VideoPromptPage(){
   );
 }
 
+// ─── PIPELINE STRIP ───────────────────────────────────────────────────────────
+function PipelineStrip({active}){
+  const setPage=React.useContext(PageCtx);
+  const steps=[
+    {n:1,label:"Character",page:"avatars",icon:"🧬"},
+    {n:2,label:"Multi-Shot",page:"angles",icon:"🎬"},
+    {n:3,label:"Generate",page:null,icon:"✦"},
+    {n:4,label:"Expand",page:"how",icon:"🔍"},
+  ];
+  const colors=["#e8780a","#4fa3e0","#a78bfa","#34d399"];
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:2,marginBottom:20,padding:"8px 12px",borderRadius:10,background:"var(--s2)",border:"1px solid var(--bdh)",overflowX:"auto",flexWrap:"nowrap"}}>
+      {steps.map((s,i)=>{
+        const isActive=s.n===active;
+        const isDone=s.n<active;
+        const color=colors[i];
+        return(
+          <React.Fragment key={s.n}>
+            <button
+              onClick={s.page?()=>setPage(s.page):undefined}
+              title={s.page?"Go to "+s.label:null}
+              style={{
+                display:"flex",alignItems:"center",gap:6,padding:"5px 10px",borderRadius:6,
+                border:isActive?`1px solid ${color}55`:"1px solid transparent",
+                background:isActive?`${color}18`:"transparent",
+                cursor:s.page?"pointer":"default",flexShrink:0,
+                opacity:isDone?.7:isActive?1:.4,transition:"all .15s"
+              }}
+            >
+              <span style={{fontSize:13}}>{s.icon}</span>
+              <span style={{fontSize:11,fontWeight:isActive?800:600,color:isActive?color:"var(--t)",whiteSpace:"nowrap",letterSpacing:.3}}>
+                {s.n}. {s.label}
+              </span>
+              {isDone&&<span style={{fontSize:10,color:color}}>✓</span>}
+            </button>
+            {i<3&&<span style={{color:"var(--bd)",fontSize:12,flexShrink:0,padding:"0 2px"}}>→</span>}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── HOW IT WORKS PAGE ────────────────────────────────────────────────────────
 function HowItWorksPage(){
   const setPage = React.useContext(PageCtx);
