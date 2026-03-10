@@ -1,4 +1,5 @@
 # PrompTo miniStudio
+**Tags:** `#ai-image-generation` `#prompt-engineering` `#midjourney` `#stable-diffusion` `#character-design`
 
 Professional prompt engineering tool for AI image generation. Inspired by [jaffsavage.lovable.app/savage-angles](https://jaffsavage.lovable.app/savage-angles).
 
@@ -13,7 +14,14 @@ The tool structures your creative vision into machine-readable instructions with
 ### 1. Camera Angles & Scene Composition
 Build multi-angle cinematic prompts with precise 3D camera control and technical specifications.
 
-**Features:**
+## Features
+
+**Camera Angles & Scene Composition**
+Tags: `#cinematic` `#3d-camera-control` `#film-production`
+
+**Avatar Builder**
+Tags: `#character-design` `#sprite-selection` `#anatomy-control`
+
 - **30+ predefined camera angles** — from wide establishing shots to extreme close-ups, each with detailed compositional instructions
 - **Interactive 3D viewport** — set exact azimuth, elevation and camera distance with real-time visualization
 - **Visual sprite selectors** — browse lighting conditions, environments, lenses, film stocks, and color grades with thumbnail previews
@@ -82,6 +90,10 @@ All options use **sprite-based selection** — click thumbnails to build your pr
 2. Click sprite thumbnails to select options
 3. Copy generated prompt
 4. Paste into Midjourney, Stable Diffusion, DALL-E, etc.
+
+---
+## Tags
+`#ai-image-generation` `#prompt-engineering` `#midjourney` `#stable-diffusion` `#dall-e` `#character-design` `#avatar-builder` `#camera-angles` `#react` `#vite`
 
 ## Credits
 
