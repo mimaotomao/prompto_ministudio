@@ -40,6 +40,7 @@ textarea::placeholder{color:var(--t4)}
 .pc{margin-top:12px;font-size:13px;font-weight:600;color:var(--t);display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:var(--s2);border:1px solid var(--bd);transition:all .3s}
 .pc.full{color:var(--acc);border-color:var(--acc);background:var(--acdim)}
 .sec{margin-bottom:36px}
+.notranslate{translate:no}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--bd)}
 .st{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--t)}
 .sb{font-size:10px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:4px;background:var(--acc);color:#000;text-transform:uppercase}
@@ -1262,7 +1263,7 @@ function AnglesPage(){
                   backgroundPosition:(-col*200)+"px "+(-row*100)+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
-                  color:isSel?"#e8780a":"var(--t)",lineHeight:1.2}}>{angle.name}</div>
+                  color:isSel?"#e8780a":"var(--t)",lineHeight:1.2}}><span translate="no">{angle.name}</span></div>
                 {isSel&&<div className="anum">{ord+1}</div>}
               </div>
             );
@@ -1297,7 +1298,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:light===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:light===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -1320,7 +1321,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:bg===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:bg===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -1343,7 +1344,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:lens===r.mm?"#e8780a":"var(--t)"}}>{r.mm}</div>
+                color:lens===r.mm?"#e8780a":"var(--t)"}}><span translate="no">{r.mm}</span></div>
             </div>
           ))}
         </div>
@@ -1369,7 +1370,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:filmStock===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:filmStock===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -1389,7 +1390,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:colorGrade===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:colorGrade===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -1416,7 +1417,7 @@ function AnglesPage(){
                 backgroundPosition:r.sx+"px 0px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:aspectRatio===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:aspectRatio===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -2185,7 +2186,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px 0px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.universe===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.universe===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2204,7 +2205,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.race===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.race===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2223,7 +2224,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.gender===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.gender===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2242,7 +2243,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.region===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.region===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2261,7 +2262,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.eyeColor===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.eyeColor===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2280,7 +2281,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.age===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.age===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2318,7 +2319,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.expression===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.expression===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2366,7 +2367,7 @@ function AvatarsPage(){
                     backgroundPosition:r.sx+"px "+r.sy+"px",
                     backgroundRepeat:"no-repeat"}}/>
                   <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                    color:c.hair===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                    color:c.hair===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
                 </div>
               ))}
             </div>
@@ -2385,7 +2386,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.eyeType===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.eyeType===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2404,7 +2405,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.lips===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.lips===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2423,7 +2424,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.markings===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.markings===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2441,7 +2442,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.horns===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.horns===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2470,7 +2471,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.bodyType===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.bodyType===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2488,7 +2489,7 @@ function AvatarsPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>  
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
-                color:c.lArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}>{r.name}</div>
+                color:c.lArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -2514,7 +2515,7 @@ function AvatarsPage(){
 
 
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
-                color:c.rArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}>{r.name}</div>
+                color:c.rArm===r.name?"#e8780a":"var(--t)",lineHeight:1.2}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -2532,7 +2533,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,
-                  color:c.lLeg===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.lLeg===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2550,7 +2551,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,
-                  color:c.rLeg===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.rLeg===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2569,7 +2570,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.wings===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.wings===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2588,7 +2589,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.tail===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.tail===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2606,7 +2607,7 @@ function AvatarsPage(){
                   backgroundPosition:r.sx+"px "+r.sy+"px",
                   backgroundRepeat:"no-repeat"}}/>
                 <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                  color:c.ears===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                  color:c.ears===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2627,7 +2628,7 @@ function AvatarsPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:c.clothing===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:c.clothing===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -2647,7 +2648,7 @@ function AvatarsPage(){
                 backgroundPosition:r.sx+"px "+r.sy+"px",
                 backgroundRepeat:"no-repeat"}}/>
               <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
-                color:c.avLayout===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                color:c.avLayout===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -2664,7 +2665,7 @@ function AvatarsPage(){
                   boxShadow:c.avLight===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
                   transition:"all .15s",width:150}}>
                 <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
-                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLight===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLight===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2679,7 +2680,7 @@ function AvatarsPage(){
                   boxShadow:c.avEnv===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
                   transition:"all .15s",width:133}}>
                 <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
-                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avEnv===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avEnv===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2694,7 +2695,7 @@ function AvatarsPage(){
                   boxShadow:c.avLens===r.name?"0 0 14px rgba(232,120,10,.4)":"none",
                   transition:"all .15s",width:150}}>
                 <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
-                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLens===r.name?"#e8780a":"var(--t)"}}>{r.name}</div>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:c.avLens===r.name?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2711,7 +2712,7 @@ function AvatarsPage(){
                   display:"flex",flexDirection:"column",alignItems:"center",
                   padding:"10px 8px",background:"var(--s1)",gap:6}}>
                 <div style={{width:80,height:80,flexShrink:0,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
-                <div style={{fontSize:11,fontWeight:600,color:c.avAspect===r.id?"#e8780a":"var(--t)"}}>{r.name}</div>
+                <div style={{fontSize:11,fontWeight:600,color:c.avAspect===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
               </div>
             ))}
           </div>
@@ -2808,6 +2809,7 @@ function buildFramePrompt(frameDesc,{lighting,colorGrade,lens,filmStock,style}){
 }
 
 function VideoPromptPage(){
+  const[videoMode,setVideoMode]=useState("txt2vid"); // "txt2vid" | "img2vid" | "frames"
   const[scene,setScene]=useState("");
   const[firstFrame,setFirstFrame]=useState("");
   const[lastFrame,setLastFrame]=useState("");
@@ -2837,7 +2839,7 @@ function VideoPromptPage(){
       <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t)"}}>{label}</div>
       <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
         {opts.map(o=>(
-          <button key={o} className={`ob${val===o?" sel":""}`} onClick={()=>onSet(stateKey,o)}>{o}</button>
+          <button key={o} className={`ob${val===o?" sel":""}`} onClick={()=>onSet(stateKey,o)} translate="no">{o}</button>
         ))}
       </div>
     </div>
@@ -2851,12 +2853,48 @@ function VideoPromptPage(){
     else if(key==="style")setStyle(val);
   };
 
+  const modeBtn=(id,icon,title,sub)=>(
+    <button onClick={()=>setVideoMode(id)} style={{
+      flex:1,padding:"14px 16px",borderRadius:10,cursor:"pointer",textAlign:"left",
+      border:`2px solid ${videoMode===id?"var(--acc)":"var(--bdh)"}`,
+      background:videoMode===id?"var(--acdim)":"var(--s2)",
+      transition:"all .2s"
+    }}>
+      <div style={{fontSize:18,marginBottom:6}}>{icon}</div>
+      <div style={{fontSize:13,fontWeight:800,color:videoMode===id?"var(--acc)":"var(--t)"}}>{title}</div>
+      <div style={{fontSize:11,color:"var(--t)",opacity:.6,marginTop:3,lineHeight:1.4}}>{sub}</div>
+    </button>
+  );
+
   return(
     <div className="page">
+      <PipelineStrip active={2}/>
       <div className="ph">
-        <div className="pt">🚧 Under <b>Construction</b></div>
-        <div className="ps">Build cinematic video prompts for Sora, Runway, Kling and Pika. Define your scene, set first and last frames, pick visual style — generate separately.</div>
+        <div className="pt">🎬 Video <b>Prompt</b></div>
+        <div className="ps">Build cinematic video prompts for Sora, Runway, Kling and Pika.</div>
       </div>
+
+      {/* MODE SELECTOR */}
+      <div className="sec">
+        <div className="sh"><span className="st">What are you making?</span></div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {modeBtn("txt2vid","✍️","Text to Video","No reference image — describe a new scene from scratch and generate video directly.")}
+          {modeBtn("img2vid","📸","Image to Video","Animate an existing image. Attach your photo/render as reference — AI continues or transforms it.")}
+          {modeBtn("frames","🎞","First + Last Frame","Define opening and closing frames from your Multi-Shot grid, AI fills the motion between them.")}
+        </div>
+      </div>
+
+      {/* MODE HINTS */}
+      {videoMode==="img2vid"&&(
+        <div style={{margin:"-16px 0 24px",padding:"10px 14px",borderRadius:8,border:"1px solid rgba(255,180,0,.25)",background:"rgba(255,180,0,.06)",fontSize:12,color:"var(--t)",lineHeight:1.6}}>
+          📎 <strong style={{color:"rgba(255,200,80,.9)"}}>Attach your reference image</strong> in the AI generator — the prompt instructs it to animate from that image.
+        </div>
+      )}
+      {videoMode==="frames"&&(
+        <div style={{margin:"-16px 0 24px",padding:"10px 14px",borderRadius:8,border:"1px solid rgba(120,180,255,.25)",background:"rgba(120,180,255,.06)",fontSize:12,color:"var(--t)",lineHeight:1.6}}>
+          💡 Use <strong style={{color:"var(--acc)"}}>Character Sheet</strong> or <strong style={{color:"var(--acc)"}}>Multi-Shot</strong> to generate your character/scene grid first, then use panel prompts here as first &amp; last frames.
+        </div>
+      )}
 
       <div className="sec">
         <div className="sh"><span className="st">Scene</span><span className="sb">CORE</span></div>
@@ -2902,7 +2940,7 @@ function VideoPromptPage(){
           {LIGHTING.map(l=>(
             <div key={l.id} className={`scard${lighting===l.id?" sel":""}`} onClick={()=>tog1(setLighting,l.id)}>
               <div className="simg" style={{width:150,height:105,backgroundImage:`url(${l.src})`,backgroundSize:"750px 315px",backgroundPosition:`-${l.sx}px -${l.sy}px`}}/>
-              <div className="slabel">{l.name}</div>
+              <div className="slabel" translate="no">{l.name}</div>
             </div>
           ))}
         </div>
@@ -2914,7 +2952,7 @@ function VideoPromptPage(){
           {COLOR_GRADES.map(c=>(
             <div key={c.id} className={`scard${colorGrade===c.id?" sel":""}`} onClick={()=>tog1(setColorGrade,c.id)}>
               <div className="simg" style={{width:150,height:167,backgroundImage:`url(${c.src})`,backgroundSize:"600px 334px",backgroundPosition:`-${c.sx}px -${c.sy}px`}}/>
-              <div className="slabel">{c.name}</div>
+              <div className="slabel" translate="no">{c.name}</div>
             </div>
           ))}
         </div>
@@ -2926,7 +2964,7 @@ function VideoPromptPage(){
           {LENSES.map(l=>(
             <div key={l.mm} className={`scard${lens===l.mm?" sel":""}`} onClick={()=>tog1(setLens,l.mm)}>
               <div className="simg" style={{width:150,height:83,backgroundImage:`url(${l.src})`,backgroundSize:"600px 332px",backgroundPosition:`-${l.sx}px -${l.sy}px`}}/>
-              <div className="slabel">{l.mm}</div>
+              <div className="slabel" translate="no">{l.mm}</div>
             </div>
           ))}
         </div>
@@ -2938,7 +2976,7 @@ function VideoPromptPage(){
           {FILM_STOCKS.map(f=>(
             <div key={f.id} className={`scard${filmStock===f.id?" sel":""}`} onClick={()=>tog1(setFilmStock,f.id)}>
               <div className="simg" style={{width:150,height:167,backgroundImage:`url(${f.src})`,backgroundSize:"600px 334px",backgroundPosition:`-${f.sx}px -${f.sy}px`}}/>
-              <div className="slabel">{f.name}</div>
+              <div className="slabel" translate="no">{f.name}</div>
             </div>
           ))}
         </div>
@@ -3224,7 +3262,7 @@ export default function App(){
             <button className={`nt${page==="how"?" on":""}`} onClick={()=>setPage("how")}>How it works</button>
             <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Character Sheet</button>
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")}>Multi-Shot</button>
-            <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>🚧 Video</button>
+            <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video</button>
             <a href="https://github.com/mimaotomao/prompto_ministudio" target="_blank" rel="noopener noreferrer" className="nt" style={{textDecoration:"none"}}>GitHub ↗</a>
             <button
               className="nt"
