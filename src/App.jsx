@@ -3479,9 +3479,15 @@ const PET_HOW_IT_WORKS=[
 ];
 
 function PetPage(){
+  // ── SCENE DESC ──
+  const[sceneDesc,setSceneDesc]=useState("");
+  // ── SOURCE ── scratch | pet | pet_human
+  const[source,setSource]=useState("scratch");
+  // ── ACCESSORIES PANEL ──
+  const[accOpen,setAccOpen]=useState(false);
   // ── HOW IT WORKS ──
   const[pHowOpen,setPHowOpen]=useState(false);
-  // ── INPUTS ──
+  // ── INPUTS (legacy, kept for buildPetPrompt) ──
   const[hasProduct,setHasProduct]=useState(false);
   const[hasPetPhoto,setHasPetPhoto]=useState(false);
   const[hasHumanPhoto,setHasHumanPhoto]=useState(false);
@@ -3554,8 +3560,11 @@ function PetPage(){
   const toggleEnh=(e)=>setPetEnhancements(p=>p.includes(e)?p.filter(x=>x!==e):[...p,e]);
   const toggleAccSel=(id)=>setAccSelected(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500);};
-  const showVirtualPet=!hasPetPhoto;
-  const showVirtualHuman=!hasHumanPhoto&&(accMode==="product"&&accDepthHandler==="virtual_hand"||companionMode==="human");
+  // source drives photo logic
+  const showVirtualPet=source==="scratch";
+  const hasPetPhotoVal=source==="pet"||source==="pet_human";
+  const hasHumanPhotoVal=source==="pet_human";
+  const showVirtualHuman=!hasHumanPhotoVal&&accMode==="product"&&accDepthHandler==="virtual_hand";
   const spData=(vpIsFantasy?PET_SPECIES_FANTASY:PET_SPECIES_REAL).find(s=>s.id===vpSpecies)||PET_SPECIES_REAL[0];
   const accList=PET_ACCESSORIES[vpSpecies]||PET_ACCESSORIES.default;
   const poses=PET_POSES[vpSpecies]||PET_POSES.default;
@@ -3583,31 +3592,30 @@ function PetPage(){
     // Sources
     const srcs=[];
     let n=0;
-    if(hasHumanPhoto){
-      n++;
-      srcs.push(n+". [YOUR PHOTO]: "+(humanPhotoDesc||"Person — environment and props preserved, person replaced by virtual figure."));
-      srcs.push("   USAGE: Extract environment and props only. People in this photo are replaced by a virtual figure matching the scene composition.");
-    }
-    if(hasPetPhoto){
+    if(hasPetPhotoVal){
       n++;
       const enhStr=petEnhancements.length?" Enhance: "+petEnhancements.join(", ")+".":"";
-      srcs.push(n+". [YOUR PET PHOTO]: "+(petPhotoDesc||"Your pet."));
-      srcs.push("   QUALITY: "+petPhotoQuality+"."+enhStr+" Preserve exact breed identity, coat color, markings, and body structure.");
+      srcs.push(n+". [YOUR PET PHOTO]: attach when pasting this prompt in your AI generator");
+      srcs.push("   USAGE: Use as identity reference — preserve exact breed, coat, colors, markings."+enhStr);
     }
-    if(hasProduct){
+    if(hasHumanPhotoVal){
       n++;
-      if(productType==="photo"){
-        srcs.push(n+". [PRODUCT PHOTO]: "+(productDesc||"Your product."));
-        const cond={new:"Keep exactly as shown.",upgrade:"Restore worn condition to pristine showroom quality.",pristine:"Idealize to perfect condition — enhance all materials and finishes."}[productCondition];
-        srcs.push("   USAGE: "+cond+" Place as "+productFocus+" element. Preserve all material, texture, and construction detail.");
-        if(productMaterial)srcs.push("   MATERIAL: "+productMaterial);
-      }else if(productType==="description"){
-        srcs.push(n+". [GENERATE PRODUCT FROM DESCRIPTION]: "+(productDesc||"Product."));
-        if(productMaterial)srcs.push("   MATERIAL: "+productMaterial+" | Condition: "+productCondition+" | Focus: "+productFocus);
-      }else{
-        srcs.push(n+". [DESIGN NEW PRODUCT CONCEPT]: "+(productDesc||"New product idea."));
-        if(productMaterial)srcs.push("   STYLE / MATERIAL INSPIRATION: "+productMaterial);
+      srcs.push(n+". [YOUR PHOTO]: attach when pasting this prompt in your AI generator");
+      srcs.push("   USAGE: Extract environment and props only. Replace person with virtual figure matching composition.");
+    }
+    if(hasProduct&&(accProductDesc||accCreativeDesc)){
+      n++;
+      if(accMode==="product"&&accCreativeDesc){
+        srcs.push(n+". [DESIGN NEW PRODUCT CONCEPT]: "+accCreativeDesc);
+      }else if(accMode==="product"&&accProductDesc){
+        srcs.push(n+". [PRODUCT PHOTO / REFERENCE]: attach when pasting this prompt");
+        srcs.push("   DESCRIPTION: "+accProductDesc);
+        const cond={new:"Keep exactly as shown.",upgrade:"Restore to pristine showroom quality.",pristine:"Idealize — perfect condition."}[productCondition];
+        srcs.push("   USAGE: "+cond+" Place as "+productFocus+" element. Preserve all material and texture detail.");
       }
+    }
+    if(sceneDesc.trim()){
+      L.push("SCENE: "+sceneDesc.trim());L.push("");
     }
     if(srcs.length){
       L.push("MULTI-SOURCE COMPOSITION PROMPT");L.push("");
@@ -3820,7 +3828,7 @@ function PetPage(){
       {/* HEADER */}
       <div className="ph">
         <div className="pt">Pet <b>Studio</b></div>
-        <div className="ps">Compose products, pets and people into perfect reference images for AI generators</div>
+        <div className="ps">Compose pets, products and people into perfect reference images for AI generators</div>
       </div>
 
       {/* HOW IT WORKS — collapsible */}
@@ -3828,468 +3836,458 @@ function PetPage(){
         <div onClick={()=>setPHowOpen(v=>!v)}
           style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",cursor:"pointer",background:"var(--s1)",userSelect:"none"}}>
           <span style={{fontSize:12,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase"}}>How Pet Studio works</span>
-          <span style={{fontSize:13,color:"rgba(255,255,255,.72)",transition:"transform .2s",display:"inline-block",transform:pHowOpen?"rotate(180deg)":"none"}}>▼</span>
+          <span style={{fontSize:13,color:"rgba(255,255,255,.5)",transition:"transform .2s",display:"inline-block",transform:pHowOpen?"rotate(180deg)":"none"}}>▼</span>
         </div>
         {pHowOpen&&(
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:0,borderTop:"1px solid var(--bd)"}}>
             {PET_HOW_IT_WORKS.map((h,i)=>(
-              <div key={i} style={{padding:"14px 16px",borderRight:i<3?"1px solid var(--bd)":"none",borderBottom:"none"}}>
+              <div key={i} style={{padding:"14px 16px",borderRight:i<3?"1px solid var(--bd)":"none"}}>
                 <div style={{fontSize:18,marginBottom:6}}>{h.icon}</div>
                 <div style={{fontSize:12,fontWeight:700,marginBottom:4}}>{h.title}</div>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.72)",lineHeight:1.6}}>{h.body}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.75)",lineHeight:1.6}}>{h.body}</div>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* WHAT ARE YOU BRINGING — sprite cards */}
+      {/* 1. SCENE DESCRIPTION */}
       <div className="sec">
-        <div className="sh"><span className="st">What are you bringing?</span><span className="sb">START HERE</span></div>
+        <div className="sh"><span className="st">What do you want to create?</span><span className="sb">OPTIONAL</span></div>
+        <textarea rows={2} value={sceneDesc} onChange={e=>{setSceneDesc(e.target.value);setEnhanced("");}}
+          placeholder="Describe the scene: 'my dog sitting in a park wearing a new harness, golden hour lighting' — or skip and configure below"/>
+      </div>
+
+      {/* 2. SOURCE — 4 options */}
+      <div className="sec">
+        <div className="sh"><span className="st">Starting point</span></div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {PET_INPUT_SPRITES.map((item)=>{
-            const stateMap={product:hasProduct,pet:hasPetPhoto,human:hasHumanPhoto};
-            const setMap={product:setHasProduct,pet:setHasPetPhoto,human:setHasHumanPhoto};
-            const active=stateMap[item.key];
+          {[
+            {id:"scratch",   label:"Build from scratch",      sub:"fully virtual — no photos",    icon:"🐾"},
+            {id:"pet",       label:"I have a pet photo",       sub:"attach when generating",        img:true, sx:-160},
+            {id:"pet_human", label:"Pet + my photo",           sub:"both photos, attach when gen.", img:true, sx:null},
+            {id:"product_only",label:"Product only",           sub:"showcase accessory, no pet",   icon:"🛍"},
+          ].map(opt=>{
+            const active=source===opt.id;
             return(
-              <div key={item.key} onClick={()=>{setMap[item.key](v=>!v);setEnhanced("");}}
-                style={{flex:"1 1 160px",cursor:"pointer",borderRadius:10,overflow:"hidden",
+              <div key={opt.id} onClick={()=>{setSource(opt.id);setEnhanced("");}}
+                style={{flex:"1 1 140px",cursor:"pointer",borderRadius:10,overflow:"hidden",
                   border:"2px solid "+(active?"var(--acc)":"rgba(255,255,255,.2)"),
                   background:active?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                <div style={{width:"100%",height:127,overflow:"hidden",position:"relative"}}>
-                  <div style={{width:160,height:127,margin:"0 auto",
-                    backgroundImage:"url(/pet-inputs.png)",
-                    backgroundSize:"480px 127px",backgroundPosition:item.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
-                </div>
+                {opt.img?(
+                  <div style={{width:"100%",height:100,overflow:"hidden",display:"flex"}}>
+                    <div style={{flex:1,height:100,backgroundImage:"url(/pet-inputs.png)",
+                      backgroundSize:"480px 127px",backgroundPosition:"-160px 0px",backgroundRepeat:"no-repeat"}}/>
+                    {opt.id==="pet_human"&&<div style={{flex:1,height:100,backgroundImage:"url(/pet-inputs.png)",
+                      backgroundSize:"480px 127px",backgroundPosition:"-320px 0px",backgroundRepeat:"no-repeat"}}/>}
+                  </div>
+                ):(
+                  <div style={{width:"100%",height:100,display:"flex",alignItems:"center",justifyContent:"center",
+                    background:"rgba(255,255,255,.03)"}}>
+                    <span style={{fontSize:44}}>{opt.icon}</span>
+                  </div>
+                )}
                 <div style={{padding:"8px 10px 10px"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:active?"var(--acc)":"#fff"}}>{item.label}</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>{item.sub}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:active?"var(--acc)":"#fff"}}>{opt.label}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.75)",marginTop:2}}>{opt.sub}</div>
                 </div>
                 {active&&<div style={{height:3,background:"var(--acc)"}}/>}
               </div>
             );
           })}
-          {/* 4th card — build from scratch */}
-          {(()=>{
-            const scratchActive=!hasProduct&&!hasPetPhoto&&!hasHumanPhoto;
-            return(
-              <div onClick={()=>{setHasProduct(false);setHasPetPhoto(false);setHasHumanPhoto(false);setPTab("species");setEnhanced("");}}
-                style={{flex:"1 1 160px",cursor:"pointer",borderRadius:10,overflow:"hidden",
-                  border:"2px solid "+(scratchActive?"var(--acc)":"rgba(255,255,255,.2)"),
-                  background:scratchActive?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                <div style={{width:"100%",height:127,display:"flex",alignItems:"center",justifyContent:"center",
-                  background:"rgba(255,255,255,.04)"}}>
-                  <span style={{fontSize:52,lineHeight:1}}>🐾</span>
-                </div>
-                <div style={{padding:"8px 10px 10px"}}>
-                  <div style={{fontSize:13,fontWeight:700,color:scratchActive?"var(--acc)":"#fff"}}>Build my pet from scratch</div>
-                  <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>no photos — fully virtual</div>
-                </div>
-                {scratchActive&&<div style={{height:3,background:"var(--acc)"}}/>}
-              </div>
-            );
-          })()}
         </div>
-      </div>
-
-      {/* PRODUCT INPUTS */}
-      {hasProduct&&(
-        <div className="sec">
-          <div className="sh"><span className="st">Product</span><span className="sb">HERO</span></div>
-          <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
-            {[{id:"photo",label:"I have a photo"},{id:"description",label:"I'll describe it"},{id:"concept",label:"Design new concept"}].map(t=>(
-              <Pill key={t.id} active={productType===t.id} onClick={()=>{setProductType(t.id);setEnhanced("");}}>{t.label}</Pill>
-            ))}
-          </div>
-          <textarea rows={2} value={productDesc} onChange={e=>{setProductDesc(e.target.value);setEnhanced("");}}
-            placeholder={productType==="photo"?"Describe photo: 'brown leather collar, silver buckle, slightly worn, hand for scale'":
-              productType==="description"?"Describe your product: 'birch wood wall cat scratcher, 30cm wide, minimal design'":
-              "Describe concept: 'retractable leash with LED lighting, cyberpunk aesthetic, matte black'"}/>
-          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
-            <input placeholder="Material / finish (optional)" value={productMaterial} onChange={e=>setProductMaterial(e.target.value)}
-              style={{flex:"1 1 160px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
-            {productType!=="concept"&&(
-              <select value={productCondition} onChange={e=>setProductCondition(e.target.value)}
-                style={{flex:"1 1 150px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
-                <option value="new">Keep as shown</option>
-                <option value="upgrade">Restore to pristine</option>
-                <option value="pristine">Idealize — perfect</option>
-              </select>
-            )}
-            <select value={productFocus} onChange={e=>setProductFocus(e.target.value)}
-              style={{flex:"1 1 140px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
-              <option value="hero">Hero (main focus)</option>
-              <option value="co_star">Co-star with pet</option>
-              <option value="background">Background element</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      {/* PET PHOTO */}
-      {hasPetPhoto&&(
-        <div className="sec">
-          <div className="sh"><span className="st">Pet photo</span></div>
-          <textarea rows={2} value={petPhotoDesc} onChange={e=>{setPetPhotoDesc(e.target.value);setEnhanced("");}}
-            placeholder="Describe your pet photo: 'my golden retriever lying on couch, dim lighting, slightly blurry'"/>
-          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
+        {/* Photo quality hint when photo source selected */}
+        {(source==="pet"||source==="pet_human")&&(
+          <div style={{marginTop:14,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center",padding:"10px 14px",borderRadius:8,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)"}}>
+            <span style={{fontSize:12,color:"rgba(255,255,255,.8)"}}>Pet photo quality:</span>
             <select value={petPhotoQuality} onChange={e=>setPetPhotoQuality(e.target.value)}
-              style={{padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
-              <option value="poor">Poor (dark/blurry)</option>
+              style={{padding:"6px 10px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
+              <option value="poor">Poor (dark / blurry)</option>
               <option value="average">Average</option>
               <option value="good">Good, needs polish</option>
             </select>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.72)"}}>Enhance:</span>
+            <span style={{fontSize:12,color:"rgba(255,255,255,.6)"}}>Enhance:</span>
             {["lighting","sharpness","background","pose","fur detail"].map(e=>(
               <Pill key={e} active={petEnhancements.includes(e)} onClick={()=>toggleEnh(e)}>{petEnhancements.includes(e)?"✓ ":""}{e}</Pill>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* HUMAN PHOTO */}
-      {hasHumanPhoto&&(
+      {/* 3. PET CONFIGURATION TABS */}
+      {source!=="product_only"&&(
         <div className="sec">
-          <div className="sh"><span className="st">Person photo</span>
-            <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:4,background:"var(--s4)",color:"rgba(255,255,255,.72)"}}>REPLACED IN SCENE</span>
-          </div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.72)",marginBottom:10,padding:"8px 12px",borderRadius:6,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)",lineHeight:1.5}}>
-            People in your photo are replaced by a virtual figure. Only environment and props are preserved.
-          </div>
-          <textarea rows={2} value={humanPhotoDesc} onChange={e=>{setHumanPhotoDesc(e.target.value);setEnhanced("");}}
-            placeholder="Describe photo context: 'me on couch, dark hoodie, left hand on knee'"/>
-        </div>
-      )}
-
-      {/* PET CONFIG TABS */}
-      <div className="sec">
-        {/* Tab strip */}
-        <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:20,borderBottom:"1px solid var(--bd)",paddingBottom:12}}>
-          {[
-            {id:"species",    label:"🐾 Species"},
-            {id:"look",       label:"✨ Look"},
-            {id:"accessories",label:"🛍 Accessories"},
-            {id:"companion",  label:"🤝 Companion"},
-          ].map(t=>(
-            <button key={t.id} onClick={()=>setPTab(t.id)}
-              style={{padding:"8px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,transition:"all .15s",
-                border:"none",background:pTab===t.id?"var(--acc)":"transparent",
-                color:pTab===t.id?"#000":"rgba(255,255,255,.85)"}}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* TAB: SPECIES */}
-        {pTab==="species"&&(
-          <div>
-            {/* Real / Fantasy toggle */}
-            <div style={{display:"flex",gap:8,marginBottom:16}}>
-              <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");setEnhanced("");}}
-                style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
-                  border:"2px solid "+(!vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
-                  background:!vpIsFantasy?"var(--acdim)":"transparent",color:!vpIsFantasy?"var(--acc)":"#fff"}}>
-                Real animal
+          <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:20,borderBottom:"1px solid var(--bd)",paddingBottom:12}}>
+            {[
+              {id:"species",    label:"🐾 Species"},
+              {id:"look",       label:"✨ Look"},
+              {id:"companion",  label:"🤝 Companion"},
+            ].map(t=>(
+              <button key={t.id} onClick={()=>setPTab(t.id)}
+                style={{padding:"8px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,transition:"all .15s",
+                  border:"none",background:pTab===t.id?"var(--acc)":"transparent",
+                  color:pTab===t.id?"#000":"rgba(255,255,255,.7)"}}>
+                {t.label}
               </button>
-              <button onClick={()=>{setVpIsFantasy(true);setVpSpecies("dragon");setEnhanced("");}}
-                style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
-                  border:"2px solid "+(vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
-                  background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"#fff"}}>
-                Fantasy creature
-              </button>
-            </div>
+            ))}
+          </div>
 
-            {/* Real species — sprite strip */}
-            {!vpIsFantasy&&(
-              <>
-                <SL>Species</SL>
-                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
-                  {PET_REAL_SPRITES.map(sp=>(
-                    <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setVpBreed("");setEnhanced("");}}
-                      style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                        border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                        boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                        background:"var(--s1)",transition:"all .15s"}}>
-                      <div style={{width:100,height:100,overflow:"hidden",
-                        backgroundImage:"url(/pet-species-real.png)",
-                        backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
-                      <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
-                        color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* Fantasy species — sprite strip, same 100px size */}
-            {vpIsFantasy&&(
-              <>
-                <SL>Creature</SL>
-                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
-                  {PET_FANTASY_SPRITES.map(sp=>(
-                    <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setEnhanced("");}}
-                      style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                        border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                        boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                        background:"var(--s1)",transition:"all .15s"}}>
-                      <div style={{width:100,height:98,overflow:"hidden",
-                        backgroundImage:"url(/pet-species-fantasy.png)",
-                        backgroundSize:"700px 98px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
-                      <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
-                        color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {/* Breed — sprite grid, 7 per row, properly sized */}
-            {!vpIsFantasy&&spData.breedSprites&&(
-              <div style={{marginBottom:16}}>
-                <SL>Breed</SL>
-                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                  {spData.breedSprites.map(b=>{
-                    // Actual cell sizes in source PNG:
-                    //   dog:   200×200  (2000×400,  10 cols, 2 rows)
-                    //   cat:   222×218  (2000×437,   9 cols, 2 rows)
-                    //   horse: 333×327  (2000×327,   6 cols, 1 row)
-                    // Display size: 158×158 for dog/cat, 190×185 for horse
-                    let srcCellW, srcCellH, srcCols, srcRows, dispW, dispH;
-                    if(vpSpecies==="dog"){    srcCellW=200;srcCellH=200;srcCols=10;srcRows=2;dispW=158;dispH=158;}
-                    else if(vpSpecies==="cat"){srcCellW=222;srcCellH=218;srcCols=9; srcRows=2;dispW=158;dispH=154;}
-                    else{                     srcCellW=333;srcCellH=327;srcCols=6; srcRows=1;dispW=190;dispH=185;}
-                    const scale=dispW/srcCellW;
-                    const bgW=Math.round(srcCellW*srcCols*scale);
-                    const bgH=Math.round(srcCellH*srcRows*scale);
-                    // col index from sx (sx = -colIdx * 100 in old data, needs rescaling)
-                    const colIdx=Math.round(Math.abs(b.sx)/(vpSpecies==="horse"?130:100));
-                    const rowIdx=b.sy&&b.sy<0?1:0;
-                    const posX=-(colIdx*dispW);
-                    const posY=-(rowIdx*dispH);
-                    return(
-                      <div key={b.id} onClick={()=>{setVpBreed(b.id);setEnhanced("");}}
-                        style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                          border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                          boxShadow:vpBreed===b.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                          background:"var(--s1)",transition:"all .15s",width:dispW,flexShrink:0}}>
-                        <div style={{width:dispW,height:dispH,overflow:"hidden",
-                          backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
-                          backgroundSize:bgW+"px "+bgH+"px",
-                          backgroundPosition:posX+"px "+posY+"px",backgroundRepeat:"no-repeat"}}/>
-                        <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
-                          color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
-                      </div>
-                    );
-                  })}
-                </div>
+          {/* TAB: SPECIES */}
+          {pTab==="species"&&(
+            <div>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
+                <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");setEnhanced("");}}
+                  style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                    border:"2px solid "+(!vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
+                    background:!vpIsFantasy?"var(--acdim)":"transparent",color:!vpIsFantasy?"var(--acc)":"#fff"}}>
+                  Real animal
+                </button>
+                <button onClick={()=>{setVpIsFantasy(true);setVpSpecies("dragon");setEnhanced("");}}
+                  style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                    border:"2px solid "+(vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
+                    background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"#fff"}}>
+                  Fantasy creature
+                </button>
               </div>
-            )}
 
-            {/* Fantasy: empathy + size */}
-            {vpIsFantasy&&(
-              <>
-                <SL>Mood / Empathy</SL>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-                  <button onClick={()=>{setVpEmpathy("");setEnhanced("");}}
-                    style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
-                      border:"2px solid "+(vpEmpathy===""?"var(--acc)":"rgba(255,255,255,.2)"),
-                      background:vpEmpathy===""?"var(--acdim)":"transparent",
-                      display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
-                    <span style={{fontSize:24}}>—</span>
-                    <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>None</span>
-                  </button>
-                  {EMPATHY_STYLES.map(e=>(
-                    <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
+              {!vpIsFantasy&&(
+                <>
+                  <SL>Species</SL>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                    {PET_REAL_SPRITES.map(sp=>(
+                      <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setVpBreed("");setEnhanced("");}}
+                        style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                          border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                          background:"var(--s1)",transition:"all .15s"}}>
+                        <div style={{width:100,height:100,overflow:"hidden",
+                          backgroundImage:"url(/pet-species-real.png)",
+                          backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
+                        <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
+                          color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {vpIsFantasy&&(
+                <>
+                  <SL>Creature</SL>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                    {PET_FANTASY_SPRITES.map(sp=>(
+                      <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setEnhanced("");}}
+                        style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                          border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                          background:"var(--s1)",transition:"all .15s"}}>
+                        <div style={{width:100,height:98,overflow:"hidden",
+                          backgroundImage:"url(/pet-species-fantasy.png)",
+                          backgroundSize:"700px 98px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                        <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
+                          color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {!vpIsFantasy&&spData.breedSprites&&(
+                <div style={{marginBottom:16}}>
+                  <SL>Breed</SL>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                    {spData.breedSprites.map(b=>{
+                      let srcCellW,srcCellH,srcCols,srcRows,dispW,dispH;
+                      if(vpSpecies==="dog"){srcCellW=200;srcCellH=200;srcCols=10;srcRows=2;dispW=158;dispH=158;}
+                      else if(vpSpecies==="cat"){srcCellW=222;srcCellH=218;srcCols=9;srcRows=2;dispW=158;dispH=154;}
+                      else{srcCellW=333;srcCellH=327;srcCols=6;srcRows=1;dispW=190;dispH=185;}
+                      const scale=dispW/srcCellW;
+                      const bgW=Math.round(srcCellW*srcCols*scale);
+                      const bgH=Math.round(srcCellH*srcRows*scale);
+                      const colIdx=Math.round(Math.abs(b.sx)/(vpSpecies==="horse"?130:100));
+                      const rowIdx=b.sy&&b.sy<0?1:0;
+                      const posX=-(colIdx*dispW);
+                      const posY=-(rowIdx*dispH);
+                      return(
+                        <div key={b.id} onClick={()=>{setVpBreed(b.id);setEnhanced("");}}
+                          style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                            border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                            boxShadow:vpBreed===b.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                            background:"var(--s1)",transition:"all .15s",width:dispW,flexShrink:0}}>
+                          <div style={{width:dispW,height:dispH,overflow:"hidden",
+                            backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
+                            backgroundSize:bgW+"px "+bgH+"px",
+                            backgroundPosition:posX+"px "+posY+"px",backgroundRepeat:"no-repeat"}}/>
+                          <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
+                            color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {vpIsFantasy&&(
+                <>
+                  <SL>Mood / Empathy</SL>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+                    <button onClick={()=>{setVpEmpathy("");setEnhanced("");}}
                       style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
-                        border:"2px solid "+(vpEmpathy===e.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                        background:vpEmpathy===e.id?"var(--acdim)":"transparent",
+                        border:"2px solid "+(vpEmpathy===""?"var(--acc)":"rgba(255,255,255,.2)"),
+                        background:vpEmpathy===""?"var(--acdim)":"transparent",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
-                      <span style={{fontSize:24}}>{e.emoji}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"#fff"}}>{e.label}</span>
+                      <span style={{fontSize:24}}>—</span>
+                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>None</span>
                     </button>
-                  ))}
+                    {EMPATHY_STYLES.map(e=>(
+                      <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
+                        style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
+                          border:"2px solid "+(vpEmpathy===e.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          background:vpEmpathy===e.id?"var(--acdim)":"transparent",
+                          display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
+                        <span style={{fontSize:24}}>{e.emoji}</span>
+                        <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"#fff"}}>{e.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <SL>Size</SL>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
+                      {["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"].map(s=>(
+                        <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* TAB: LOOK */}
+          {pTab==="look"&&(
+            <div>
+              {!vpIsFantasy&&spData.hasCoat&&(
+                <div style={{marginBottom:16}}>
+                  <SL>Coat</SL>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Type</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        <Pill active={vpCoatType===""} onClick={()=>{setVpCoatType("");setEnhanced("");}}>— none</Pill>
+                        {PET_COAT_TYPES.map(t=><Pill key={t} active={vpCoatType===t} onClick={()=>{setVpCoatType(t);setEnhanced("");}}>{t}</Pill>)}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Pattern</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        <Pill active={vpCoatPattern===""} onClick={()=>{setVpCoatPattern("");setEnhanced("");}}>— none</Pill>
+                        {PET_COAT_PATTERNS.map(t=><Pill key={t} active={vpCoatPattern===t} onClick={()=>{setVpCoatPattern(t);setEnhanced("");}}>{t}</Pill>)}
+                      </div>
+                    </div>
+                  </div>
+                  <input placeholder="Colors (e.g. golden, white chest)" value={vpCoatColors}
+                    onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
+                    style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+                </div>
+              )}
+              {spData.hasTail&&(
+                <div style={{marginBottom:16}}>
+                  <SL>Tail</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <Pill active={vpTail===""} onClick={()=>{setVpTail("");setEnhanced("");}}>— none</Pill>
+                    {PET_TAIL_TYPES.map(t=><Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>)}
+                  </div>
+                </div>
+              )}
+              {spData.hasEars&&(
+                <div style={{marginBottom:16}}>
+                  <SL>Ears</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <Pill active={vpEars===""} onClick={()=>{setVpEars("");setEnhanced("");}}>— none</Pill>
+                    {(spData.earOptions||PET_EAR_TYPES).map(t=><Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>)}
+                  </div>
+                </div>
+              )}
+              {spData.hasBeak&&(
+                <div style={{marginBottom:16}}>
+                  <SL>Beak</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    {spData.beakOptions.map(t=><Pill key={t} active={vpBeak===t} onClick={()=>{setVpBeak(t);setEnhanced("");}}>{t}</Pill>)}
+                  </div>
+                </div>
+              )}
+              {vpIsFantasy&&(
+                <>
+                  {spData.hasWings&&(
+                    <div style={{marginBottom:16}}>
+                      <SL>Wings</SL>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {["folded","spread","in flight","tattered","glowing"].map(t=>(
+                          <Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {spData.hasHorns&&(
+                    <div style={{marginBottom:16}}>
+                      <SL>Horns</SL>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {["small","curved","spiral","massive","jagged","glowing"].map(t=>(
+                          <Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div style={{marginBottom:16}}>
+                    <SL>Color / fur / scales</SL>
+                    <input placeholder="e.g. purple fur with orange horns, iridescent scales"
+                      value={vpCoatColors} onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
+                      style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+                  </div>
+                </>
+              )}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <div>
+                  <SL>Pose</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <Pill active={vpPose===""} onClick={()=>{setVpPose("");setEnhanced("");}}>— none</Pill>
+                    {poses.map(p=><Pill key={p} active={vpPose===p} onClick={()=>{setVpPose(p);setEnhanced("");}}>{p}</Pill>)}
+                  </div>
                 </div>
                 <div>
-                  <SL>Size</SL>
-                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                    <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
-                    {["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"].map(s=>(
-                      <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
+                  <SL>Gaze</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    <Pill active={vpGaze===""} onClick={()=>{setVpGaze("");setEnhanced("");}}>— none</Pill>
+                    {["toward viewer","toward owner / hand","into distance","at product"].map(g=>(
+                      <Pill key={g} active={vpGaze===g} onClick={()=>{setVpGaze(g);setEnhanced("");}}>{g}</Pill>
                     ))}
                   </div>
                 </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* TAB: LOOK — universal: real animals + fantasy creatures */}
-        {pTab==="look"&&(
-          <div>
-            {/* Coat — real animals only */}
-            {!vpIsFantasy&&spData.hasCoat&&(
-              <div style={{marginBottom:16}}>
-                <SL>Coat</SL>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Type</div>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      <Pill active={vpCoatType===""} onClick={()=>{setVpCoatType("");setEnhanced("");}}>— none</Pill>
-                      {PET_COAT_TYPES.map(t=><Pill key={t} active={vpCoatType===t} onClick={()=>{setVpCoatType(t);setEnhanced("");}}>{t}</Pill>)}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Pattern</div>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      <Pill active={vpCoatPattern===""} onClick={()=>{setVpCoatPattern("");setEnhanced("");}}>— none</Pill>
-                      {PET_COAT_PATTERNS.map(t=><Pill key={t} active={vpCoatPattern===t} onClick={()=>{setVpCoatPattern(t);setEnhanced("");}}>{t}</Pill>)}
-                    </div>
-                  </div>
-                </div>
-                <input placeholder="Colors (e.g. golden, white chest)" value={vpCoatColors}
-                  onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
-                  style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
-              </div>
-            )}
-            {/* Tail */}
-            {spData.hasTail&&(
-              <div style={{marginBottom:16}}>
-                <SL>Tail</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  <Pill active={vpTail===""} onClick={()=>{setVpTail("");setEnhanced("");}}>— none</Pill>
-                  {PET_TAIL_TYPES.map(t=><Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>)}
-                </div>
-              </div>
-            )}
-            {/* Ears */}
-            {spData.hasEars&&(
-              <div style={{marginBottom:16}}>
-                <SL>Ears</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  <Pill active={vpEars===""} onClick={()=>{setVpEars("");setEnhanced("");}}>— none</Pill>
-                  {(spData.earOptions||PET_EAR_TYPES).map(t=><Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>)}
-                </div>
-              </div>
-            )}
-            {/* Beak */}
-            {spData.hasBeak&&(
-              <div style={{marginBottom:16}}>
-                <SL>Beak</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  {spData.beakOptions.map(t=><Pill key={t} active={vpBeak===t} onClick={()=>{setVpBeak(t);setEnhanced("");}}>{t}</Pill>)}
-                </div>
-              </div>
-            )}
-            {/* Fantasy extras */}
-            {vpIsFantasy&&(
-              <>
-                {spData.hasWings&&(
-                  <div style={{marginBottom:16}}>
-                    <SL>Wings</SL>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {["folded","spread","in flight","tattered","glowing"].map(t=>(
-                        <Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {spData.hasHorns&&(
-                  <div style={{marginBottom:16}}>
-                    <SL>Horns</SL>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {["small","curved","spiral","massive","jagged","glowing"].map(t=>(
-                        <Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div style={{marginBottom:16}}>
-                  <SL>Color / fur / scales</SL>
-                  <input placeholder="e.g. purple fur with orange horns, iridescent scales"
-                    value={vpCoatColors} onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
-                    style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
-                </div>
-              </>
-            )}
-            {/* Pose & Gaze — universal */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-              <div>
-                <SL>Pose</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  <Pill active={vpPose===""} onClick={()=>{setVpPose("");setEnhanced("");}}>— none</Pill>
-                  {poses.map(p=><Pill key={p} active={vpPose===p} onClick={()=>{setVpPose(p);setEnhanced("");}}>{p}</Pill>)}
-                </div>
-              </div>
-              <div>
-                <SL>Gaze</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  <Pill active={vpGaze===""} onClick={()=>{setVpGaze("");setEnhanced("");}}>— none</Pill>
-                  {["toward viewer","toward owner / hand","into distance","at product"].map(g=>(
-                    <Pill key={g} active={vpGaze===g} onClick={()=>{setVpGaze(g);setEnhanced("");}}>{g}</Pill>
-                  ))}
-                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* TAB: ACCESSORIES */}
-        {pTab==="accessories"&&(
-          <div>
+          {/* TAB: COMPANION */}
+          {pTab==="companion"&&(
+            <div>
+              <SL>Who is in the scene?</SL>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+                {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Virtual person"}].map(m=>(
+                  <button key={m.id} onClick={()=>{setCompanionMode(m.id);setEnhanced("");}}
+                    style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"center",
+                      border:"2px solid "+(companionMode===m.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                      background:companionMode===m.id?"var(--acdim)":"transparent"}}>
+                    <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
+                    <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{m.sub}</div>
+                  </button>
+                ))}
+              </div>
+              {companionMode==="animal"&&(
+                <>
+                  <SL>Second animal</SL>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8,marginBottom:16}}>
+                    {PET_SPECIES_REAL.filter(s=>s.id!==vpSpecies).map(sp=>(
+                      <button key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
+                        style={{padding:"12px 6px 8px",borderRadius:10,cursor:"pointer",
+                          border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          background:companionSpecies===sp.id?"var(--acdim)":"transparent",
+                          display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                        <span style={{fontSize:24}}>{sp.emoji}</span>
+                        <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              {companionMode==="human"&&(
+                <div style={{padding:"12px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)",marginBottom:16}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:"var(--acc)",marginBottom:10}}>Virtual person</div>
+                  <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>VISIBILITY</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>(
+                          <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>ACTION</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>(
+                          <Pill key={o.v} active={vhAction===o.v} onClick={()=>setVhAction(o.v)}>{o.l}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>STYLE</div>
+                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                        {[{v:"casual",l:"Casual"},{v:"outdoorsy",l:"Outdoorsy"},{v:"smart_casual",l:"Smart casual"}].map(o=>(
+                          <Pill key={o.v} active={vhStyle===o.v} onClick={()=>setVhStyle(o.v)}>{o.l}</Pill>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {companionMode!=="alone"&&(
+                <div>
+                  <SL>Interaction</SL>
+                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                    {(companionMode==="animal"
+                      ?["playing together","lying side by side","sniffing each other","chasing","sleeping together","looking at each other"]
+                      :["petting","holding leash","giving treat","playing","hugging","kneeling with","lifting up"]
+                    ).map(i=>(
+                      <Pill key={i} active={companionInteraction===i} onClick={()=>{setCompanionInteraction(i);setEnhanced("");}}>{i}</Pill>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 4. ACCESSORIES — always available, collapsible */}
+      <div className="sec" style={{borderRadius:10,border:"1px solid var(--bd)",overflow:"hidden",marginBottom:28}}>
+        <div onClick={()=>setAccOpen(v=>!v)}
+          style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",cursor:"pointer",background:"var(--s1)",userSelect:"none"}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:20}}>🛍</span>
+            <div>
+              <div style={{fontSize:13,fontWeight:700}}>Accessories & Product placement</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginTop:1}}>Optional — add collar, harness, toy or showcase a product</div>
+            </div>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {(accProductDesc||accCreativeDesc||accSelected.length>0)&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--acc)",color:"#000",fontWeight:700}}>ACTIVE</span>}
+            <span style={{fontSize:13,color:"rgba(255,255,255,.5)",transition:"transform .2s",display:"inline-block",transform:accOpen?"rotate(180deg)":"none"}}>▼</span>
+          </div>
+        </div>
+        {accOpen&&(
+          <div style={{padding:"16px 18px",borderTop:"1px solid var(--bd)"}}>
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               <button onClick={()=>{setAccMode("product");setEnhanced("");}}
-                style={{flex:1,padding:"11px 16px",borderRadius:8,cursor:"pointer",textAlign:"left",
-                  border:"2px solid "+(accMode==="product"?"var(--acc)":"var(--bd)"),
-                  background:accMode==="product"?"var(--acdim)":"var(--s1)"}}>
+                style={{flex:1,padding:"10px 14px",borderRadius:8,cursor:"pointer",textAlign:"left",
+                  border:"2px solid "+(accMode==="product"?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:accMode==="product"?"var(--acdim)":"transparent"}}>
                 <div style={{fontSize:12,fontWeight:800,color:accMode==="product"?"var(--acc)":"#fff"}}>🛍 Product Placement</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3}}>Product is the hero — animal is context</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginTop:2}}>Product is hero — pet is context</div>
               </button>
               <button onClick={()=>{setAccMode("standard");setEnhanced("");}}
-                style={{flex:1,padding:"11px 16px",borderRadius:8,cursor:"pointer",textAlign:"left",
-                  border:"2px solid "+(accMode==="standard"?"var(--acc)":"var(--bd)"),
-                  background:accMode==="standard"?"var(--acdim)":"var(--s1)"}}>
+                style={{flex:1,padding:"10px 14px",borderRadius:8,cursor:"pointer",textAlign:"left",
+                  border:"2px solid "+(accMode==="standard"?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:accMode==="standard"?"var(--acdim)":"transparent"}}>
                 <div style={{fontSize:12,fontWeight:800,color:accMode==="standard"?"var(--acc)":"#fff"}}>🐾 Standard Accessories</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3}}>Animal is hero — accessories are additions</div>
+                <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginTop:2}}>Pet is hero — accessories are additions</div>
               </button>
             </div>
 
             {accMode==="product"&&(
               <>
-                {/* Depth handler */}
-                <div style={{marginBottom:16}}>
-                  <SL>How is the product presented?</SL>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                    {[
-                      {id:"virtual_hand",label:"🤲 Hand presenting",  sub:"anonymous hand holds/extends product toward pet"},
-                      {id:"pet_wearing",  label:"🐾 Pet wearing it",   sub:"animal wears/uses product, product sharp focus"},
-                      {id:"attaching",    label:"🔗 Being attached",   sub:"hands attaching product to pet — trust moment"},
-                    ].map(d=>(
-                      <button key={d.id} onClick={()=>{setAccDepthHandler(d.id);setEnhanced("");}}
-                        style={{flex:"1 1 160px",padding:"10px 12px",borderRadius:8,cursor:"pointer",textAlign:"left",
-                          border:"2px solid "+(accDepthHandler===d.id?"var(--acc)":"var(--bd)"),
-                          background:accDepthHandler===d.id?"var(--acdim)":"var(--s1)"}}>
-                        <div style={{fontSize:12,fontWeight:700,color:accDepthHandler===d.id?"var(--acc)":"#fff"}}>{d.label}</div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3,lineHeight:1.4}}>{d.sub}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Primary product select */}
-                {accList.length>0&&(
-                  <div style={{marginBottom:14}}>
-                    <SL>Product type (optional)</SL>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {accList.map(a=>(
-                        <Pill key={a.id} active={accPrimary===a.id}
-                          onClick={()=>{setAccPrimary(p=>p===a.id?"":a.id);setEnhanced("");}}>
-                          {a.name}
-                        </Pill>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {/* Existing vs creative */}
-                <div style={{marginBottom:12,display:"flex",gap:8}}>
+                <div style={{marginBottom:12,display:"flex",gap:8,flexWrap:"wrap"}}>
                   <Pill active={accProductMode==="existing"} onClick={()=>{setAccProductMode("existing");setEnhanced("");}}>Existing product</Pill>
                   <Pill active={accProductMode==="creative"} onClick={()=>{setAccProductMode("creative");setEnhanced("");}}>Creative concept 🚀</Pill>
                 </div>
@@ -4298,15 +4296,32 @@ function PetPage(){
                     placeholder="Describe the product: 'brown leather collar, silver D-ring, slightly worn, artisan stitching'"/>
                 ):(
                   <textarea rows={2} value={accCreativeDesc} onChange={e=>{setAccCreativeDesc(e.target.value);setEnhanced("");}}
-                    placeholder="Describe your concept: 'modular GPS collar with LED strip, matte black, cyberpunk aesthetic' — AI designs it as a real product"/>
+                    placeholder="Describe your concept: 'modular GPS collar with LED strip, matte black, cyberpunk' — AI designs it as a real product"/>
                 )}
-                {/* Virtual person for hand presenting */}
-                {accDepthHandler==="virtual_hand"&&!hasHumanPhoto&&(
-                  <div style={{marginTop:14,padding:"12px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)"}}>
-                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:"var(--acc)",marginBottom:10}}>Virtual hand — style</div>
+                <div style={{marginTop:12}}>
+                  <SL>How is it presented?</SL>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {[
+                      {id:"virtual_hand",label:"🤲 Hand presenting",  sub:"hand holds/extends product toward pet"},
+                      {id:"pet_wearing",  label:"🐾 Pet wearing it",   sub:"product worn/used, animal sharp focus"},
+                      {id:"attaching",    label:"🔗 Being attached",   sub:"hands attaching product — trust moment"},
+                    ].map(d=>(
+                      <button key={d.id} onClick={()=>{setAccDepthHandler(d.id);setEnhanced("");}}
+                        style={{flex:"1 1 160px",padding:"10px 12px",borderRadius:8,cursor:"pointer",textAlign:"left",
+                          border:"2px solid "+(accDepthHandler===d.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          background:accDepthHandler===d.id?"var(--acdim)":"transparent"}}>
+                        <div style={{fontSize:12,fontWeight:700,color:accDepthHandler===d.id?"var(--acc)":"#fff"}}>{d.label}</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginTop:3,lineHeight:1.4}}>{d.sub}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {accDepthHandler==="virtual_hand"&&source!=="pet_human"&&(
+                  <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)"}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,color:"var(--acc)",marginBottom:8}}>Virtual hand style</div>
                     <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
                       <div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:5}}>VISIBILITY</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>VISIBILITY</div>
                         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                           {[{v:"hands_only",l:"Hands only"},{v:"upper_body",l:"Upper body"},{v:"implied",l:"Implied"}].map(o=>(
                             <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
@@ -4314,7 +4329,7 @@ function PetPage(){
                         </div>
                       </div>
                       <div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:5}}>STYLE</div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>STYLE</div>
                         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                           {[{v:"casual",l:"Casual"},{v:"outdoorsy",l:"Outdoorsy"},{v:"smart_casual",l:"Smart casual"}].map(o=>(
                             <Pill key={o.v} active={vhStyle===o.v} onClick={()=>setVhStyle(o.v)}>{o.l}</Pill>
@@ -4330,10 +4345,9 @@ function PetPage(){
             {accMode==="standard"&&(
               <>
                 <SL>Select accessories</SL>
-                {/* Group by category */}
                 {[...new Set(accList.map(a=>a.cat))].map(cat=>(
                   <div key={cat} style={{marginBottom:12}}>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.72)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{cat}</div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.65)",textTransform:"uppercase",letterSpacing:1,marginBottom:6}}>{cat}</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                       {accList.filter(a=>a.cat===cat).map(a=>(
                         <Pill key={a.id} active={accSelected.includes(a.id)} onClick={()=>{toggleAccSel(a.id);setEnhanced("");}}>
@@ -4347,315 +4361,184 @@ function PetPage(){
             )}
           </div>
         )}
-
-        {/* TAB: COMPANION */}
-        {pTab==="companion"&&(
-          <div>
-            <SL>Who is in the scene?</SL>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
-              {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Person in scene"}].map(m=>(
-                <button key={m.id} onClick={()=>{setCompanionMode(m.id);setEnhanced("");}}
-                  style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"center",
-                    border:"2px solid "+(companionMode===m.id?"var(--acc)":"var(--bd)"),
-                    background:companionMode===m.id?"var(--acdim)":"var(--s1)"}}>
-                  <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
-                  <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:2}}>{m.sub}</div>
-                </button>
-              ))}
-            </div>
-
-            {companionMode==="animal"&&(
-              <>
-                <SL>Second animal</SL>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8,marginBottom:16}}>
-                  {PET_SPECIES_REAL.filter(s=>s.id!==vpSpecies).map(sp=>(
-                    <button key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
-                      style={{padding:"12px 6px 8px",borderRadius:10,cursor:"pointer",
-                        border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"var(--bd)"),
-                        background:companionSpecies===sp.id?"var(--acdim)":"var(--s1)",
-                        display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                      <span style={{fontSize:24}}>{sp.emoji}</span>
-                      <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {companionMode==="human"&&(
-              <div style={{padding:"12px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)",marginBottom:16}}>
-                <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:"var(--acc)",marginBottom:10}}>Virtual person</div>
-                <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:5}}>VISIBILITY</div>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>(
-                        <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:5}}>ACTION</div>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>(
-                        <Pill key={o.v} active={vhAction===o.v} onClick={()=>setVhAction(o.v)}>{o.l}</Pill>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:5}}>STYLE</div>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {[{v:"casual",l:"Casual"},{v:"outdoorsy",l:"Outdoorsy"},{v:"smart_casual",l:"Smart casual"}].map(o=>(
-                        <Pill key={o.v} active={vhStyle===o.v} onClick={()=>setVhStyle(o.v)}>{o.l}</Pill>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {companionMode!=="alone"&&(
-              <div>
-                <SL>Interaction</SL>
-                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                  {(companionMode==="animal"
-                    ?["playing together","lying side by side","sniffing each other","chasing","sleeping together","looking at each other"]
-                    :["petting","holding leash","giving treat","playing","hugging","kneeling with","lifting up"]
-                  ).map(i=>(
-                    <Pill key={i} active={companionInteraction===i} onClick={()=>{setCompanionInteraction(i);setEnhanced("");}}>{i}</Pill>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
       </div>
 
-
-      {/* SCENE PARAMETERS — always visible */}
+      {/* 5. SCENE PARAMETERS */}
       <div className="sec">
         <div className="sh"><span className="st">Scene parameters</span></div>
-        <div style={{fontSize:11,color:"rgba(255,255,255,.72)",marginBottom:16,padding:"8px 12px",borderRadius:6,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)",lineHeight:1.6}}>
-          ⚙ Applied to the generated scene. People from reference photos are replaced by virtual figures — only environment and props are preserved.
+        <div style={{fontSize:11,color:"rgba(255,255,255,.7)",marginBottom:16,padding:"8px 12px",borderRadius:6,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)",lineHeight:1.6}}>
+          ⚙ Applied to the generated scene. People from reference photos are replaced by virtual figures.
         </div>
-          <div style={{marginBottom:22}}>
-            <SL>Lighting</SL>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-              {LIGHT_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>{tog1(setLight,r.id);setEnhanced("");}}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
-                    border:"2px solid "+(light===r.id?"var(--acc)":"var(--bd)"),
-                    boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
-                  <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:light===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{marginBottom:22}}>
-            <SL>Environment</SL>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-              {ENV_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>{tog1(setBg,r.id);setEnhanced("");}}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:133,
-                    border:"2px solid "+(bg===r.id?"var(--acc)":"var(--bd)"),
-                    boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
-                  <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:bg===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{marginBottom:22}}>
-            <SL>Lens</SL>
-            <div className="lens-row">
-              {LENS_SPRITES.map(r=>(
-                <div key={r.mm} onClick={()=>{tog1(setLens,r.mm);setEnhanced("");}}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
-                    border:"2px solid "+(lens===r.mm?"var(--acc)":"var(--bd)"),
-                    boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none"}}>
-                  <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:lens===r.mm?"var(--acc)":"#fff"}} translate="no">{r.mm}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:22}}>
-            <div style={{flex:"1 1 280px"}}>
-              <SL>Film Stock</SL>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {FILM_SPRITES.map(r=>(
-                  <div key={r.id} onClick={()=>{tog1(setFilmStock,r.id);setEnhanced("");}}
-                    style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
-                      border:"2px solid "+(filmStock===r.id?"var(--acc)":"var(--bd)"),
-                      boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
-                    <div style={{width:150,height:167,backgroundImage:"url(/film.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:filmStock===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
-                  </div>
-                ))}
+        <div style={{marginBottom:22}}>
+          <SL>Lighting</SL>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {LIGHT_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>{tog1(setLight,r.id);setEnhanced("");}}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+                  border:"2px solid "+(light===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                  boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:light===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
               </div>
-            </div>
-            <div style={{flex:"1 1 280px"}}>
-              <SL>Color Grade</SL>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {COLOR_SPRITES.map(r=>(
-                  <div key={r.id} onClick={()=>{tog1(setColorGrade,r.id);setEnhanced("");}}
-                    style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
-                      border:"2px solid "+(colorGrade===r.id?"var(--acc)":"var(--bd)"),
-                      boxShadow:colorGrade===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
-                    <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:colorGrade===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div>
-            <SL>Aspect Ratio</SL>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-              {FORMAT_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>{setAspectRatio(r.id);setEnhanced("");}}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:r.fw,
-                    border:"2px solid "+(aspectRatio===r.id?"var(--acc)":"var(--bd)"),
-                    boxShadow:aspectRatio===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                    display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
-                  <div style={{width:80,height:80,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px"}}/>
-                  <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-      </div>
-
-      {/* OUTPUT — always visible */}
-      <div className="sec">
-        <div className="sh"><span className="st">Output</span></div>
-          <SL>Output layout</SL>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
-            {[...PET_OUTPUT_LAYOUTS,{id:"multi_custom",name:"Custom Multi-Shot",icon:"🎬",desc:"Pick angles manually + 3D camera"}].map(l=>(
-              <button key={l.id} onClick={()=>{setOutputLayout(l.id);setEnhanced("");}}
-                style={{flex:"1 1 140px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"left",
-                  border:"2px solid "+(outputLayout===l.id?"var(--acc)":"var(--bd)"),
-                  background:outputLayout===l.id?"var(--acdim)":"var(--s1)"}}>
-                <div style={{fontSize:18,marginBottom:5}}>{l.icon}</div>
-                <div style={{fontSize:12,fontWeight:800,color:outputLayout===l.id?"var(--acc)":"#fff"}}>{l.name}</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3,lineHeight:1.4}}>{l.desc}</div>
-              </button>
             ))}
           </div>
-          {outputLayout==="multi_custom"&&(
-            <>
-              <SL>Camera angles ({sel.length}/{MAX_A})</SL>
-              <div className="grid3" style={{marginBottom:20}}>
-                {ANGLES.map((a,i)=>(
-                  <div key={i} className={`ac${sel.includes(i)?" sel":""}`} onClick={()=>togAngle(i)}>
-                    <div className="abar"/>
-                    <div className="an">{a.name}</div>
-                    {sel.includes(i)&&<div className="anum">{sel.indexOf(i)+1}</div>}
-                  </div>
-                ))}
+        </div>
+        <div style={{marginBottom:22}}>
+          <SL>Environment</SL>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {ENV_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>{tog1(setBg,r.id);setEnhanced("");}}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:133,
+                  border:"2px solid "+(bg===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                  boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:bg===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
               </div>
-              <div onClick={()=>{setUse3D(v=>!v);}} style={{cursor:"pointer"}}>
-                <div className="sh">
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <span className="st">3D Camera Control</span>
-                    <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,padding:"2px 7px",borderRadius:3,border:"1px solid var(--bd)",color:"#fff"}}>BETA</span>
-                  </div>
-                  <div onClick={e=>{e.stopPropagation();setUse3D(v=>!v);}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",userSelect:"none"}}>
-                    <span style={{fontSize:11,color:use3D?"var(--acc)":"#fff"}}>{use3D?"Active — panel 1":"Disabled"}</span>
-                    <div style={{width:44,height:24,borderRadius:12,position:"relative",background:use3D?"#e8780a":"var(--s3)",border:"1px solid "+(use3D?"#e8780a":"var(--bd)"),transition:"all .2s",flexShrink:0}}>
-                      <div style={{position:"absolute",top:4,left:use3D?24:4,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
-                    </div>
-                  </div>
-                </div>
-                <div className="ctrl3d">
-                  <div className="ctrl3d-body">
-                    <Viewport3D azimuth={cam.azimuth} elevation={cam.elevation} zoom={cam.zoom} onChange={setCam} active={use3D}/>
-                    <div className="ctrl3d-panel">
-                      <div className="presets">
-                        <div className="preset-label">Quick Presets</div>
-                        <div className="preset-grid">
-                          {PRESETS_3D.map(pr=>(
-                            <button key={pr.label} className="preset-btn" onClick={()=>setCam(p=>({...p,azimuth:pr.az,elevation:pr.el}))}>{pr.label}</button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="sliders">
-                        {[
-                          {label:"Rotation",key:"azimuth",min:-180,max:180,unit:"°",get:p=>Math.round(((p.azimuth+180)%360)-180)},
-                          {label:"Tilt",key:"elevation",min:-90,max:90,unit:"°",get:p=>Math.round(p.elevation)},
-                          {label:"Distance",key:"zoom",min:1,max:25,unit:"m",get:p=>Math.round(p.zoom)},
-                        ].map(sl=>(
-                          <div key={sl.key} className="slider-row">
-                            <div className="slider-hdr"><span className="slider-label">{sl.label}</span><span className="slider-val">{sl.get(cam)>0&&sl.key!=="zoom"?"+":""}{sl.get(cam)}{sl.unit}</span></div>
-                            <input type="range" min={sl.min} max={sl.max} step={1} value={sl.get(cam)}
-                              onChange={e=>{const v=Number(e.target.value);setCam(p=>({...p,[sl.key]:sl.key==="azimuth"?((v+360)%360):v}));}}/>
-                          </div>
-                        ))}
-                      </div>
-                      {use3D&&<div className="angle-desc">{describe3D(cam.azimuth,cam.elevation,cam.zoom)}</div>}
-                    </div>
-                  </div>
-                </div>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:22}}>
+          <SL>Lens</SL>
+          <div className="lens-row">
+            {LENS_SPRITES.map(r=>(
+              <div key={r.mm} onClick={()=>{tog1(setLens,r.mm);setEnhanced("");}}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+                  border:"2px solid "+(lens===r.mm?"var(--acc)":"rgba(255,255,255,.2)"),
+                  boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
+                <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:lens===r.mm?"var(--acc)":"#fff"}} translate="no">{r.mm}</div>
               </div>
-            </>
-          )}
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:22}}>
+          <div style={{flex:"1 1 280px"}}>
+            <SL>Film Stock</SL>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {FILM_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>{tog1(setFilmStock,r.id);setEnhanced("");}}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+                    border:"2px solid "+(filmStock===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                    boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/film.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
+                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:filmStock===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:"1 1 280px"}}>
+            <SL>Color Grade</SL>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {COLOR_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>{tog1(setColorGrade,r.id);setEnhanced("");}}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+                    border:"2px solid "+(colorGrade===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                    boxShadow:colorGrade===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
+                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:colorGrade===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div>
+          <SL>Aspect Ratio</SL>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {FORMAT_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>{setAspectRatio(r.id);setEnhanced("");}}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:r.fw,
+                  border:"2px solid "+(aspectRatio===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                  boxShadow:aspectRatio===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                  display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
+                <div style={{width:80,height:80,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px"}}/>
+                <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* CUSTOM */}
+      {/* 6. OUTPUT */}
+      <div className="sec">
+        <div className="sh"><span className="st">Output</span></div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:outputLayout==="multi_custom"?20:0}}>
+          {[...PET_OUTPUT_LAYOUTS,{id:"multi_custom",name:"Custom Multi-Shot",icon:"🎬",desc:"Pick angles + 3D camera"}].map(l=>(
+            <button key={l.id} onClick={()=>{setOutputLayout(l.id);setEnhanced("");}}
+              style={{flex:"1 1 130px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"left",
+                border:"2px solid "+(outputLayout===l.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                background:outputLayout===l.id?"var(--acdim)":"transparent"}}>
+              <div style={{fontSize:18,marginBottom:5}}>{l.icon}</div>
+              <div style={{fontSize:12,fontWeight:800,color:outputLayout===l.id?"var(--acc)":"#fff"}}>{l.name}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginTop:3,lineHeight:1.4}}>{l.desc}</div>
+            </button>
+          ))}
+        </div>
+        {outputLayout==="multi_custom"&&(
+          <>
+            <SL>Camera angles ({sel.length}/{MAX_A})</SL>
+            <div className="grid3" style={{marginBottom:20}}>
+              {ANGLES.map((a,i)=>(
+                <div key={i} className={`ac${sel.includes(i)?" sel":""}`} onClick={()=>togAngle(i)}>
+                  <div className="abar"/>
+                  <div className="an">{a.name}</div>
+                  {sel.includes(i)&&<div className="anum">{sel.indexOf(i)+1}</div>}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 7. ADDITIONAL */}
       <div className="sec">
         <div className="sh"><span className="st">Additional details</span><span className="sb" translate="no">OPTIONAL</span></div>
         <textarea rows={3} value={custom} onChange={e=>{setCustom(e.target.value);setEnhanced("");}}
-          placeholder="Extra requests: 'more dramatic shadows', 'add autumn leaves', 'collar should have a visible name tag'"/>
+          placeholder="Extra requests: 'more dramatic shadows', 'add autumn leaves', 'collar should have visible name tag'"/>
       </div>
 
-      {/* PROMPT OUTPUT */}
+      {/* 8. PROMPT OUTPUT */}
       <div className="sec">
-        <div className="sh"><span className="st">Generated Prompt</span>{hasContent&&<span className="sb" translate="no">LIVE</span>}</div>
-        <div className={`pbox${hasContent?" live":""}`}>
-          {hasContent?(enhanced||prompt):<span className="pbox-empty">Configure options above to generate your composition prompt.</span>}
+        <div className="sh"><span className="st">Generated Prompt</span><span className="sb" translate="no">LIVE</span></div>
+        <div className="pbox live">
+          {enhanced||prompt}
         </div>
         {enhanced&&(
           <div style={{marginTop:8,fontSize:11,color:"var(--acc)",fontWeight:600,letterSpacing:1}}>
-            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"rgba(255,255,255,.72)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert</button>
+            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert</button>
           </div>
         )}
         <div className="pbar" translate="no">
-          <button className="btn" onClick={reset}>Reset</button>
-          <button className="btn" onClick={enhance} disabled={!hasContent||enhancing}
-            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.85)":"var(--acc)",background:"var(--acdim)"}}>
+          <button className="btn" onClick={()=>{setSource("scratch");setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setEnhanced("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
+          <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("✦ ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
+            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)"}}>
             {enhancing?"ENHANCING…":"✦ AI Prompt Enhance"}
           </button>
-          <button className={`btn${hasContent?" pri":""}`} onClick={copy} disabled={!hasContent}>
-            <span translate="no">Copy Prompt</span> <span style={{fontSize:10,opacity:.8,fontWeight:400}}>EN</span>
+          <button className="btn pri" onClick={async()=>{const ok=await copyText(enhanced||prompt);doToast(ok?"COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");}}>
+            <span translate="no">Copy Prompt</span> <span style={{fontSize:10,opacity:.6,fontWeight:400}}>EN</span>
           </button>
         </div>
-        {hasContent&&(
-          <div style={{marginTop:14,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
-            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Generate with</div>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}} translate="no">
-              {GEN_TARGETS.map(t=>(
-                <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
-                  <button className="genwith-btn" onClick={async()=>{await copyText(enhanced||prompt);doToast("PROMPT COPIED — ATTACH YOUR PHOTOS");window.open(t.url,"_blank","noopener,noreferrer");}}>
-                    <span>{t.icon}</span>{t.label} ↗
-                  </button>
-                  {t.warn&&<span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7}}>⚠️</span>}
-                </div>
-              ))}
-            </div>
-            <div style={{borderTop:"1px solid var(--bd)",paddingTop:12,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-              <span style={{fontSize:11,color:"rgba(255,255,255,.72)"}}>💡 Next step:</span>
-              <button onClick={()=>setPage("angles")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                🎬 Multi-Shot — create grid
-              </button>
-              <button onClick={()=>setPage("video")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-                🎥 Video — animate it
-              </button>
-            </div>
+        <div style={{marginTop:14,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Generate with</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}} translate="no">
+            {GEN_TARGETS.map(t=>(
+              <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+                <button className="genwith-btn" onClick={async()=>{await copyText(enhanced||prompt);doToast("PROMPT COPIED — ATTACH YOUR PHOTOS");window.open(t.url,"_blank","noopener,noreferrer");}}>
+                  <span>{t.icon}</span>{t.label} ↗
+                </button>
+                {t.warn&&<span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7}}>⚠️</span>}
+              </div>
+            ))}
           </div>
-        )}
+          <div style={{borderTop:"1px solid var(--bd)",paddingTop:12,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+            <span style={{fontSize:11,color:"rgba(255,255,255,.65)"}}>💡 Next step:</span>
+            <button onClick={()=>setPage("angles")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              🎬 Multi-Shot
+            </button>
+            <button onClick={()=>setPage("video")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              🎥 Video
+            </button>
+          </div>
+        </div>
       </div>
 
       {toast&&<div className="toast">{toast}</div>}
