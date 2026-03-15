@@ -3432,57 +3432,60 @@ const PET_FANTASY_SPRITES=[
   {id:"hellhound",name:"Hellhound",      sx:-500},
   {id:"imp",      name:"Imp",            sx:-600},
 ];
-// pet-breeds-dog.png: 2000×400, 10×2 cells 200×200 → display 100×100 (bgSize 1000×200)
+// pet-breeds-dog.png: 2000×400, 10 cols × 2 rows, each cell 200×200
+// Display: 158×158 → scale=0.79 → bgSize 1580×316 → row0 posY=0, row1 posY=-158, colX=-(col×158)
 const PET_DOG_BREED_SPRITES=[
-  {id:"Golden Retriever",  sx:0,    sy:0,   desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
-  {id:"German Shepherd",   sx:-100, sy:0,   desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
-  {id:"French Bulldog",    sx:-200, sy:0,   desc:"bat ears wide at base, flat face, wrinkled skin, brindle color"},
-  {id:"Labrador",          sx:-300, sy:0,   desc:"broad head, kind expression, floppy ears, short dense coat, chocolate brown"},
-  {id:"Beagle",            sx:-400, sy:0,   desc:"long floppy ears set low, domed head, tricolor black white brown"},
-  {id:"Dachshund",         sx:-500, sy:0,   desc:"long narrow snout, long droopy ears, elongated head, red solid color"},
-  {id:"Husky",             sx:-600, sy:0,   desc:"erect triangular ears, masked face, blue almond-shaped eyes, gray and white"},
-  {id:"Boxer",             sx:-700, sy:0,   desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
-  {id:"Poodle",            sx:-800, sy:0,   desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
-  {id:"Mixed breed",       sx:-900, sy:0,   desc:"medium-sized mixed breed, black with white markings"},
-  {id:"Pomeranian",        sx:0,    sy:-100,desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
-  {id:"Shih Tzu",          sx:-100, sy:-100,desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
-  {id:"Maltese",           sx:-200, sy:-100,desc:"silky pure white coat, black button eyes and nose, small drop ears"},
-  {id:"Cavalier",          sx:-300, sy:-100,desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
-  {id:"Havanese",          sx:-400, sy:-100,desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
-  {id:"Boston Terrier",    sx:-500, sy:-100,desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
-  {id:"Yorkshire Terrier", sx:-600, sy:-100,desc:"small erect ears, long straight silky coat, steel blue and tan color"},
-  {id:"Pug",               sx:-700, sy:-100,desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
-  {id:"Mini Schnauzer",    sx:-800, sy:-100,desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+  {id:"Golden Retriever",  row:0,col:0, desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
+  {id:"German Shepherd",   row:0,col:1, desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
+  {id:"French Bulldog",    row:0,col:2, desc:"bat ears wide at base, flat face, wrinkled skin, brindle color"},
+  {id:"Labrador",          row:0,col:3, desc:"broad head, kind expression, floppy ears, short dense coat, chocolate brown"},
+  {id:"Beagle",            row:0,col:4, desc:"long floppy ears set low, domed head, tricolor black white brown"},
+  {id:"Dachshund",         row:0,col:5, desc:"long narrow snout, long droopy ears, elongated head, red solid color"},
+  {id:"Husky",             row:0,col:6, desc:"erect triangular ears, masked face, blue almond-shaped eyes, gray and white"},
+  {id:"Boxer",             row:0,col:7, desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
+  {id:"Poodle",            row:0,col:8, desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
+  {id:"Mixed breed",       row:0,col:9, desc:"medium-sized mixed breed, black with white markings"},
+  {id:"Pomeranian",        row:1,col:0, desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
+  {id:"Shih Tzu",          row:1,col:1, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
+  {id:"Maltese",           row:1,col:2, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
+  {id:"Cavalier",          row:1,col:3, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
+  {id:"Havanese",          row:1,col:4, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
+  {id:"Boston Terrier",    row:1,col:5, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
+  {id:"Yorkshire Terrier", row:1,col:6, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
+  {id:"Pug",               row:1,col:7, desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
+  {id:"Mini Schnauzer",    row:1,col:8, desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
 ];
-// pet-breeds-cat.png: 2000×437, 9×2 cells 222.2×218.5 → display 100×100 (bgSize 900×197, row2 sy:-98)
+// pet-breeds-cat.png: 2000×437, 9 cols × 2 rows, each cell 222×218
+// Display: 158×154 → scale=0.712 → bgSize 1422×311 → row0 posY=0, row1 posY=-154, colX=-(col×158)
 const PET_CAT_BREED_SPRITES=[
-  {id:"European Shorthair",  sx:0,    sy:0,   desc:"tabby pattern with M marking on forehead, medium upright ears, green eyes, short dense coat"},
-  {id:"Maine Coon",          sx:-100, sy:0,   desc:"large tufted ears with lynx tips, square muzzle, heavy mane and ruff, long shaggy brown tabby coat"},
-  {id:"Persian",             sx:-200, sy:0,   desc:"completely flat brachycephalic face, tiny rounded ears set low, extremely long flowing white coat, large round copper eyes"},
-  {id:"Siamese",             sx:-300, sy:0,   desc:"extreme wedge-shaped triangular head, large triangular ears, deep vivid blue eyes, dark brown points on cream body"},
-  {id:"British Shorthair",   sx:-400, sy:0,   desc:"round massive head with prominent chubby cheeks, round copper eyes, dense plush teddy-bear coat, solid blue-gray"},
-  {id:"Ragdoll",             sx:-500, sy:0,   desc:"large oval brilliant blue eyes, semi-long silky coat, colorpoint with distinctive pure white mittens on paws"},
-  {id:"Sphynx",              sx:-600, sy:0,   desc:"completely hairless wrinkled skin, enormous bat-like ears, lemon-shaped eyes, black skin visible"},
-  {id:"Scottish Fold",       sx:-700, sy:0,   desc:"tiny ears folded forward and downward, round owl-like face, huge round copper eyes, short dense blue-gray coat"},
-  {id:"Bengal",              sx:-800, sy:0,   desc:"dramatic leopard-like spotted and rosette pattern, small wild head, pronounced whisker pads, glittered gold coat"},
-  {id:"Abyssinian",          sx:0,    sy:-98, desc:"ticked coat each hair banded multiple colors ruddy brown with black tipping, large alert ears, elegant wedge head"},
-  {id:"Exotic Shorthair",    sx:-100, sy:-98, desc:"flat face like Persian but short plush coat, large round copper eyes, silver tabby pattern on silver background"},
-  {id:"Burmese",             sx:-200, sy:-98, desc:"glossy satin-like coat, rich sable brown solid color, rounded head with full cheeks, large round gold eyes"},
-  {id:"Russian Blue",        sx:-300, sy:-98, desc:"silver-tipped blue coat that shimmers, triangular head with flat plane, vivid green eyes, large ears wide at base"},
-  {id:"Devon Rex",           sx:-400, sy:-98, desc:"pixie-like elfin head, huge low-set bat ears, wavy and curly short black coat, high prominent cheekbones"},
-  {id:"Turkish Angora",      sx:-500, sy:-98, desc:"long fine silky white coat, elegant wedge head, large pointed ears, brilliant blue eyes"},
-  {id:"Norwegian Forest Cat",sx:-600, sy:-98, desc:"triangular head with long nose, large tufted ears with lynx tips, heavy neck ruff, long water-resistant black and silver tabby coat"},
-  {id:"Birman",              sx:-700, sy:-98, desc:"semi-long silky coat, colorpoint pattern with pure white gloves on all four paws, deep blue eyes, round head with full cheeks"},
-  {id:"Oriental Shorthair",  sx:-800, sy:-98, desc:"extreme wedge-shaped triangular head, hugely exaggerated ears, long slender muzzle, solid black short coat, vivid green eyes"},
+  {id:"European Shorthair",   row:0,col:0, desc:"tabby pattern with M marking on forehead, medium upright ears, green eyes, short dense coat"},
+  {id:"Maine Coon",           row:0,col:1, desc:"large tufted ears with lynx tips, square muzzle, heavy mane and ruff, long shaggy brown tabby coat"},
+  {id:"Persian",              row:0,col:2, desc:"completely flat brachycephalic face, tiny rounded ears set low, extremely long flowing white coat, large round copper eyes"},
+  {id:"Siamese",              row:0,col:3, desc:"extreme wedge-shaped triangular head, large triangular ears, deep vivid blue eyes, dark brown points on cream body"},
+  {id:"British Shorthair",    row:0,col:4, desc:"round massive head with prominent chubby cheeks, round copper eyes, dense plush teddy-bear coat, solid blue-gray"},
+  {id:"Ragdoll",              row:0,col:5, desc:"large oval brilliant blue eyes, semi-long silky coat, colorpoint with distinctive pure white mittens on paws"},
+  {id:"Sphynx",               row:0,col:6, desc:"completely hairless wrinkled skin, enormous bat-like ears, lemon-shaped eyes, black skin visible"},
+  {id:"Scottish Fold",        row:0,col:7, desc:"tiny ears folded forward and downward, round owl-like face, huge round copper eyes, short dense blue-gray coat"},
+  {id:"Bengal",               row:0,col:8, desc:"dramatic leopard-like spotted and rosette pattern, small wild head, pronounced whisker pads, glittered gold coat"},
+  {id:"Abyssinian",           row:1,col:0, desc:"ticked coat each hair banded multiple colors ruddy brown with black tipping, large alert ears, elegant wedge head"},
+  {id:"Exotic Shorthair",     row:1,col:1, desc:"flat face like Persian but short plush coat, large round copper eyes, silver tabby pattern on silver background"},
+  {id:"Burmese",              row:1,col:2, desc:"glossy satin-like coat, rich sable brown solid color, rounded head with full cheeks, large round gold eyes"},
+  {id:"Russian Blue",         row:1,col:3, desc:"silver-tipped blue coat that shimmers, triangular head with flat plane, vivid green eyes, large ears wide at base"},
+  {id:"Devon Rex",            row:1,col:4, desc:"pixie-like elfin head, huge low-set bat ears, wavy and curly short black coat, high prominent cheekbones"},
+  {id:"Turkish Angora",       row:1,col:5, desc:"long fine silky white coat, elegant wedge head, large pointed ears, brilliant blue eyes"},
+  {id:"Norwegian Forest Cat", row:1,col:6, desc:"triangular head with long nose, large tufted ears with lynx tips, heavy neck ruff, long water-resistant black and silver tabby coat"},
+  {id:"Birman",               row:1,col:7, desc:"semi-long silky coat, colorpoint pattern with pure white gloves on all four paws, deep blue eyes, round head with full cheeks"},
+  {id:"Oriental Shorthair",   row:1,col:8, desc:"extreme wedge-shaped triangular head, hugely exaggerated ears, long slender muzzle, solid black short coat, vivid green eyes"},
 ];
-// pet-breeds-horse.png: 2000×327, 6 cells 333.3×327 → display 130×127 (bgSize 780×128)
+// pet-breeds-horse.png: 2000×327, 6 cols × 1 row, each cell 333×327
+// Display: 190×185 → scale=0.570 → bgSize 1140×186 → row0 posY=0, colX=-(col×190)
 const PET_HORSE_BREED_SPRITES=[
-  {id:"Arabian",      sx:0,    desc:"chestnut color, refined dished profile, large nostrils, arched neck, high tail carriage"},
-  {id:"Thoroughbred", sx:-130, desc:"bay color, long elegant neck, lean athletic build, deep chest"},
-  {id:"Quarter Horse",sx:-260, desc:"palomino color, broad forehead, short refined head, muscular compact build"},
-  {id:"Friesian",     sx:-390, desc:"jet black color, thick flowing mane, feathered lower legs, arched powerful neck"},
-  {id:"Appaloosa",    sx:-520, desc:"spotted coat pattern brown spots on light background, strong sturdy build"},
-  {id:"Andalusian",   sx:-650, desc:"grey dappled color, slightly convex profile, thick wavy mane, compact powerful body"},
+  {id:"Arabian",       row:0,col:0, desc:"chestnut color, refined dished profile, large nostrils, arched neck, high tail carriage"},
+  {id:"Thoroughbred",  row:0,col:1, desc:"bay color, long elegant neck, lean athletic build, deep chest"},
+  {id:"Quarter Horse", row:0,col:2, desc:"palomino color, broad forehead, short refined head, muscular compact build"},
+  {id:"Friesian",      row:0,col:3, desc:"jet black color, thick flowing mane, feathered lower legs, arched powerful neck"},
+  {id:"Appaloosa",     row:0,col:4, desc:"spotted coat pattern brown spots on light background, strong sturdy build"},
+  {id:"Andalusian",    row:0,col:5, desc:"grey dappled color, slightly convex profile, thick wavy mane, compact powerful body"},
 ];
 
 const PET_SPECIES_REAL=[
@@ -4209,7 +4212,7 @@ function PetPage(){
                           background:"var(--s1)",transition:"all .15s"}}>
                         <div style={{width:100,height:100,overflow:"hidden",
                           backgroundImage:"url(/pet-species-real.png)",
-                          backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
+                          backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -120px",backgroundRepeat:"no-repeat"}}/>
                         <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
                           color:!vpOtherSpecies&&vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                       </div>
@@ -4299,38 +4302,41 @@ function PetPage(){
                 </>
               )}
 
-              {/* Breed — sprite grid only when a sprite species is selected */}
+              {/* Breed — explicit row/col per sprite line */}
               {!vpIsFantasy&&!vpOtherSpecies&&spData.breedSprites&&(
                 <div style={{marginBottom:24}}>
                   <SL>Breed</SL>
                   {(()=>{
-                    // Use documented native display sizes — sx/sy are direct bgPos values
                     let dW,dH,bgW,bgH;
-                    if(vpSpecies==="dog"){dW=100;dH=100;bgW=1000;bgH=200;}
-                    else if(vpSpecies==="cat"){dW=100;dH=100;bgW=900;bgH=197;}
-                    else{dW=130;dH=127;bgW=780;bgH=128;} // horse
+                    if(vpSpecies==="dog")     {dW=158;dH=158;bgW=1580;bgH=316;}
+                    else if(vpSpecies==="cat"){dW=158;dH=154;bgW=1422;bgH=311;}
+                    else                      {dW=190;dH=185;bgW=1140;bgH=186;}
                     const perRow=vpSpecies==="horse"?5:6;
                     const rows=[];
                     for(let i=0;i<spData.breedSprites.length;i+=perRow)rows.push(spData.breedSprites.slice(i,i+perRow));
                     return rows.map((row,ri)=>(
-                      <div key={ri} style={{display:"flex",gap:6,marginBottom:6}}>
-                        {row.map(b=>(
-                          <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
-                            style={{cursor:"pointer",borderRadius:7,overflow:"hidden",
-                              flexShrink:0,width:dW,
-                              border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                              boxShadow:vpBreed===b.id?"0 0 12px rgba(232,120,10,.4)":"none",
-                              background:"var(--s1)",transition:"all .15s",
-                              opacity:vpBreed&&vpBreed!==b.id?.55:1}}>
-                            <div style={{width:dW,height:dH,
-                              backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
-                              backgroundSize:bgW+"px "+bgH+"px",
-                              backgroundPosition:(b.sx||0)+"px "+(b.sy||0)+"px",
-                              backgroundRepeat:"no-repeat"}}/>
-                            <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:9,fontWeight:600,lineHeight:1.2,
-                              color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
-                          </div>
-                        ))}
+                      <div key={ri} style={{display:"flex",gap:8,marginBottom:8}}>
+                        {row.map(b=>{
+                          const px=-(b.col*dW);
+                          const py=-(b.row*dH);
+                          return(
+                            <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
+                              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                                flexShrink:0,width:dW,
+                                border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                                boxShadow:vpBreed===b.id?"0 0 12px rgba(232,120,10,.4)":"none",
+                                background:"var(--s1)",transition:"all .15s",
+                                opacity:vpBreed&&vpBreed!==b.id?.55:1}}>
+                              <div style={{width:dW,height:dH,
+                                backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
+                                backgroundSize:bgW+"px "+bgH+"px",
+                                backgroundPosition:px+"px "+py+"px",
+                                backgroundRepeat:"no-repeat"}}/>
+                              <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
+                                color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     ));
                   })()}
@@ -4436,7 +4442,7 @@ function PetPage(){
                             background:"var(--s1)",transition:"all .15s"}}>
                           <div style={{width:100,height:100,overflow:"hidden",
                             backgroundImage:"url(/pet-species-real.png)",
-                            backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
+                            backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -120px",backgroundRepeat:"no-repeat"}}/>
                           <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
                             color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                         </div>
