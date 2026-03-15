@@ -3618,11 +3618,14 @@ function PetPage(){
       L.push("SCENE: "+sceneDesc.trim());L.push("");
     }
     if(srcs.length){
-      L.push("MULTI-SOURCE COMPOSITION PROMPT");L.push("");
-      L.push("=== ATTACH THESE REFERENCE IMAGES ===");L.push("");
+      L.push("Generate a photorealistic image using the following reference photos and specifications:");
+      L.push("");
+      L.push("=== ATTACH THESE PHOTOS BEFORE GENERATING ===");
+      L.push("");
       srcs.forEach(s=>L.push(s));L.push("");
     }else{
-      L.push("COMPOSITION PROMPT — FULLY GENERATED");L.push("");
+      L.push("Generate a photorealistic image from scratch based on the following specifications:");
+      L.push("");
     }
 
     // Virtual pet
@@ -3926,9 +3929,8 @@ function PetPage(){
         <div className="sec">
           <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:20,borderBottom:"1px solid var(--bd)",paddingBottom:12}}>
             {[
-              {id:"species",    label:"🐾 Species"},
-              {id:"look",       label:"✨ Look"},
-              {id:"companion",  label:"🤝 Companion"},
+              {id:"species", label:"🐾 Species"},
+              {id:"look",    label:"✨ Look"},
             ].map(t=>(
               <button key={t.id} onClick={()=>setPTab(t.id)}
                 style={{padding:"8px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,transition:"all .15s",
@@ -3942,6 +3944,7 @@ function PetPage(){
           {/* TAB: SPECIES */}
           {pTab==="species"&&(
             <div>
+              {/* Real / Fantasy + Random */}
               <div style={{display:"flex",gap:8,marginBottom:16}}>
                 <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");setEnhanced("");}}
                   style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
@@ -3955,8 +3958,35 @@ function PetPage(){
                     background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"#fff"}}>
                   Fantasy creature
                 </button>
+                <button onClick={()=>{
+                  const allReal=PET_SPECIES_REAL;
+                  const allFantasy=PET_SPECIES_FANTASY;
+                  const useFantasy=Math.random()>.5;
+                  setVpIsFantasy(useFantasy);
+                  if(useFantasy){
+                    const sp=allFantasy[Math.floor(Math.random()*allFantasy.length)];
+                    setVpSpecies(sp.id);
+                    setVpEmpathy(EMPATHY_STYLES[Math.floor(Math.random()*EMPATHY_STYLES.length)].id);
+                    setVpFantasySize(["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"][Math.floor(Math.random()*4)]);
+                  }else{
+                    const sp=allReal[Math.floor(Math.random()*allReal.length)];
+                    setVpSpecies(sp.id);
+                    if(sp.breedSprites){setVpBreed(sp.breedSprites[Math.floor(Math.random()*sp.breedSprites.length)].id);}
+                    setVpCoatType(PET_COAT_TYPES[Math.floor(Math.random()*PET_COAT_TYPES.length)]);
+                    setVpCoatPattern(PET_COAT_PATTERNS[Math.floor(Math.random()*PET_COAT_PATTERNS.length)]);
+                  }
+                  setVpPose((PET_POSES[vpSpecies]||PET_POSES.default)[Math.floor(Math.random()*((PET_POSES[vpSpecies]||PET_POSES.default).length))]);
+                  setVpGaze(["toward viewer","toward owner / hand","into distance","at product"][Math.floor(Math.random()*4)]);
+                  setLight(LIGHT_SPRITES[Math.floor(Math.random()*LIGHT_SPRITES.length)].id);
+                  setEnhanced("");
+                }}
+                  style={{padding:"10px 16px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                    border:"2px solid rgba(255,255,255,.2)",background:"transparent",color:"rgba(255,255,255,.8)"}}>
+                  🎲 Random
+                </button>
               </div>
 
+              {/* Real species */}
               {!vpIsFantasy&&(
                 <>
                   <SL>Species</SL>
@@ -3978,6 +4008,7 @@ function PetPage(){
                 </>
               )}
 
+              {/* Fantasy species */}
               {vpIsFantasy&&(
                 <>
                   <SL>Creature</SL>
@@ -3999,32 +4030,33 @@ function PetPage(){
                 </>
               )}
 
+              {/* Breed — fixed 6-column grid, correct math */}
               {!vpIsFantasy&&spData.breedSprites&&(
-                <div style={{marginBottom:16}}>
+                <div style={{marginBottom:24}}>
                   <SL>Breed</SL>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                  <div style={{display:"grid",
+                    gridTemplateColumns:vpSpecies==="horse"?"repeat(auto-fill,190px)":"repeat(auto-fill,158px)",
+                    gap:8}}>
                     {spData.breedSprites.map(b=>{
-                      let srcCellW,srcCellH,srcCols,srcRows,dispW,dispH;
-                      if(vpSpecies==="dog"){srcCellW=200;srcCellH=200;srcCols=10;srcRows=2;dispW=158;dispH=158;}
-                      else if(vpSpecies==="cat"){srcCellW=222;srcCellH=218;srcCols=9;srcRows=2;dispW=158;dispH=154;}
-                      else{srcCellW=333;srcCellH=327;srcCols=6;srcRows=1;dispW=190;dispH=185;}
-                      const scale=dispW/srcCellW;
-                      const bgW=Math.round(srcCellW*srcCols*scale);
-                      const bgH=Math.round(srcCellH*srcRows*scale);
-                      const colIdx=Math.round(Math.abs(b.sx)/(vpSpecies==="horse"?130:100));
-                      const rowIdx=b.sy&&b.sy<0?1:0;
-                      const posX=-(colIdx*dispW);
-                      const posY=-(rowIdx*dispH);
+                      let srcCW,srcCH,srcC,srcR,dW,dH;
+                      if(vpSpecies==="dog"){srcCW=200;srcCH=200;srcC=10;srcR=2;dW=158;dH=158;}
+                      else if(vpSpecies==="cat"){srcCW=222;srcCH=218;srcC=9;srcR=2;dW=158;dH=154;}
+                      else{srcCW=333;srcCH=327;srcC=6;srcR=1;dW=190;dH=185;}
+                      const sc=dW/srcCW;
+                      const bgW=Math.round(srcCW*srcC*sc);
+                      const bgH=Math.round(srcCH*srcR*sc);
+                      const ci=Math.round(Math.abs(b.sx)/100); // col index (sx uses -100 step)
+                      const ri=b.sy&&b.sy<0?1:0;
                       return(
                         <div key={b.id} onClick={()=>{setVpBreed(b.id);setEnhanced("");}}
                           style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                             border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
                             boxShadow:vpBreed===b.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                            background:"var(--s1)",transition:"all .15s",width:dispW,flexShrink:0}}>
-                          <div style={{width:dispW,height:dispH,overflow:"hidden",
+                            background:"var(--s1)",transition:"all .15s"}}>
+                          <div style={{width:dW,height:dH,overflow:"hidden",
                             backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
                             backgroundSize:bgW+"px "+bgH+"px",
-                            backgroundPosition:posX+"px "+posY+"px",backgroundRepeat:"no-repeat"}}/>
+                            backgroundPosition:(-ci*dW)+"px "+(-ri*dH)+"px",backgroundRepeat:"no-repeat"}}/>
                           <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
                             color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
                         </div>
@@ -4034,6 +4066,7 @@ function PetPage(){
                 </div>
               )}
 
+              {/* Fantasy empathy + size */}
               {vpIsFantasy&&(
                 <>
                   <SL>Mood / Empathy</SL>
@@ -4057,7 +4090,7 @@ function PetPage(){
                       </button>
                     ))}
                   </div>
-                  <div>
+                  <div style={{marginBottom:24}}>
                     <SL>Size</SL>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
                       <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
@@ -4068,6 +4101,84 @@ function PetPage(){
                   </div>
                 </>
               )}
+
+              {/* COMPANION — always shown at bottom of Species tab */}
+              <div style={{borderTop:"1px solid var(--bd)",paddingTop:20,marginTop:8}}>
+                <SL>Who is in the scene?</SL>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+                  {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Virtual person"}].map(m=>(
+                    <button key={m.id} onClick={()=>{setCompanionMode(m.id);setEnhanced("");}}
+                      style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"center",
+                        border:"2px solid "+(companionMode===m.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                        background:companionMode===m.id?"var(--acdim)":"transparent"}}>
+                      <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
+                      <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
+                      <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{m.sub}</div>
+                    </button>
+                  ))}
+                </div>
+                {companionMode==="animal"&&(
+                  <>
+                    <SL>Second animal</SL>
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8,marginBottom:16}}>
+                      {PET_SPECIES_REAL.filter(s=>s.id!==vpSpecies).map(sp=>(
+                        <button key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
+                          style={{padding:"12px 6px 8px",borderRadius:10,cursor:"pointer",
+                            border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                            background:companionSpecies===sp.id?"var(--acdim)":"transparent",
+                            display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                          <span style={{fontSize:24}}>{sp.emoji}</span>
+                          <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {companionMode==="human"&&(
+                  <div style={{padding:"12px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)",marginBottom:16}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:"var(--acc)",marginBottom:10}}>Virtual person</div>
+                    <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+                      <div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>VISIBILITY</div>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>(
+                            <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>ACTION</div>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>(
+                            <Pill key={o.v} active={vhAction===o.v} onClick={()=>setVhAction(o.v)}>{o.l}</Pill>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>STYLE</div>
+                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                          {[{v:"casual",l:"Casual"},{v:"outdoorsy",l:"Outdoorsy"},{v:"smart_casual",l:"Smart casual"}].map(o=>(
+                            <Pill key={o.v} active={vhStyle===o.v} onClick={()=>setVhStyle(o.v)}>{o.l}</Pill>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {companionMode!=="alone"&&(
+                  <div>
+                    <SL>Interaction</SL>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      {(companionMode==="animal"
+                        ?["playing together","lying side by side","sniffing each other","chasing","sleeping together","looking at each other"]
+                        :["petting","holding leash","giving treat","playing","hugging","kneeling with","lifting up"]
+                      ).map(i=>(
+                        <Pill key={i} active={companionInteraction===i} onClick={()=>{setCompanionInteraction(i);setEnhanced("");}}>{i}</Pill>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -4175,85 +4286,6 @@ function PetPage(){
             </div>
           )}
 
-          {/* TAB: COMPANION */}
-          {pTab==="companion"&&(
-            <div>
-              <SL>Who is in the scene?</SL>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
-                {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Virtual person"}].map(m=>(
-                  <button key={m.id} onClick={()=>{setCompanionMode(m.id);setEnhanced("");}}
-                    style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"center",
-                      border:"2px solid "+(companionMode===m.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                      background:companionMode===m.id?"var(--acdim)":"transparent"}}>
-                    <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
-                    <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
-                    <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{m.sub}</div>
-                  </button>
-                ))}
-              </div>
-              {companionMode==="animal"&&(
-                <>
-                  <SL>Second animal</SL>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8,marginBottom:16}}>
-                    {PET_SPECIES_REAL.filter(s=>s.id!==vpSpecies).map(sp=>(
-                      <button key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
-                        style={{padding:"12px 6px 8px",borderRadius:10,cursor:"pointer",
-                          border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                          background:companionSpecies===sp.id?"var(--acdim)":"transparent",
-                          display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                        <span style={{fontSize:24}}>{sp.emoji}</span>
-                        <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-              {companionMode==="human"&&(
-                <div style={{padding:"12px 14px",borderRadius:8,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.04)",marginBottom:16}}>
-                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,color:"var(--acc)",marginBottom:10}}>Virtual person</div>
-                  <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-                    <div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>VISIBILITY</div>
-                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                        {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>(
-                          <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>ACTION</div>
-                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                        {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>(
-                          <Pill key={o.v} active={vhAction===o.v} onClick={()=>setVhAction(o.v)}>{o.l}</Pill>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>STYLE</div>
-                      <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                        {[{v:"casual",l:"Casual"},{v:"outdoorsy",l:"Outdoorsy"},{v:"smart_casual",l:"Smart casual"}].map(o=>(
-                          <Pill key={o.v} active={vhStyle===o.v} onClick={()=>setVhStyle(o.v)}>{o.l}</Pill>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {companionMode!=="alone"&&(
-                <div>
-                  <SL>Interaction</SL>
-                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    {(companionMode==="animal"
-                      ?["playing together","lying side by side","sniffing each other","chasing","sleeping together","looking at each other"]
-                      :["petting","holding leash","giving treat","playing","hugging","kneeling with","lifting up"]
-                    ).map(i=>(
-                      <Pill key={i} active={companionInteraction===i} onClick={()=>{setCompanionInteraction(i);setEnhanced("");}}>{i}</Pill>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
