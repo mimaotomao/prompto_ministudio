@@ -3937,15 +3937,7 @@ function PetPage(){
                 )}
               </>
             )}
-            {/* Fish joke mode */}
-            {!vpIsFantasy&&spData.jokeMode&&(
-              <div style={{marginTop:12,padding:"10px 14px",borderRadius:8,border:"1px dashed var(--bd)",background:"rgba(255,200,0,.04)"}}>
-                <label style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",fontSize:12}}>
-                  <input type="checkbox" checked={vpJokeLegs} onChange={e=>{setVpJokeLegs(e.target.checked);setEnhanced("");}}/>
-                  <span>🎭 Gag mode — add tiny realistic legs to the fish</span>
-                </label>
-              </div>
-            )}
+
           </div>
         )}
 
@@ -4453,6 +4445,198 @@ function PetPage(){
   );
 }
 
+// ─── APP MAP ──────────────────────────────────────────────────────────────────
+
+const MAP_DATA={
+  id:"root",label:"PrompTo miniStudio",color:"#ffffff",
+  children:[
+    {id:"char",label:"Character Sheet",color:"#e8780a",page:"avatars",children:[
+      {id:"ci",label:"Identity",color:"#e8780a",children:[
+        {id:"ci1",label:"16 universes — Realism, Anime, Pixel Art, Oil Painting…"},
+        {id:"ci2",label:"16 races with sprite previews (Human, Elf, Orc, Cyborg…)"},
+        {id:"ci3",label:"Gender · Region · Age · Eye color · Skin color · Skin traits"},
+        {id:"ci4",label:"25 expressions with sprite previews"},
+      ]},
+      {id:"cf",label:"Face",color:"#e8780a",children:[
+        {id:"cf1",label:"12 hair styles"},
+        {id:"cf2",label:"7 eye types · 7 lip shapes · Facial markings"},
+        {id:"cf3",label:"Horns — 7×2 sprite sheet, 10+ variants"},
+      ]},
+      {id:"cb",label:"Body",color:"#e8780a",children:[
+        {id:"cb1",label:"Asymmetric arms L/R — natural, steampunk, cybernetic, tentacles, claws…"},
+        {id:"cb2",label:"Asymmetric legs L/R — prosthetic, digitigrade, snake tail, hooves…"},
+        {id:"cb3",label:"Wings · Tail · Ears — 7+ variants each"},
+      ]},
+      {id:"cw",label:"Wardrobe & Output",color:"#e8780a",children:[
+        {id:"cw1",label:"10 clothing categories — studio neutral to fantasy armor"},
+        {id:"cw2",label:"10 layout templates — Style Sheet, Headshot, Full Body, Action Pose…"},
+        {id:"cw3",label:"Lighting · Environment · Lens per character"},
+        {id:"cw4",label:"From scratch or from reference photo"},
+      ]},
+    ]},
+    {id:"multi",label:"Multi-Shot",color:"#4fa3e0",page:"angles",children:[
+      {id:"ma",label:"Camera Angles",color:"#4fa3e0",children:[
+        {id:"ma1",label:"30+ predefined angles — wide establishing to extreme close-up"},
+        {id:"ma2",label:"3D Camera Control (BETA) — azimuth, elevation, distance"},
+        {id:"ma3",label:"Up to 9 panels per composite grid"},
+        {id:"ma4",label:"Batch variants — 1–4 simultaneous prompt variations"},
+      ]},
+      {id:"ms",label:"Visual Settings",color:"#4fa3e0",children:[
+        {id:"ms1",label:"14 lighting scenarios — Golden Hour, Neon Night, Studio Key…"},
+        {id:"ms2",label:"17 environments — Sci-Fi Megacity, Cyberpunk Alley, Crystal Cave…"},
+        {id:"ms3",label:"16 focal lengths — 8mm fisheye to 600mm extreme telephoto"},
+        {id:"ms4",label:"8 film stocks · 8 color grades · 5 aspect ratios"},
+      ]},
+      {id:"mw",label:"Workflow",color:"#4fa3e0",children:[
+        {id:"mw1",label:"Step 1: generate multi-panel grid — copy prompt, attach photo"},
+        {id:"mw2",label:"Step 2: expand any panel to full-resolution single shot"},
+        {id:"mw3",label:"From scratch (txt2img) or from reference photo (img2img)"},
+      ]},
+    ]},
+    {id:"video",label:"Video",color:"#a78bfa",page:"video",children:[
+      {id:"v1",label:"txt2vid — Text to Video (describe from zero)"},
+      {id:"v2",label:"img2vid — Image to Video (attach reference)"},
+      {id:"v3",label:"Frames — First + Last Frame from Multi-Shot grid"},
+      {id:"v4",label:"Generators: Sora · Runway · Kling · Pika"},
+      {id:"v5",label:"Frame generators: Grok Imagine · Gemini · Arena.ai"},
+    ]},
+    {id:"pet",label:"Pet Studio",color:"#34d399",page:"pet",children:[
+      {id:"pi",label:"Inputs",color:"#34d399",children:[
+        {id:"pi1",label:"Product — photo / description / creative concept"},
+        {id:"pi2",label:"Pet reference photo — quality enhancement, identity preservation"},
+        {id:"pi3",label:"Person photo — replaced by virtual figure in scene"},
+      ]},
+      {id:"pv",label:"Virtual Pet",color:"#34d399",children:[
+        {id:"pv1",label:"9 real species — Dog, Cat, Rabbit, Horse, Hamster, Parrot, Turtle, Fish, Hedgehog"},
+        {id:"pv2",label:"7 fantasy creatures — Dragon, Unicorn, Griffin, Phoenix, Fluffy, Hellhound, Imp"},
+        {id:"pv3",label:"Coat type · Pattern · Colors · Tail · Ears · Pose · Gaze"},
+        {id:"pv4",label:"5 empathy levels for fantasy (Cute → Menacing)"},
+        {id:"pv5",label:"4 size options (dog-sized → gigantic)"},
+      ]},
+      {id:"pa",label:"Accessories",color:"#34d399",children:[
+        {id:"pa1",label:"Product Placement — 3 depth handlers"},
+        {id:"pa2",label:"🤲 Hand presenting · 🐾 Pet wearing · 🔗 Being attached"},
+        {id:"pa3",label:"Standard multi-select — grouped by category per species"},
+        {id:"pa4",label:"Existing product / Description / Creative concept mode"},
+      ]},
+      {id:"pc",label:"Companion & Scene",color:"#34d399",children:[
+        {id:"pc1",label:"Alone / With second animal / With human"},
+        {id:"pc2",label:"14 lighting · 17 environments · 16 lenses"},
+        {id:"pc3",label:"Output: Single · 1×3 Grid · 2×2 Grid · Product Showcase · Custom Multi-Shot"},
+      ]},
+    ]},
+    {id:"common",label:"Common Features",color:"#f472b6",children:[
+      {id:"cm1",label:"✦ AI Prompt Enhance — Gemini rewrites prompt cinematically"},
+      {id:"cm2",label:"Google Sign-In — free, no credit card"},
+      {id:"cm3",label:"Copy Prompt — always copies English regardless of browser translation"},
+      {id:"cm4",label:"🌐 EN toggle — force English UI, disable Chrome auto-translate"},
+      {id:"cm5",label:"Visual sprite selectors — all options shown as thumbnail previews"},
+      {id:"cm6",label:"Live prompt preview — updates in real time as you configure"},
+    ]},
+  ]
+};
+
+function MapPage(){
+  const setPage=React.useContext(PageCtx);
+  const[hovered,setHovered]=useState(null);
+  const[expanded,setExpanded]=useState(new Set(["root","char","multi","video","pet","common"]));
+
+  function countLeaves(node){
+    if(!node.children||!node.children.length)return 1;
+    return node.children.filter(c=>expanded.has(c.id)).reduce((s,c)=>s+countLeaves(c),0)||1;
+  }
+  function assignPos(node,depth,yStart,xBase){
+    const xGap=[220,190,180,170];
+    node._x=xBase+(xGap[depth]||160);
+    node._depth=depth;
+    const isExp=expanded.has(node.id);
+    if(!node.children||!node.children.length||!isExp){
+      node._y=yStart+24;
+      node._h=48;
+      return yStart+48;
+    }
+    let y=yStart+8;
+    node.children.forEach(child=>{y=assignPos(child,depth+1,y,node._x);});
+    node._y=(node.children[0]._y+node.children[node.children.length-1]._y)/2;
+    node._h=y-yStart;
+    return y+8;
+  }
+  function flatten(node,out=[]){
+    out.push(node);
+    if(node.children&&expanded.has(node.id))node.children.forEach(c=>flatten(c,out));
+    return out;
+  }
+  function getEdges(node,out=[]){
+    if(node.children&&expanded.has(node.id)){
+      node.children.forEach(c=>{out.push({from:node,to:c,color:node.color||"rgba(255,255,255,.3)"});getEdges(c,out);});
+    }
+    return out;
+  }
+  const toggle=(id)=>setExpanded(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;});
+
+  const dataClone=JSON.parse(JSON.stringify(MAP_DATA));
+  const totalH=assignPos(dataClone,0,20,0)+40;
+  const nodes=flatten(dataClone);
+  const edgeList=getEdges(dataClone);
+  const maxX=Math.max(...nodes.map(n=>n._x))+280;
+
+  return(
+    <div className="page">
+      <div className="ph">
+        <div className="pt">App <b>Map</b></div>
+        <div className="ps">PrompTo miniStudio — full feature overview · click nodes to navigate · click branches to expand/collapse</div>
+      </div>
+      <div style={{overflowX:"auto",overflowY:"auto",borderRadius:12,border:"1px solid var(--bd)",background:"var(--s1)",padding:"20px 0"}}>
+        <svg width={maxX} height={totalH} style={{fontFamily:"var(--font)",display:"block"}}>
+          {edgeList.map((e,i)=>{
+            const mx=(e.from._x+e.to._x)/2;
+            return(
+              <path key={i}
+                d={`M${e.from._x+4},${e.from._y} C${mx},${e.from._y} ${mx},${e.to._y} ${e.to._x-4},${e.to._y}`}
+                fill="none" stroke={e.color} strokeWidth={e.from._depth===0?2:e.from._depth===1?1.5:1}
+                strokeOpacity={e.from._depth===0?.8:e.from._depth===1?.6:.4}
+              />
+            );
+          })}
+          {nodes.map((n,i)=>{
+            const isRoot=n._depth===0;
+            const isL1=n._depth===1;
+            const isL2=n._depth===2;
+            const isLeaf=!n.children||n.children.length===0;
+            const hasChildren=n.children&&n.children.length>0;
+            const isExp=expanded.has(n.id);
+            const col=n.color||(isLeaf?"rgba(255,255,255,.75)":"rgba(255,255,255,.9)");
+            const isHov=hovered===n.id;
+            const r=isRoot?7:isL1?5:isL2?4:3;
+            const fs=isRoot?14:isL1?13:isL2?12:11;
+            const fw=isRoot?"800":isL1?"700":isL2?"600":"400";
+            return(
+              <g key={i}
+                style={{cursor:hasChildren||n.page?"pointer":"default"}}
+                onMouseEnter={()=>setHovered(n.id)}
+                onMouseLeave={()=>setHovered(null)}
+                onClick={()=>hasChildren?toggle(n.id):n.page&&setPage(n.page)}
+              >
+                <circle cx={n._x} cy={n._y} r={isHov?r+2:r} fill={col} opacity={isLeaf?.6:1}/>
+                {isRoot&&<circle cx={n._x} cy={n._y} r={12} fill="none" stroke={col} strokeWidth={1.5} strokeOpacity={.4}/>}
+                {!isLeaf&&<text x={n._x+r+6} y={n._y+4} fontSize={fs} fontWeight={fw} fill={col} style={{userSelect:"none"}}>
+                  {n.label}{hasChildren?<tspan style={{opacity:.5}}> {isExp?"▾":"▸"}</tspan>:null}
+                </text>}
+                {isLeaf&&<text x={n._x+r+6} y={n._y+4} fontSize={fs} fontWeight={fw} fill={col} style={{userSelect:"none"}}>
+                  {n.label}
+                </text>}
+                {n.page&&isL1&&(
+                  <text x={n._x+r+6} y={n._y+17} fontSize={9} fill={col} opacity={.5} style={{userSelect:"none"}}>tap to open →</text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    </div>
+  );
+}
+
 // ─── ROOT ──────────────────────────────────────────────────────────────────────
 const PageCtx = React.createContext(()=>{});
 
@@ -4514,6 +4698,7 @@ export default function App(){
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")} translate="no">Multi-Shot</button>
             <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video</button>
             <button className={`nt${page==="pet"?" on":""}`} onClick={()=>setPage("pet")}>Pet Studio</button>
+            <button className={`nt${page==="map"?" on":""}`} onClick={()=>setPage("map")}>Map</button>
             <button
               className="nt"
               onClick={toggleEN}
@@ -4530,7 +4715,7 @@ export default function App(){
             </button>
           </div>
         </nav>
-        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:page==="pet"?<PetPage/>:<VideoPromptPage/>}
+        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:page==="pet"?<PetPage/>:page==="map"?<MapPage/>:<VideoPromptPage/>}
       </div>
       </PageCtx.Provider>
     </AuthCtx.Provider>
