@@ -989,7 +989,11 @@ function buildPrompt({scene,selectedAngles,lighting,bg,lens,cam,use3D,custom,fil
   // 4. Camera angles with full descriptions
   parts.push(
     "Create "+n+" clearly distinct camera angles from the same scene:\n"+
-    selectedAngles.map((i,idx)=>(idx+1)+". "+ANGLES[i].name+" — "+ANGLES[i].desc).join("\n")
+    (use3D?"3D Camera Control is active and applies to panel 1 only. All other panels use the standard angle descriptions below.\n":"")+
+    selectedAngles.map((i,idx)=>{
+      if(idx===0&&use3D)return "1. "+describe3D(cam.azimuth,cam.elevation,cam.zoom)+" [3D Camera Control — first panel only]";
+      return (idx+1)+". "+ANGLES[i].name+" — "+ANGLES[i].desc;
+    }).join("\n")
   );
 
   // 5. Aspect ratio rules
@@ -3158,7 +3162,7 @@ function HowItWorksPage(){
           How PrompTo <span style={{color:"var(--acc)"}}>miniStudio</span> works
         </div>
         <div style={{fontSize:14,color:"var(--t)",opacity:.6,marginTop:8,maxWidth:520,margin:"10px auto 0"}}>
-          A four-step pipeline from character creation to full-quality cinematic shots
+          From character or product concept to multi-shot grid to cinematic video — one connected pipeline
         </div>
       </div>
 
@@ -3267,6 +3271,11 @@ function HowItWorksPage(){
               background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
             🧬 Build a character
           </button>
+          <button onClick={()=>setPage("pet")}
+            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",
+              background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+            🐾 Open Pet Studio
+          </button>
           <button onClick={()=>setPage("angles")}
             style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--acc)",
               background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
@@ -3274,6 +3283,782 @@ function HowItWorksPage(){
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── PET STUDIO ───────────────────────────────────────────────────────────────
+
+const PET_SPECIES_DATA=[
+  {id:"dog",   name:"Dog",            isFantasy:false, hasBreeds:true},
+  {id:"cat",   name:"Cat",            isFantasy:false, hasBreeds:true},
+  {id:"rabbit",name:"Rabbit",         isFantasy:false, hasBreeds:false},
+  {id:"bird",  name:"Bird",           isFantasy:false, hasBreeds:false},
+  {id:"dragon",name:"Dragon",         isFantasy:true,  hasBreeds:false},
+  {id:"fluffy",name:"Fluffy Creature",isFantasy:true,  hasBreeds:false},
+  {id:"wolf",  name:"Fantasy Wolf",   isFantasy:true,  hasBreeds:false},
+];
+const PET_DOG_BREEDS=["Golden Retriever","German Shepherd","French Bulldog","Labrador","Beagle","Dachshund","Husky","Mixed breed"];
+const PET_CAT_BREEDS=["European","Maine Coon","Persian","Siamese","British Shorthair","Ragdoll","Sphynx"];
+const PET_COAT_TYPES=["short","medium","long","curly","wavy","wiry"];
+const PET_COAT_PATTERNS=["solid","patchy","striped","spotted","saddle","pointed"];
+const PET_TAIL_TYPES=["short","long","curled","bushy","sickle","plumed"];
+const PET_EAR_TYPES=["upright","floppy","semi-erect","folded","rounded"];
+const EMPATHY_STYLES=[
+  {id:"cute",     label:"Cute",     emoji:"🥰", visual:"fluffy cute friendly large eyes pastel colors"},
+  {id:"playful",  label:"Playful",  emoji:"😄", visual:"playful bright cheerful expressive"},
+  {id:"neutral",  label:"Neutral",  emoji:"😐", visual:"realistic natural proportions wild"},
+  {id:"serious",  label:"Serious",  emoji:"😤", visual:"serious intense dark tones powerful gaze"},
+  {id:"menacing", label:"Menacing", emoji:"😈", visual:"menacing dangerous glowing eyes sharp teeth dark"},
+];
+const PET_COMPOSITION_TYPES=[
+  {id:"HAND_TO_PET",    name:"Hand to Pet",     icon:"🤝",
+   desc:"Hand extends product toward animal — product sharp, pet in soft bokeh",
+   depthStack:["Foreground (20% blur): Hand holding/extending product","Midground (SHARP): Product — hero lighting, material detail","Background (35% bokeh): Pet face — emotional connection","Deep: Environment atmosphere"],
+   defaultLens:"85mm"},
+  {id:"PET_WEARING",    name:"Pet Wearing",      icon:"🐾",
+   desc:"Pet wearing/using product — both co-focused, environment soft",
+   depthStack:["Co-focused (sharp): Pet + product together","Soft background: Contextual environment","Deep bokeh: Color harmony atmosphere"],
+   defaultLens:"50mm"},
+  {id:"PRODUCT_DETAIL", name:"Product Detail",   icon:"🔍",
+   desc:"Macro product shot, pet as blurred emotional context",
+   depthStack:["Macro sharp (60% frame): Product detail","Heavy bokeh: Pet eye or whisker providing context","Abstract: Color harmony background"],
+   defaultLens:"100mm macro"},
+  {id:"LIFESTYLE_WIDE", name:"Lifestyle Scene",  icon:"🏠",
+   desc:"Full scene — all subjects sharp, environment readable",
+   depthStack:["All subjects (f/4 sharp): Human, pet, product in harmony","Soft background: Environmental context"],
+   defaultLens:"35mm"},
+  {id:"SCALE_REF",      name:"Scale Reference",  icon:"📐",
+   desc:"Product beside pet for scale — both sharp, neutral background",
+   depthStack:["Sharp (both): Product + pet side by side","Neutral soft: Clean background"],
+   defaultLens:"50mm"},
+];
+
+function PetPage(){
+  const[hasProduct,setHasProduct]=useState(false);
+  const[hasPetPhoto,setHasPetPhoto]=useState(false);
+  const[hasHumanPhoto,setHasHumanPhoto]=useState(false);
+  const[productType,setProductType]=useState("photo");
+  const[productDesc,setProductDesc]=useState("");
+  const[productMaterial,setProductMaterial]=useState("");
+  const[productCondition,setProductCondition]=useState("new");
+  const[productFocus,setProductFocus]=useState("hero");
+  const[petPhotoDesc,setPetPhotoDesc]=useState("");
+  const[petPhotoQuality,setPetPhotoQuality]=useState("average");
+  const[petEnhancements,setPetEnhancements]=useState([]);
+  const[humanPhotoDesc,setHumanPhotoDesc]=useState("");
+  const[vpIsFantasy,setVpIsFantasy]=useState(false);
+  const[vpSpecies,setVpSpecies]=useState("dog");
+  const[vpBreed,setVpBreed]=useState("Golden Retriever");
+  const[vpEmpathy,setVpEmpathy]=useState("playful");
+  const[vpCoatType,setVpCoatType]=useState("long");
+  const[vpCoatPattern,setVpCoatPattern]=useState("solid");
+  const[vpCoatColors,setVpCoatColors]=useState("golden");
+  const[vpTail,setVpTail]=useState("long");
+  const[vpEars,setVpEars]=useState("floppy");
+  const[vpPose,setVpPose]=useState("sitting");
+  const[vpGaze,setVpGaze]=useState("toward viewer");
+  const[vhVisibility,setVhVisibility]=useState("hands_only");
+  const[vhAction,setVhAction]=useState("extended_hand");
+  const[vhStyle,setVhStyle]=useState("casual");
+  const[compType,setCompType]=useState("HAND_TO_PET");
+  const[light,setLight]=useState(null);
+  const[bg,setBg]=useState(null);
+  const[lens,setLens]=useState(null);
+  const[filmStock,setFilmStock]=useState(null);
+  const[colorGrade,setColorGrade]=useState(null);
+  const[aspectRatio,setAspectRatio]=useState("16:9");
+  const[outputMode,setOutputMode]=useState("single");
+  const[sel,setSel]=useState([]);
+  const[use3D,setUse3D]=useState(false);
+  const[cam,setCam]=useState({azimuth:0,elevation:0,zoom:5});
+  const[custom,setCustom]=useState("");
+  const[enhanced,setEnhanced]=useState("");
+  const[enhancing,setEnhancing]=useState(false);
+  const[showAuthModal,setShowAuthModal]=useState(false);
+  const[toast,setToast]=useState("");
+  const{user}=React.useContext(AuthCtx);
+  const setPage=React.useContext(PageCtx);
+  const MAX_ANGLES=9;
+  const tog1=(setter,id)=>setter(p=>p===id?null:id);
+  const togAngle=(i)=>setSel(p=>p.includes(i)?p.filter(x=>x!==i):p.length>=MAX_ANGLES?p:[...p,i]);
+  const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500);};
+  const toggleEnh=(e)=>setPetEnhancements(p=>p.includes(e)?p.filter(x=>x!==e):[...p,e]);
+  const showVirtualHuman=!hasHumanPhoto&&compType==="HAND_TO_PET";
+
+  const reset=()=>{
+    setHasProduct(false);setHasPetPhoto(false);setHasHumanPhoto(false);
+    setProductType("photo");setProductDesc("");setProductMaterial("");
+    setProductCondition("new");setProductFocus("hero");
+    setPetPhotoDesc("");setPetPhotoQuality("average");setPetEnhancements([]);
+    setHumanPhotoDesc("");
+    setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");
+    setVpEmpathy("playful");setVpCoatType("long");setVpCoatPattern("solid");
+    setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");
+    setVpPose("sitting");setVpGaze("toward viewer");
+    setVhVisibility("hands_only");setVhAction("extended_hand");setVhStyle("casual");
+    setCompType("HAND_TO_PET");
+    setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);
+    setAspectRatio("16:9");setOutputMode("single");setSel([]);
+    setUse3D(false);setCam({azimuth:0,elevation:0,zoom:5});
+    setCustom("");setEnhanced("");
+    doToast("RESET COMPLETE");
+  };
+
+  const buildPetPrompt=()=>{
+    const lines=[];
+    const comp=PET_COMPOSITION_TYPES.find(c=>c.id===compType);
+    const showVP=!hasPetPhoto;
+    const showVH=!hasHumanPhoto&&compType==="HAND_TO_PET";
+    lines.push("MULTI-SOURCE COMPOSITION PROMPT");
+    lines.push("");
+    const inputs=[];
+    let n=0;
+    if(hasHumanPhoto){
+      n++;
+      inputs.push(n+". [YOUR PHOTO]: "+(humanPhotoDesc||"Person — extract context"));
+      inputs.push("   USAGE: People in this photo are replaced by a virtual figure matching the composition type. Only environment and props are preserved.");
+    }
+    if(hasPetPhoto){
+      n++;
+      const enhStr=petEnhancements.length?". Enhance: "+petEnhancements.join(", "):"";
+      inputs.push(n+". [YOUR PET PHOTO]: "+(petPhotoDesc||"Your pet"));
+      inputs.push("   QUALITY: "+petPhotoQuality+enhStr+". Preserve breed identity, coat color and markings.");
+    }
+    if(hasProduct){
+      n++;
+      if(productType==="photo"){
+        inputs.push(n+". [PRODUCT PHOTO]: "+(productDesc||"Your product"));
+        const condText={new:"Keep as shown.",upgrade:"Restore worn condition to pristine.",pristine:"Idealize to perfect showroom condition."}[productCondition];
+        inputs.push("   USAGE: Extract product. "+condText+" Place as "+productFocus+" element. Preserve all material and texture detail.");
+        if(productMaterial)inputs.push("   MATERIAL: "+productMaterial);
+      } else if(productType==="description"){
+        inputs.push(n+". [GENERATE PRODUCT FROM DESCRIPTION]: "+(productDesc||"Product"));
+        if(productMaterial)inputs.push("   MATERIAL: "+productMaterial+". Condition: "+productCondition+". Focus level: "+productFocus+".");
+      } else {
+        inputs.push(n+". [DESIGN NEW PRODUCT CONCEPT]: "+(productDesc||"New product idea"));
+        if(productMaterial)inputs.push("   STYLE / MATERIAL: "+productMaterial);
+      }
+    }
+    if(inputs.length){
+      lines.push("=== ATTACH THESE REFERENCE IMAGES ===");
+      lines.push("");
+      inputs.forEach(l=>lines.push(l));
+      lines.push("");
+    }
+    const virtuals=[];
+    if(showVP){
+      const sp=PET_SPECIES_DATA.find(s=>s.id===vpSpecies);
+      if(vpIsFantasy){
+        const emp=EMPATHY_STYLES.find(e=>e.id===vpEmpathy);
+        virtuals.push("VIRTUAL PET: "+sp.name+" (fantasy creature). Mood / empathy: "+emp.label+" — "+emp.visual+".\nPose: "+vpPose+". Gaze: "+vpGaze+".");
+      } else {
+        const breedStr=sp.hasBreeds?" ("+vpBreed+")":"";
+        virtuals.push("VIRTUAL PET: "+sp.name+breedStr+".\nCoat: "+vpCoatType+", "+vpCoatPattern+" pattern, color: "+vpCoatColors+".\nTail: "+vpTail+". Ears: "+vpEars+".\nPose: "+vpPose+". Gaze: "+vpGaze+".");
+      }
+    }
+    if(showVH){
+      const visText={full:"full body visible",upper_body:"upper body and torso visible",hands_only:"hands and forearms only — action implied",implied:"presence suggested by shadow or action only"}[vhVisibility];
+      const actText={extended_hand:"extending hand toward animal / product",holding_leash:"holding leash",kneeling:"kneeling at pet level",standing:"standing nearby"}[vhAction];
+      const styleText={casual:"casual everyday clothing",outdoorsy:"outdoor / sport clothing",smart_casual:"smart casual attire"}[vhStyle];
+      virtuals.push("VIRTUAL PERSON: "+visText+". Action: "+actText+". Style: "+styleText+". Gender and age: neutral, AI discretion.");
+    }
+    if(virtuals.length){
+      lines.push("=== GENERATE ===");
+      lines.push("");
+      virtuals.forEach(v=>lines.push(v));
+      lines.push("");
+    }
+    lines.push("=== COMPOSITION — "+comp.name.toUpperCase()+" ===");
+    lines.push(comp.desc);
+    lines.push("");
+    lines.push("DEPTH & FOCUS:");
+    comp.depthStack.forEach(l=>lines.push("  "+l));
+    lines.push("");
+    if(outputMode==="multi"&&sel.length>0){
+      lines.push("=== CAMERA ANGLES ===");
+      lines.push("Output as a single composite "+sel.length+"-panel grid. Each panel shows the same scene from a different angle.");
+      if(use3D)lines.push("3D Camera Control applies to panel 1 only. Remaining panels use standard angle descriptions below.");
+      lines.push(sel.map((i,idx)=>{
+        if(idx===0&&use3D)return "1. "+describe3D(cam.azimuth,cam.elevation,cam.zoom)+" [3D Camera Control — first panel only]";
+        return (idx+1)+". "+ANGLES[i].name+" — "+ANGLES[i].desc;
+      }).join("\n"));
+      lines.push("");
+    }
+    const techParts=[];
+    if(bg)techParts.push(BACKGROUNDS.find(b=>b.id===bg)?.p);
+    if(light)techParts.push(LIGHTING.find(l=>l.id===light)?.p);
+    const lensP=lens?LENSES.find(l=>l.mm===lens)?.p:(comp.defaultLens+" focal length lens");
+    techParts.push(lensP);
+    if(filmStock)techParts.push(FILM_STOCKS.find(f=>f.id===filmStock)?.p);
+    if(colorGrade)techParts.push(COLOR_GRADES.find(c=>c.id===colorGrade)?.p);
+    lines.push("=== SCENE PARAMETERS ===");
+    lines.push("Note: People from reference photos are replaced by virtual figures matching the composition type above.");
+    lines.push(techParts.filter(Boolean).join(". ")+".");
+    lines.push("Aspect ratio: "+aspectRatio+".");
+    lines.push("");
+    if(custom.trim()){lines.push("=== ADDITIONAL ===");lines.push(custom.trim());lines.push("");}
+    lines.push("=== CRITICAL ===");
+    lines.push("All elements (photo-extracted and generated) must share:");
+    lines.push("• Identical lighting direction and color temperature");
+    lines.push("• Consistent depth of field logic per the composition type above");
+    lines.push("• Seamless edge integration — no visible compositing seams");
+    lines.push("• Matching perspective and scale");
+    lines.push("No text. No labels. No watermarks. No UI elements.");
+    return lines.join("\n");
+  };
+
+  const prompt=buildPetPrompt();
+  const hasContent=prompt.length>200;
+
+  const copy=async()=>{
+    const ok=await copyText(enhanced||prompt);
+    doToast(ok?"COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");
+  };
+  const enhance=async()=>{
+    if(!user){setShowAuthModal(true);return;}
+    setEnhancing(true);setEnhanced("");
+    try{
+      const result=await callEnhance(prompt,custom,user.idToken);
+      setEnhanced(result);doToast("✦ ENHANCED BY GEMINI");
+    }catch(e){
+      if(e.status===401)setShowAuthModal(true);
+      else doToast("ERROR: "+e.message);
+    }
+    setEnhancing(false);
+  };
+
+  const PRESETS_3D=[
+    {label:"Front",az:0,el:0},{label:"Right",az:90,el:0},{label:"Back",az:180,el:0},{label:"Left",az:270,el:0},
+    {label:"Top",az:0,el:85},{label:"Low",az:0,el:-45},{label:"Dutch",az:45,el:15},{label:"Bird",az:0,el:70},
+  ];
+
+  return(
+    <div className="page">
+      <PipelineStrip active={1}/>
+      <div className="ph">
+        <div className="pt">Pet <b>Studio</b></div>
+        <div className="ps">Compose products, pets and people into perfect reference images for AI generators</div>
+      </div>
+
+      {/* WHAT DO YOU HAVE */}
+      <div className="sec">
+        <div className="sh"><span className="st">What are you bringing?</span><span className="sb">START HERE</span></div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {[
+            {key:"product",label:"I have a product",sub:"photo, description, or concept to showcase",state:hasProduct,set:setHasProduct},
+            {key:"pet",label:"I have a pet photo",sub:"your real animal — AI uses it as reference",state:hasPetPhoto,set:setHasPetPhoto},
+            {key:"human",label:"I have a person photo",sub:"optional — people will be replaced by virtual figures for composition",state:hasHumanPhoto,set:setHasHumanPhoto},
+          ].map(item=>(
+            <div key={item.key} onClick={()=>item.set(v=>!v)}
+              style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",borderRadius:10,cursor:"pointer",transition:"all .15s",
+                border:"2px solid "+(item.state?"var(--acc)":"var(--bd)"),
+                background:item.state?"var(--acdim)":"var(--s1)"}}>
+              <div style={{width:22,height:22,borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s",
+                border:"2px solid "+(item.state?"var(--acc)":"var(--bd)"),background:item.state?"var(--acc)":"transparent"}}>
+                {item.state&&<span style={{color:"#000",fontSize:13,fontWeight:900,lineHeight:1}}>✓</span>}
+              </div>
+              <div>
+                <div style={{fontSize:13,fontWeight:700,color:item.state?"var(--acc)":"var(--t)"}}>{item.label}</div>
+                <div style={{fontSize:11,color:"var(--t4)",marginTop:2}}>{item.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* PRODUCT */}
+      {hasProduct&&(
+        <div className="sec">
+          <div className="sh"><span className="st">Product</span><span className="sb">HERO</span></div>
+          <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+            {[{id:"photo",label:"I have a photo"},{id:"description",label:"I'll describe it"},{id:"concept",label:"Design something new"}].map(t=>(
+              <button key={t.id} onClick={()=>setProductType(t.id)}
+                style={{padding:"9px 16px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                  border:"2px solid "+(productType===t.id?"var(--acc)":"var(--bd)"),
+                  background:productType===t.id?"var(--acdim)":"var(--s1)",
+                  color:productType===t.id?"var(--acc)":"var(--t)"}}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <textarea rows={2} value={productDesc} onChange={e=>{setProductDesc(e.target.value);setEnhanced("");}}
+            placeholder={
+              productType==="photo"?"Describe the product photo: 'brown leather collar, silver buckle, slightly worn, hand for scale'":
+              productType==="description"?"Describe your product: 'birch wood wall cat scratcher, 30cm wide, minimal design'":
+              "Describe your concept: 'retractable leash with LED lighting, cyberpunk aesthetic, matte black'"
+            }/>
+          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+            <input placeholder="Material / finish (optional)" value={productMaterial}
+              onChange={e=>setProductMaterial(e.target.value)}
+              style={{flex:"1 1 180px",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",
+                background:"var(--s2)",color:"var(--t)",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+            {productType!=="concept"&&(
+              <select value={productCondition} onChange={e=>setProductCondition(e.target.value)}
+                style={{flex:"1 1 160px",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                <option value="new">Keep as shown</option>
+                <option value="upgrade">Restore to pristine</option>
+                <option value="pristine">Idealize — perfect condition</option>
+              </select>
+            )}
+            <select value={productFocus} onChange={e=>setProductFocus(e.target.value)}
+              style={{flex:"1 1 160px",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+              <option value="hero">Hero (main focus)</option>
+              <option value="co_star">Co-star with pet</option>
+              <option value="background">Background element</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* PET PHOTO */}
+      {hasPetPhoto&&(
+        <div className="sec">
+          <div className="sh"><span className="st">Pet photo</span></div>
+          <textarea rows={2} value={petPhotoDesc} onChange={e=>{setPetPhotoDesc(e.target.value);setEnhanced("");}}
+            placeholder="Describe your pet photo: 'my golden retriever lying on couch, dim lighting, slightly blurry'"/>
+          <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
+            <select value={petPhotoQuality} onChange={e=>setPetPhotoQuality(e.target.value)}
+              style={{padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+              <option value="poor">Poor quality (dark / blurry)</option>
+              <option value="average">Average</option>
+              <option value="good">Good, needs polish</option>
+            </select>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"var(--t4)"}}>Enhance:</span>
+              {["lighting","sharpness","background","pose","fur detail"].map(e=>(
+                <div key={e} onClick={()=>toggleEnh(e)}
+                  style={{padding:"6px 10px",borderRadius:6,cursor:"pointer",fontSize:11,transition:"all .15s",
+                    border:"1px solid "+(petEnhancements.includes(e)?"var(--acc)":"var(--bd)"),
+                    background:petEnhancements.includes(e)?"var(--acdim)":"var(--s1)",
+                    color:petEnhancements.includes(e)?"var(--acc)":"var(--t)"}}>
+                  {petEnhancements.includes(e)?"✓ ":""}{e}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* HUMAN PHOTO */}
+      {hasHumanPhoto&&(
+        <div className="sec">
+          <div className="sh"><span className="st">Person photo</span><span className="sb" style={{background:"var(--s4)",color:"var(--t3)"}}>REPLACED IN SCENE</span></div>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:10,lineHeight:1.5,padding:"8px 12px",borderRadius:6,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)"}}>
+            People in your photo are replaced by a virtual figure matching the composition type. Only environment and props are preserved.
+          </div>
+          <textarea rows={2} value={humanPhotoDesc} onChange={e=>{setHumanPhotoDesc(e.target.value);setEnhanced("");}}
+            placeholder="Describe photo context: 'me sitting on couch, dark hoodie, left hand resting on knee'"/>
+        </div>
+      )}
+
+      {/* VIRTUAL PET */}
+      {!hasPetPhoto&&(
+        <div className="sec">
+          <div className="sh"><span className="st">Virtual pet</span></div>
+          <div style={{display:"flex",gap:8,marginBottom:14}}>
+            <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");}}
+              style={{padding:"9px 20px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                border:"2px solid "+(!vpIsFantasy?"var(--acc)":"var(--bd)"),
+                background:!vpIsFantasy?"var(--acdim)":"var(--s1)",color:!vpIsFantasy?"var(--acc)":"var(--t)"}}>Real animal</button>
+            <button onClick={()=>{setVpIsFantasy(true);setVpSpecies("dragon");}}
+              style={{padding:"9px 20px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
+                border:"2px solid "+(vpIsFantasy?"var(--acc)":"var(--bd)"),
+                background:vpIsFantasy?"var(--acdim)":"var(--s1)",color:vpIsFantasy?"var(--acc)":"var(--t)"}}>Fantasy creature</button>
+          </div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+            {PET_SPECIES_DATA.filter(s=>!!s.isFantasy===vpIsFantasy).map(sp=>(
+              <button key={sp.id} onClick={()=>{setVpSpecies(sp.id);if(sp.hasBreeds)setVpBreed(sp.id==="dog"?PET_DOG_BREEDS[0]:PET_CAT_BREEDS[0]);}}
+                style={{padding:"10px 16px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:600,
+                  border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"var(--bd)"),
+                  background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",color:vpSpecies===sp.id?"var(--acc)":"var(--t)"}}>
+                {sp.name}
+              </button>
+            ))}
+          </div>
+          {vpIsFantasy?(
+            <div>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:10}}>Mood / Empathy</div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {EMPATHY_STYLES.map(e=>(
+                  <button key={e.id} onClick={()=>setVpEmpathy(e.id)}
+                    style={{padding:"12px 16px",borderRadius:8,cursor:"pointer",
+                      border:"2px solid "+(vpEmpathy===e.id?"var(--acc)":"var(--bd)"),
+                      background:vpEmpathy===e.id?"var(--acdim)":"var(--s1)",
+                      display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                    <span style={{fontSize:20}}>{e.emoji}</span>
+                    <span style={{fontSize:12,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"var(--t)"}}>{e.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ):(
+            <>
+              {PET_SPECIES_DATA.find(s=>s.id===vpSpecies)?.hasBreeds&&(
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:8}}>Breed</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    {(vpSpecies==="dog"?PET_DOG_BREEDS:PET_CAT_BREEDS).map(b=>(
+                      <button key={b} onClick={()=>setVpBreed(b)}
+                        style={{padding:"7px 14px",borderRadius:6,cursor:"pointer",fontSize:12,
+                          border:"1px solid "+(vpBreed===b?"var(--acc)":"var(--bd)"),
+                          background:vpBreed===b?"var(--acdim)":"var(--s1)",color:vpBreed===b?"var(--acc)":"var(--t)"}}>
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(175px,1fr))",gap:12,marginBottom:16}}>
+                {[
+                  {label:"Coat type",items:PET_COAT_TYPES,val:vpCoatType,set:setVpCoatType},
+                  {label:"Coat pattern",items:PET_COAT_PATTERNS,val:vpCoatPattern,set:setVpCoatPattern},
+                  {label:"Tail",items:PET_TAIL_TYPES,val:vpTail,set:setVpTail},
+                  {label:"Ears",items:PET_EAR_TYPES,val:vpEars,set:setVpEars},
+                ].map(g=>(
+                  <div key={g.label}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>{g.label}</div>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      {g.items.map(it=>(
+                        <button key={it} onClick={()=>g.set(it)}
+                          style={{padding:"6px 10px",borderRadius:6,cursor:"pointer",fontSize:11,
+                            border:"1px solid "+(g.val===it?"var(--acc)":"var(--bd)"),
+                            background:g.val===it?"var(--acdim)":"var(--s1)",color:g.val===it?"var(--acc)":"var(--t)"}}>
+                          {it}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Coat colors</div>
+                <input placeholder="e.g. golden, white chest" value={vpCoatColors} onChange={e=>setVpCoatColors(e.target.value)}
+                  style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",
+                    background:"var(--s2)",color:"var(--t)",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+              <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+                <div style={{flex:"1 1 160px"}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Pose</div>
+                  <select value={vpPose} onChange={e=>setVpPose(e.target.value)}
+                    style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                    <option value="sitting">Sitting</option>
+                    <option value="standing">Standing</option>
+                    <option value="lying down">Lying down</option>
+                    <option value="running">Running</option>
+                    <option value="jumping">Jumping</option>
+                    <option value="curled up">Curled up</option>
+                  </select>
+                </div>
+                <div style={{flex:"1 1 160px"}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Gaze</div>
+                  <select value={vpGaze} onChange={e=>setVpGaze(e.target.value)}
+                    style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                    <option value="toward viewer">Toward viewer</option>
+                    <option value="toward owner / hand">Toward owner / hand</option>
+                    <option value="into distance">Into distance</option>
+                    <option value="at product">At product</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* VIRTUAL HUMAN LITE — only HAND_TO_PET + no human photo */}
+      {showVirtualHuman&&(
+        <div className="sec" style={{border:"1px solid rgba(232,120,10,.25)",borderRadius:10,padding:16,background:"rgba(232,120,10,.04)"}}>
+          <div className="sh"><span className="st">Virtual person in scene</span><span className="sb" style={{background:"rgba(232,120,10,.25)",color:"var(--acc)"}}>HAND TO PET</span></div>
+          <div style={{fontSize:11,color:"var(--t4)",marginBottom:14,lineHeight:1.5}}>
+            No person photo — AI generates a virtual figure for this composition type.
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",gap:12}}>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Visibility</div>
+              <select value={vhVisibility} onChange={e=>setVhVisibility(e.target.value)}
+                style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                <option value="full">Full body</option>
+                <option value="upper_body">Upper body</option>
+                <option value="hands_only">Hands only</option>
+                <option value="implied">Implied (shadow / action)</option>
+              </select>
+            </div>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Action</div>
+              <select value={vhAction} onChange={e=>setVhAction(e.target.value)}
+                style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                <option value="extended_hand">Extending hand</option>
+                <option value="holding_leash">Holding leash</option>
+                <option value="kneeling">Kneeling at pet level</option>
+                <option value="standing">Standing nearby</option>
+              </select>
+            </div>
+            <div>
+              <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>Style</div>
+              <select value={vhStyle} onChange={e=>setVhStyle(e.target.value)}
+                style={{width:"100%",padding:"9px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                <option value="casual">Casual</option>
+                <option value="outdoorsy">Outdoorsy</option>
+                <option value="smart_casual">Smart casual</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* COMPOSITION TYPE */}
+      <div className="sec">
+        <div className="sh"><span className="st">Shot composition</span></div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {PET_COMPOSITION_TYPES.map(c=>(
+            <button key={c.id} onClick={()=>{setCompType(c.id);setEnhanced("");}}
+              style={{flex:"1 1 180px",padding:"14px 16px",borderRadius:10,textAlign:"left",cursor:"pointer",
+                border:"2px solid "+(compType===c.id?"var(--acc)":"var(--bd)"),
+                background:compType===c.id?"var(--acdim)":"var(--s1)"}}>
+              <div style={{fontSize:18,marginBottom:6}}>{c.icon}</div>
+              <div style={{fontSize:12,fontWeight:800,color:compType===c.id?"var(--acc)":"var(--t)",marginBottom:4}}>{c.name}</div>
+              <div style={{fontSize:11,color:"var(--t4)",lineHeight:1.5}}>{c.desc}</div>
+              <div style={{fontSize:10,color:"var(--t4)",marginTop:8,opacity:.7}}>Default lens: {c.defaultLens}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* OUTPUT MODE */}
+      <div className="sec">
+        <div className="sh"><span className="st">Output</span></div>
+        <div style={{display:"flex",gap:10,marginBottom:outputMode==="multi"?20:0}}>
+          {[{id:"single",label:"Single image",sub:"One composition, maximum quality"},{id:"multi",label:"Multi-shot grid",sub:"Multiple angles, same scene"}].map(m=>(
+            <button key={m.id} onClick={()=>setOutputMode(m.id)}
+              style={{flex:1,padding:"12px 16px",borderRadius:10,cursor:"pointer",textAlign:"left",
+                border:"2px solid "+(outputMode===m.id?"var(--acc)":"var(--bd)"),
+                background:outputMode===m.id?"var(--acdim)":"var(--s1)"}}>
+              <div style={{fontSize:13,fontWeight:700,color:outputMode===m.id?"var(--acc)":"var(--t)"}}>{m.label}</div>
+              <div style={{fontSize:11,color:"var(--t4)",marginTop:3}}>{m.sub}</div>
+            </button>
+          ))}
+        </div>
+        {outputMode==="multi"&&(
+          <>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12,marginTop:4}}>
+              Camera angles <span style={{color:"var(--t4)",fontWeight:400}}>({sel.length}/{MAX_ANGLES})</span>
+            </div>
+            <div className="grid3" style={{marginBottom:20}}>
+              {ANGLES.map((a,i)=>(
+                <div key={i} className={`ac${sel.includes(i)?" sel":""}`} onClick={()=>togAngle(i)}>
+                  <div className="abar"/>
+                  <div className="an">{a.name}</div>
+                  {sel.includes(i)&&<div className="anum">{sel.indexOf(i)+1}</div>}
+                </div>
+              ))}
+            </div>
+            <div onClick={()=>setUse3D(v=>!v)} style={{cursor:"pointer"}}>
+              <div className="sh">
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span className="st">3D Camera Control</span>
+                  <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,padding:"2px 7px",borderRadius:3,border:"1px solid var(--bd)",color:"var(--t)"}}>BETA</span>
+                </div>
+                <div onClick={e=>{e.stopPropagation();setUse3D(v=>!v);}} style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",userSelect:"none"}}>
+                  <span style={{fontSize:11,color:use3D?"var(--acc)":"var(--t)"}}>{use3D?"Active — panel 1":"Disabled"}</span>
+                  <div style={{width:44,height:24,borderRadius:12,position:"relative",background:use3D?"#e8780a":"var(--s3)",border:"1px solid "+(use3D?"#e8780a":"var(--bd)"),transition:"all .2s",flexShrink:0}}>
+                    <div style={{position:"absolute",top:4,left:use3D?24:4,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+                  </div>
+                </div>
+              </div>
+              <div className="ctrl3d">
+                <div className="ctrl3d-body">
+                  <Viewport3D azimuth={cam.azimuth} elevation={cam.elevation} zoom={cam.zoom} onChange={setCam} active={use3D}/>
+                  <div className="ctrl3d-panel">
+                    <div className="presets">
+                      <div className="preset-label">Quick Presets</div>
+                      <div className="preset-grid">
+                        {PRESETS_3D.map(pr=>(
+                          <button key={pr.label} className="preset-btn" onClick={()=>setCam(p=>({...p,azimuth:pr.az,elevation:pr.el}))}>
+                            {pr.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="sliders">
+                      {[
+                        {label:"Rotation",key:"azimuth",min:-180,max:180,unit:"°",get:p=>Math.round(((p.azimuth+180)%360)-180)},
+                        {label:"Tilt",key:"elevation",min:-90,max:90,unit:"°",get:p=>Math.round(p.elevation)},
+                        {label:"Distance",key:"zoom",min:1,max:25,unit:"m",get:p=>Math.round(p.zoom)},
+                      ].map(sl=>(
+                        <div key={sl.key} className="slider-row">
+                          <div className="slider-hdr">
+                            <span className="slider-label">{sl.label}</span>
+                            <span className="slider-val">{sl.get(cam)>0&&sl.key!=="zoom"?"+":""}{sl.get(cam)}{sl.unit}</span>
+                          </div>
+                          <input type="range" min={sl.min} max={sl.max} step={1} value={sl.get(cam)}
+                            onChange={e=>{const v=Number(e.target.value);setCam(p=>({...p,[sl.key]:sl.key==="azimuth"?((v+360)%360):v}));}}/>
+                        </div>
+                      ))}
+                    </div>
+                    {use3D&&<div className="angle-desc">{describe3D(cam.azimuth,cam.elevation,cam.zoom)}</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* SCENE PARAMETERS */}
+      <div className="sec">
+        <div className="sh"><span className="st">Scene parameters</span></div>
+        <div style={{fontSize:11,color:"var(--t4)",marginBottom:20,padding:"8px 12px",borderRadius:6,background:"rgba(255,255,255,.03)",border:"1px solid var(--bd)",lineHeight:1.6}}>
+          ⚙ Applied to the generated scene. People from your photos are replaced by virtual figures — only environment and props are preserved.
+        </div>
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Lighting</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {LIGHT_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>tog1(setLight,r.id)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:150,
+                  border:"2px solid "+(light===r.id?"var(--acc)":"var(--bd)"),
+                  boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:light===r.id?"var(--acc)":"var(--t)"}}><span translate="no">{r.name}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Environment</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            {ENV_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>tog1(setBg,r.id)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:133,
+                  border:"2px solid "+(bg===r.id?"var(--acc)":"var(--bd)"),
+                  boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:bg===r.id?"var(--acc)":"var(--t)"}}><span translate="no">{r.name}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{marginBottom:24}}>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Lens</div>
+          <div className="lens-row">
+            {LENS_SPRITES.map(r=>(
+              <div key={r.mm} onClick={()=>tog1(setLens,r.mm)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:150,
+                  border:"2px solid "+(lens===r.mm?"var(--acc)":"var(--bd)"),
+                  boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:lens===r.mm?"var(--acc)":"var(--t)"}}><span translate="no">{r.mm}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:24,flexWrap:"wrap",marginBottom:24}}>
+          <div style={{flex:"1 1 300px"}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Film Stock</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {FILM_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>tog1(setFilmStock,r.id)}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:150,
+                    border:"2px solid "+(filmStock===r.id?"var(--acc)":"var(--bd)"),
+                    boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/film.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:filmStock===r.id?"var(--acc)":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{flex:"1 1 300px"}}>
+            <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Color Grade</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+              {COLOR_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>tog1(setColorGrade,r.id)}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:150,
+                    border:"2px solid "+(colorGrade===r.id?"var(--acc)":"var(--bd)"),
+                    boxShadow:colorGrade===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:colorGrade===r.id?"var(--acc)":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:2,marginBottom:12}}>Aspect Ratio</div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {FORMAT_SPRITES.map(r=>(
+              <div key={r.id} onClick={()=>setAspectRatio(r.id)}
+                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",transition:"all .15s",width:r.fw,
+                  border:"2px solid "+(aspectRatio===r.id?"var(--acc)":"var(--bd)"),
+                  boxShadow:aspectRatio===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                  display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
+                <div style={{width:80,height:80,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{paddingBottom:6,textAlign:"center",fontSize:11,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"var(--t)"}}><span translate="no">{r.name}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CUSTOM */}
+      <div className="sec">
+        <div className="sh"><span className="st">Additional details</span><span className="sb" translate="no">OPTIONAL</span></div>
+        <textarea rows={3} value={custom} onChange={e=>{setCustom(e.target.value);setEnhanced("");}}
+          placeholder="Extra requests: 'more dramatic shadows', 'autumn leaves in background', 'collar should have a visible name tag'"/>
+      </div>
+
+      {/* PROMPT OUTPUT */}
+      <div className="sec">
+        <div className="sh"><span className="st">Generated Prompt</span>{hasContent&&<span className="sb" translate="no">LIVE</span>}</div>
+        <div className={`pbox${hasContent?" live":""}`}>
+          {hasContent?(enhanced||prompt):<span className="pbox-empty">Configure options above to generate your composition prompt.</span>}
+        </div>
+        {enhanced&&(
+          <div style={{marginTop:8,fontSize:11,color:"var(--acc)",fontWeight:600,letterSpacing:1}}>
+            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"var(--t4)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert</button>
+          </div>
+        )}
+        <div className="pbar" translate="no">
+          <button className="btn" onClick={reset}>Reset</button>
+          <button className="btn" onClick={enhance} disabled={!hasContent||enhancing}
+            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"var(--t4)":"var(--acc)",background:"var(--acdim)"}}>
+            {enhancing?"ENHANCING…":"✦ AI Prompt Enhance"}
+          </button>
+          <button className={`btn${hasContent?" pri":""}`} onClick={copy} disabled={!hasContent}>
+            <span translate="no">Copy Prompt</span> <span style={{fontSize:10,opacity:.6,fontWeight:400}}>EN</span>
+          </button>
+        </div>
+        {hasContent&&(
+          <div style={{marginTop:16,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Generate with</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}} translate="no">
+              {GEN_TARGETS.map(t=>(
+                <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+                  <button className="genwith-btn" onClick={async()=>{await copyText(enhanced||prompt);doToast("PROMPT COPIED — ATTACH YOUR PHOTOS");window.open(t.url,"_blank","noopener,noreferrer");}}>
+                    <span>{t.icon}</span>{t.label} ↗
+                  </button>
+                  {t.warn&&<span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7}}>⚠️</span>}
+                </div>
+              ))}
+            </div>
+            <div style={{borderTop:"1px solid var(--bd)",paddingTop:12,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+              <span style={{fontSize:11,color:"var(--t4)"}}>💡 Next step:</span>
+              <button onClick={()=>setPage("angles")}
+                style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                🎬 Multi-Shot — create grid
+              </button>
+              <button onClick={()=>setPage("video")}
+                style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+                🎥 Video — animate it
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {toast&&<div className="toast">{toast}</div>}
+      {enhancing&&<EnhancingIndicator/>}
+      {showAuthModal&&<AuthModal onClose={()=>setShowAuthModal(false)}/>}
     </div>
   );
 }
@@ -3338,7 +4123,7 @@ export default function App(){
             <button className={`nt${page==="avatars"?" on":""}`} onClick={()=>setPage("avatars")}>Character Sheet</button>
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")} translate="no">Multi-Shot</button>
             <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video</button>
-            <a href="https://github.com/mimaotomao/prompto_ministudio" target="_blank" rel="noopener noreferrer" className="nt" style={{textDecoration:"none"}} translate="no">GitHub ↗</a>
+            <button className={`nt${page==="pet"?" on":""}`} onClick={()=>setPage("pet")}>Pet Studio</button>
             <button
               className="nt"
               onClick={toggleEN}
@@ -3355,7 +4140,7 @@ export default function App(){
             </button>
           </div>
         </nav>
-        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:<VideoPromptPage/>}
+        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:page==="pet"?<PetPage/>:<VideoPromptPage/>}
       </div>
       </PageCtx.Provider>
     </AuthCtx.Provider>
