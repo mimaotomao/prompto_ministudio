@@ -3289,31 +3289,107 @@ function HowItWorksPage(){
 
 // ─── PET STUDIO ───────────────────────────────────────────────────────────────
 
+// ── PET SPRITE DATA ──────────────────────────────────────────────────────────
+// pet-inputs.png: 300×80, 3 cells 100×80
+const PET_INPUT_SPRITES=[
+  {key:"product",label:"I have a product",   sub:"photo / description / concept",  sx:0},
+  {key:"pet",    label:"I have a pet photo",  sub:"real animal — used as reference", sx:-100},
+  {key:"human",  label:"I have a person photo",sub:"replaced by virtual figure",    sx:-200},
+];
+// pet-species-real.png: 900×100, 9 cells 100×100
+const PET_REAL_SPRITES=[
+  {id:"dog",      name:"Dog",      sx:0},
+  {id:"cat",      name:"Cat",      sx:-100},
+  {id:"rabbit",   name:"Rabbit",   sx:-200},
+  {id:"horse",    name:"Horse",    sx:-300},
+  {id:"hamster",  name:"Hamster",  sx:-400},
+  {id:"parrot",   name:"Parrot",   sx:-500},
+  {id:"turtle",   name:"Turtle",   sx:-600},
+  {id:"fish",     name:"Fish",     sx:-700},
+  {id:"hedgehog", name:"Hedgehog", sx:-800},
+];
+// pet-species-fantasy.png: 1400×200, 7 cells 200×200
+const PET_FANTASY_SPRITES=[
+  {id:"dragon",   name:"Dragon",         sx:0},
+  {id:"unicorn",  name:"Unicorn",        sx:-200},
+  {id:"griffin",  name:"Griffin",        sx:-400},
+  {id:"phoenix",  name:"Phoenix",        sx:-600},
+  {id:"fluffy",   name:"Fluffy Creature",sx:-800},
+  {id:"hellhound",name:"Hellhound",      sx:-1000},
+  {id:"imp",      name:"Imp",            sx:-1200},
+];
+// pet-breeds-dog.png: 1000×200, 10×2 cells 100×100, 19 breeds (cell 20 excluded)
+const PET_DOG_BREED_SPRITES=[
+  {id:"Golden Retriever",  sx:0,    sy:0,    desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
+  {id:"German Shepherd",   sx:-100, sy:0,    desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
+  {id:"French Bulldog",    sx:-200, sy:0,    desc:"bat ears wide at base, flat face, wrinkled skin, brindle color"},
+  {id:"Labrador",          sx:-300, sy:0,    desc:"broad head, kind expression, floppy ears, short dense coat, chocolate brown"},
+  {id:"Beagle",            sx:-400, sy:0,    desc:"long floppy ears set low, domed head, tricolor black white brown"},
+  {id:"Dachshund",         sx:-500, sy:0,    desc:"long narrow snout, long droopy ears, elongated head, red solid color"},
+  {id:"Husky",             sx:-600, sy:0,    desc:"erect triangular ears, masked face, blue almond-shaped eyes, gray and white"},
+  {id:"Boxer",             sx:-700, sy:0,    desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
+  {id:"Poodle",            sx:-800, sy:0,    desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
+  {id:"Mixed breed",       sx:-900, sy:0,    desc:"medium-sized mixed breed, black with white markings"},
+  {id:"Pomeranian",        sx:0,    sy:-100, desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
+  {id:"Shih Tzu",          sx:-100, sy:-100, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
+  {id:"Maltese",           sx:-200, sy:-100, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
+  {id:"Cavalier",          sx:-300, sy:-100, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
+  {id:"Havanese",          sx:-400, sy:-100, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
+  {id:"Boston Terrier",    sx:-500, sy:-100, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
+  {id:"Yorkshire Terrier", sx:-600, sy:-100, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
+  {id:"Pug",               sx:-700, sy:-100, desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
+  {id:"Mini Schnauzer",    sx:-800, sy:-100, desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+];
+// pet-breeds-cat.png: 900×200, 9×2 cells 100×100
+const PET_CAT_BREED_SPRITES=[
+  {id:"European Shorthair", sx:0,    sy:0,    desc:"tabby pattern with M marking on forehead, medium upright ears, green eyes, short dense coat"},
+  {id:"Maine Coon",         sx:-100, sy:0,    desc:"large tufted ears with lynx tips, square muzzle, heavy mane and ruff, long shaggy brown tabby coat"},
+  {id:"Persian",            sx:-200, sy:0,    desc:"completely flat brachycephalic face, tiny rounded ears set low, extremely long flowing white coat, large round copper eyes"},
+  {id:"Siamese",            sx:-300, sy:0,    desc:"extreme wedge-shaped triangular head, large triangular ears, deep vivid blue eyes, dark brown points on cream body"},
+  {id:"British Shorthair",  sx:-400, sy:0,    desc:"round massive head with prominent chubby cheeks, round copper eyes, dense plush teddy-bear coat, solid blue-gray"},
+  {id:"Ragdoll",            sx:-500, sy:0,    desc:"large oval brilliant blue eyes, semi-long silky coat, colorpoint with distinctive pure white mittens on paws"},
+  {id:"Sphynx",             sx:-600, sy:0,    desc:"completely hairless wrinkled skin, enormous bat-like ears, lemon-shaped eyes, black skin visible"},
+  {id:"Scottish Fold",      sx:-700, sy:0,    desc:"tiny ears folded forward and downward, round owl-like face, huge round copper eyes, short dense blue-gray coat"},
+  {id:"Bengal",             sx:-800, sy:0,    desc:"dramatic leopard-like spotted and rosette pattern, small wild head, pronounced whisker pads, glittered gold coat"},
+  {id:"Abyssinian",         sx:0,    sy:-100, desc:"ticked coat with each hair banded multiple colors ruddy brown with black tipping, large alert ears, elegant wedge head"},
+  {id:"Exotic Shorthair",   sx:-100, sy:-100, desc:"flat face like Persian but short plush coat, large round copper eyes, silver tabby pattern on silver background"},
+  {id:"Burmese",            sx:-200, sy:-100, desc:"glossy satin-like coat, rich sable brown solid color, rounded head with full cheeks, large round gold eyes"},
+  {id:"Russian Blue",       sx:-300, sy:-100, desc:"silver-tipped blue coat that shimmers, triangular head with flat plane, vivid green eyes, large ears wide at base"},
+  {id:"Devon Rex",          sx:-400, sy:-100, desc:"pixie-like elfin head, huge low-set bat ears, wavy and curly short black coat, high prominent cheekbones"},
+  {id:"Turkish Angora",     sx:-500, sy:-100, desc:"long fine silky white coat, elegant wedge head, large pointed ears, brilliant blue eyes"},
+  {id:"Norwegian Forest Cat",sx:-600,sy:-100, desc:"triangular head with long nose, large tufted ears with lynx tips, heavy neck ruff, long water-resistant coat black and silver tabby"},
+  {id:"Birman",             sx:-700, sy:-100, desc:"semi-long silky coat, colorpoint pattern with pure white gloves on all four paws, deep blue eyes, round head with full cheeks"},
+  {id:"Oriental Shorthair", sx:-800, sy:-100, desc:"extreme wedge-shaped triangular head, hugely exaggerated ears, long slender muzzle, solid black short coat, vivid green eyes"},
+];
+// pet-breeds-horse.png: 900×120, 6 cells 150×120
+const PET_HORSE_BREED_SPRITES=[
+  {id:"Arabian",       sx:0,    desc:"chestnut color, refined dished profile, large nostrils, arched neck, high tail carriage"},
+  {id:"Thoroughbred",  sx:-150, desc:"bay color, long elegant neck, lean athletic build, deep chest"},
+  {id:"Quarter Horse", sx:-300, desc:"palomino color, broad forehead, short refined head, muscular compact build"},
+  {id:"Friesian",      sx:-450, desc:"jet black color, thick flowing mane, feathered lower legs, arched powerful neck"},
+  {id:"Appaloosa",     sx:-600, desc:"spotted coat pattern brown spots on light background, strong sturdy build"},
+  {id:"Andalusian",    sx:-750, desc:"grey dappled color, slightly convex profile, thick wavy mane, compact powerful body"},
+];
+
 const PET_SPECIES_REAL=[
-  {id:"dog",    name:"Dog",         emoji:"🐕", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",
-   breeds:["Golden Retriever","German Shepherd","French Bulldog","Labrador","Beagle","Dachshund","Husky","Boxer","Poodle","Mixed breed"]},
-  {id:"cat",    name:"Cat",         emoji:"🐈", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",
-   breeds:["European","Maine Coon","Persian","Siamese","British Shorthair","Ragdoll","Sphynx","Scottish Fold"]},
-  {id:"rabbit", name:"Rabbit",      emoji:"🐇", hasBreeds:false, hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",
-   earOptions:["upright","floppy","half-upright"]},
-  {id:"horse",  name:"Horse",       emoji:"🐎", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"legs",
-   breeds:["Arabian","Thoroughbred","Quarter Horse","Friesian","Appaloosa","Andalusian"]},
-  {id:"hamster",name:"Hamster",     emoji:"🐹", hasBreeds:false, hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws"},
-  {id:"parrot", name:"Parrot",      emoji:"🦜", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:true,  limbsName:"feet",
-   hasWings:true, hasBeak:true, beakOptions:["short hooked","long curved","parrot-style"]},
-  {id:"turtle", name:"Turtle",      emoji:"🐢", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:true,  limbsName:"legs", hasShell:true},
-  {id:"fish",   name:"Fish",        emoji:"🐠", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:false, hasFins:true, jokeMode:true},
-  {id:"hedgehog",name:"Hedgehog",   emoji:"🦔", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws", hasSpines:true},
+  {id:"dog",      name:"Dog",      emoji:"🐕", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",  breedSprites:PET_DOG_BREED_SPRITES},
+  {id:"cat",      name:"Cat",      emoji:"🐈", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",  breedSprites:PET_CAT_BREED_SPRITES},
+  {id:"rabbit",   name:"Rabbit",   emoji:"🐇", hasBreeds:false, hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",  earOptions:["upright","floppy","half-upright"]},
+  {id:"horse",    name:"Horse",    emoji:"🐎", hasBreeds:true,  hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"legs",  breedSprites:PET_HORSE_BREED_SPRITES},
+  {id:"hamster",  name:"Hamster",  emoji:"🐹", hasBreeds:false, hasCoat:true,  hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws"},
+  {id:"parrot",   name:"Parrot",   emoji:"🦜", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:true,  limbsName:"feet",  hasWings:true, hasBeak:true, beakOptions:["short hooked","long curved","parrot-style"]},
+  {id:"turtle",   name:"Turtle",   emoji:"🐢", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:true,  limbsName:"legs",  hasShell:true},
+  {id:"fish",     name:"Fish",     emoji:"🐠", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:false, hasLimbs:false, hasFins:true},
+  {id:"hedgehog", name:"Hedgehog", emoji:"🦔", hasBreeds:false, hasCoat:false, hasTail:true,  hasEars:true,  hasLimbs:true,  limbsName:"paws",  hasSpines:true},
 ];
 const PET_SPECIES_FANTASY=[
-  {id:"dragon",   name:"Dragon",         emoji:"🐉", hasWings:true,  hasTail:true,  hasHorns:true, hasFire:true,
-   sizeOptions:["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"]},
-  {id:"unicorn",  name:"Unicorn",        emoji:"🦄", hasWings:false, hasTail:true,  hasHorn:true,  hasMane:true},
-  {id:"griffin",  name:"Griffin",        emoji:"🦅", hasWings:true,  hasTail:true,  hybrid:"eagle front / lion rear"},
-  {id:"phoenix",  name:"Phoenix",        emoji:"🔥", hasWings:true,  hasTail:true,  hasFire:true,  isBird:true},
-  {id:"fluffy",   name:"Fluffy Creature",emoji:"👾", customizable:true},
-  {id:"hellhound",name:"Hellhound",      emoji:"🔥", hasTail:true,   hasFire:true,  glowingEyes:true},
-  {id:"imp",      name:"Imp",            emoji:"👹", hasTail:true,   hasHorns:true, isSmall:true},
+  {id:"dragon",   name:"Dragon",         emoji:"🐉", hasWings:true,  hasTail:true, hasHorns:true, hasFire:true,  sizeOptions:["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"]},
+  {id:"unicorn",  name:"Unicorn",        emoji:"🦄", hasWings:false, hasTail:true, hasHorn:true,  hasMane:true},
+  {id:"griffin",  name:"Griffin",        emoji:"🦅", hasWings:true,  hasTail:true, hybrid:"eagle front / lion rear"},
+  {id:"phoenix",  name:"Phoenix",        emoji:"🔥", hasWings:true,  hasTail:true, hasFire:true,  isBird:true},
+  {id:"fluffy",   name:"Fluffy Creature",emoji:"👾", customizable:true, sizeOptions:["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"]},
+  {id:"hellhound",name:"Hellhound",      emoji:"🔥", hasTail:true,  hasFire:true, glowingEyes:true},
+  {id:"imp",      name:"Imp",            emoji:"👹", hasTail:true,  hasHorns:true,isSmall:true},
 ];
 const EMPATHY_STYLES=[
   {id:"cute",     label:"Cute",     emoji:"🥰", visual:"fluffy cute friendly large eyes pastel colors"},
@@ -3330,7 +3406,7 @@ const PET_POSES={
   dog:["standing","sitting","lying down","running","jumping","on leash","sniffing","playing"],
   cat:["sitting","stretched out","curled up","jumping","grooming","hunting pose","perched"],
   parrot:["perched","in flight","on hand","resting","grooming"],
-  fish:["swimming","floating","jumping (gag)"],
+  fish:["swimming","floating"],
   default:["standing","sitting","lying down","in motion","jumping","curled up"],
 };
 const PET_ACCESSORIES={
@@ -3557,8 +3633,14 @@ function PetPage(){
         if(sp.hybrid)L.push("Hybrid form: "+sp.hybrid);
       }else{
         const sp=PET_SPECIES_REAL.find(s=>s.id===vpSpecies)||PET_SPECIES_REAL[0];
+        // Find breed with description
+        let breedDesc="";
+        if(sp.breedSprites){
+          const bData=sp.breedSprites.find(b=>b.id===vpBreed);
+          if(bData&&bData.desc)breedDesc=" — "+bData.desc;
+        }
         const breedStr=(sp.hasBreeds&&vpBreed)?" ("+vpBreed+")":"";
-        L.push("VIRTUAL PET: "+sp.name+breedStr);
+        L.push("VIRTUAL PET: "+sp.name+breedStr+(breedDesc?"\nBreed characteristics: "+breedDesc.slice(3):""));
         if(sp.hasCoat)L.push("Coat: "+vpCoatType+", "+vpCoatPattern+" pattern, color: "+vpCoatColors);
         if(sp.hasTail)L.push("Tail: "+vpTail);
         if(sp.hasEars)L.push("Ears: "+vpEars);
@@ -3566,7 +3648,6 @@ function PetPage(){
         if(sp.hasWings)L.push("Wings: "+vpPose==="in flight"?"spread, in flight":"folded");
         if(sp.hasSpines)L.push("Spines: raised, detailed texture");
         if(sp.hasShell)L.push("Shell: prominent, detailed");
-        if(sp.jokeMode&&vpJokeLegs)L.push("🎭 Gag: add small realistic legs to the fish");
         if(sp.hasFins)L.push("Fins: detailed, semi-transparent");
       }
       L.push("Pose: "+vpPose+". Gaze: "+vpGaze);
@@ -3754,29 +3835,29 @@ function PetPage(){
         )}
       </div>
 
-      {/* WHAT ARE YOU BRINGING — horizontal */}
+      {/* WHAT ARE YOU BRINGING — sprite cards */}
       <div className="sec">
         <div className="sh"><span className="st">What are you bringing?</span><span className="sb">START HERE</span></div>
         <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-          {[
-            {key:"product",label:"🛍 I have a product", sub:"photo / description / concept",  state:hasProduct, set:setHasProduct},
-            {key:"pet",    label:"🐾 I have a pet photo",sub:"real animal — used as reference", state:hasPetPhoto,set:setHasPetPhoto},
-            {key:"human",  label:"📸 I have a person photo",sub:"replaced by virtual figure",  state:hasHumanPhoto,set:setHasHumanPhoto},
-          ].map(item=>(
-            <div key={item.key} onClick={()=>{item.set(v=>!v);setEnhanced("");}}
-              style={{flex:"1 1 160px",display:"flex",alignItems:"center",gap:10,padding:"12px 14px",borderRadius:10,cursor:"pointer",
-                border:"2px solid "+(item.state?"var(--acc)":"var(--bd)"),
-                background:item.state?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-              <div style={{width:20,height:20,borderRadius:4,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",
-                border:"2px solid "+(item.state?"var(--acc)":"var(--bd)"),background:item.state?"var(--acc)":"transparent"}}>
-                {item.state&&<span style={{color:"#000",fontSize:12,fontWeight:900,lineHeight:1}}>✓</span>}
+          {PET_INPUT_SPRITES.map((item)=>{
+            const stateMap={product:hasProduct,pet:hasPetPhoto,human:hasHumanPhoto};
+            const setMap={product:setHasProduct,pet:setHasPetPhoto,human:setHasHumanPhoto};
+            const active=stateMap[item.key];
+            return(
+              <div key={item.key} onClick={()=>{setMap[item.key](v=>!v);setEnhanced("");}}
+                style={{flex:"1 1 140px",cursor:"pointer",borderRadius:10,overflow:"hidden",
+                  border:"2px solid "+(active?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:active?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
+                <div style={{width:"100%",height:80,backgroundImage:"url(/pet-inputs.png)",
+                  backgroundSize:"300px 80px",backgroundPosition:item.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{padding:"8px 10px 10px"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:active?"var(--acc)":"var(--t)"}}>{item.label}</div>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{item.sub}</div>
+                </div>
+                {active&&<div style={{height:3,background:"var(--acc)"}}/>}
               </div>
-              <div>
-                <div style={{fontSize:12,fontWeight:700,color:item.state?"var(--acc)":"var(--t)"}}>{item.label}</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:1}}>{item.sub}</div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -3871,44 +3952,93 @@ function PetPage(){
         {/* TAB: SPECIES */}
         {pTab==="species"&&(
           <div>
+            {/* Real / Fantasy toggle */}
             <div style={{display:"flex",gap:8,marginBottom:16}}>
               <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");setEnhanced("");}}
                 style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
-                  border:"2px solid "+(!vpIsFantasy?"var(--acc)":"var(--bd)"),
-                  background:!vpIsFantasy?"var(--acdim)":"var(--s1)",color:!vpIsFantasy?"var(--acc)":"var(--t)"}}>
+                  border:"2px solid "+(!vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:!vpIsFantasy?"var(--acdim)":"transparent",color:!vpIsFantasy?"var(--acc)":"var(--t)"}}>
                 Real animal
               </button>
               <button onClick={()=>{setVpIsFantasy(true);setVpSpecies("dragon");setEnhanced("");}}
                 style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
-                  border:"2px solid "+(vpIsFantasy?"var(--acc)":"var(--bd)"),
-                  background:vpIsFantasy?"var(--acdim)":"var(--s1)",color:vpIsFantasy?"var(--acc)":"var(--t)"}}>
+                  border:"2px solid "+(vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"var(--t)"}}>
                 Fantasy creature
               </button>
             </div>
-            {/* Species grid — large emoji cards */}
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(88px,1fr))",gap:8,marginBottom:20}}>
-              {(vpIsFantasy?PET_SPECIES_FANTASY:PET_SPECIES_REAL).map(sp=>(
-                <button key={sp.id} onClick={()=>{setVpSpecies(sp.id);if(!vpIsFantasy&&sp.breeds)setVpBreed(sp.breeds[0]);setEnhanced("");}}
-                  style={{padding:"14px 8px 10px",borderRadius:10,cursor:"pointer",
-                    border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"var(--bd)"),
-                    background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",
-                    display:"flex",flexDirection:"column",alignItems:"center",gap:5,transition:"all .15s"}}>
-                  <span style={{fontSize:30,lineHeight:1}}>{sp.emoji}</span>
-                  <span style={{fontSize:11,fontWeight:700,color:vpSpecies===sp.id?"var(--acc)":"var(--t)",textAlign:"center",lineHeight:1.2}}>{sp.name}</span>
-                </button>
-              ))}
-            </div>
-            {/* Breed */}
-            {!vpIsFantasy&&spData.hasBreeds&&(
+
+            {/* Real species — sprite strip */}
+            {!vpIsFantasy&&(
+              <>
+                <SL>Species</SL>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                  {PET_REAL_SPRITES.map(sp=>(
+                    <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setVpBreed("");setEnhanced("");}}
+                      style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                        border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                        boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                        background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
+                      <div style={{width:100,height:100,backgroundImage:"url(/pet-species-real.png)",
+                        backgroundSize:"900px 100px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                      <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
+                        color:vpSpecies===sp.id?"var(--acc)":"var(--t)"}}>{sp.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Fantasy species — sprite strip */}
+            {vpIsFantasy&&(
+              <>
+                <SL>Creature</SL>
+                <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+                  {PET_FANTASY_SPRITES.map(sp=>(
+                    <div key={sp.id} onClick={()=>{setVpSpecies(sp.id);setEnhanced("");}}
+                      style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                        border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                        boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                        background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
+                      <div style={{width:200,height:200,backgroundImage:"url(/pet-species-fantasy.png)",
+                        backgroundSize:"1400px 200px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                      <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
+                        color:vpSpecies===sp.id?"var(--acc)":"var(--t)"}}>{sp.name}</div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Breed — sprite grid */}
+            {!vpIsFantasy&&spData.breedSprites&&(
               <div style={{marginBottom:16}}>
                 <SL>Breed</SL>
-                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                  {spData.breeds.map(b=>(
-                    <Pill key={b} active={vpBreed===b} onClick={()=>{setVpBreed(b);setEnhanced("");}}>{b}</Pill>
-                  ))}
+                <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                  {spData.breedSprites.map(b=>{
+                    const isHorse=vpSpecies==="horse";
+                    const w=isHorse?150:100, h=isHorse?120:100;
+                    const bgW=isHorse?900:vpSpecies==="cat"?900:1000;
+                    const bgH=isHorse?120:200;
+                    return(
+                      <div key={b.id} onClick={()=>{setVpBreed(b.id);setEnhanced("");}}
+                        style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                          border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                          boxShadow:vpBreed===b.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                          background:vpBreed===b.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
+                        <div style={{width:w,height:h,
+                          backgroundImage:"url(/pet-breeds-"+(vpSpecies==="horse"?"horse":vpSpecies)+".png)",
+                          backgroundSize:bgW+"px "+bgH+"px",
+                          backgroundPosition:b.sx+"px "+(b.sy||0)+"px",backgroundRepeat:"no-repeat"}}/>
+                        <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
+                          color:vpBreed===b.id?"var(--acc)":"var(--t)",maxWidth:w}}>{b.id}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
+
             {/* Fantasy: empathy + size */}
             {vpIsFantasy&&(
               <>
@@ -3917,8 +4047,8 @@ function PetPage(){
                   {EMPATHY_STYLES.map(e=>(
                     <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
                       style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
-                        border:"2px solid "+(vpEmpathy===e.id?"var(--acc)":"var(--bd)"),
-                        background:vpEmpathy===e.id?"var(--acdim)":"var(--s1)",
+                        border:"2px solid "+(vpEmpathy===e.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                        background:vpEmpathy===e.id?"var(--acdim)":"transparent",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
                       <span style={{fontSize:24}}>{e.emoji}</span>
                       <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"var(--t)"}}>{e.label}</span>
@@ -3937,7 +4067,6 @@ function PetPage(){
                 )}
               </>
             )}
-
           </div>
         )}
 
