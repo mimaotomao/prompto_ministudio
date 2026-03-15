@@ -3525,58 +3525,166 @@ const PET_POSES={
 };
 const PET_ACCESSORIES={
   dog:[
-    {id:"collar_leather",name:"Leather collar",    cat:"collar"},
-    {id:"collar_chain",  name:"Chain collar",      cat:"collar"},
-    {id:"harness",       name:"Harness",           cat:"harness"},
-    {id:"leash_leather", name:"Leather leash",     cat:"leash"},
-    {id:"leash_retract", name:"Retractable leash", cat:"leash"},
-    {id:"muzzle_basket", name:"Basket muzzle",     cat:"muzzle"},
-    {id:"muzzle_fabric", name:"Fabric muzzle",     cat:"muzzle"},
-    {id:"bed_round",     name:"Round bed",         cat:"bed"},
-    {id:"bed_ortho",     name:"Orthopedic bed",    cat:"bed"},
-    {id:"toy_ball",      name:"Ball",              cat:"toy"},
-    {id:"toy_rope",      name:"Rope toy",          cat:"toy"},
-    {id:"coat_rain",     name:"Rain coat",         cat:"clothing"},
-    {id:"sweater",       name:"Sweater",           cat:"clothing"},
-    {id:"bowl_metal",    name:"Metal bowl",        cat:"bowl"},
+    // collar
+    {id:"collar_leather",     name:"Leather collar",         cat:"collar",    variants:["plain","studded","engraved"]},
+    {id:"collar_chain",       name:"Chain collar",           cat:"collar"},
+    {id:"collar_fabric",      name:"Fabric collar",          cat:"collar",    variants:["solid","patterned","reflective"]},
+    {id:"collar_martingale",  name:"Martingale collar",      cat:"collar"},
+    {id:"collar_elizabethan", name:"Elizabethan collar (cone)",cat:"collar"},
+    // harness
+    {id:"harness_vest",       name:"Vest harness",           cat:"harness",   variants:["step-in","overhead","clip-front"]},
+    {id:"harness_sport",      name:"Sport harness",          cat:"harness"},
+    {id:"harness_no_pull",    name:"No-pull harness",        cat:"harness"},
+    {id:"harness_service",    name:"Service dog harness",    cat:"harness"},
+    // leash
+    {id:"leash_leather",      name:"Leather leash",          cat:"leash"},
+    {id:"leash_nylon",        name:"Nylon leash",            cat:"leash",     variants:["solid","braided","reflective"]},
+    {id:"leash_retract",      name:"Retractable leash",      cat:"leash"},
+    {id:"leash_rope",         name:"Rope leash",             cat:"leash"},
+    {id:"leash_chain",        name:"Chain leash",            cat:"leash"},
+    {id:"leash_bungee",       name:"Bungee leash",           cat:"leash"},
+    // muzzle
+    {id:"muzzle_basket",      name:"Basket muzzle",          cat:"muzzle",    variants:["metal","plastic","wire"]},
+    {id:"muzzle_fabric",      name:"Fabric muzzle",          cat:"muzzle"},
+    {id:"muzzle_leather",     name:"Leather muzzle",         cat:"muzzle"},
+    // clothing
+    {id:"coat_rain",          name:"Rain coat",              cat:"clothing"},
+    {id:"coat_winter",        name:"Winter coat",            cat:"clothing"},
+    {id:"sweater",            name:"Sweater",                cat:"clothing"},
+    {id:"boots",              name:"Boots / paw protectors", cat:"clothing"},
+    {id:"life_jacket",        name:"Life jacket",            cat:"clothing"},
+    {id:"bandana",            name:"Bandana",                cat:"clothing"},
+    // bed
+    {id:"bed_round",          name:"Round plush bed",        cat:"bed"},
+    {id:"bed_ortho",          name:"Orthopedic bed",         cat:"bed"},
+    {id:"bed_donut",          name:"Donut cuddler bed",      cat:"bed"},
+    {id:"crate",              name:"Dog crate",              cat:"bed"},
+    // toys
+    {id:"toy_ball",           name:"Ball",                   cat:"toy",       variants:["rubber","tennis","squeaky","fetch"]},
+    {id:"toy_rope",           name:"Rope toy",               cat:"toy"},
+    {id:"toy_chew",           name:"Chew toy",               cat:"toy"},
+    {id:"toy_squeaky",        name:"Squeaky toy",            cat:"toy"},
+    {id:"toy_tug",            name:"Tug toy",                cat:"toy"},
+    {id:"frisbee",            name:"Frisbee",                cat:"toy"},
+    {id:"kong",               name:"Kong / treat dispenser", cat:"toy"},
+    // feeding
+    {id:"bowl_metal",         name:"Metal bowl",             cat:"bowl"},
+    {id:"bowl_elevated",      name:"Elevated bowl stand",    cat:"bowl"},
+    {id:"bowl_slow",          name:"Slow feeder bowl",       cat:"bowl"},
+    {id:"water_fountain",     name:"Water fountain",         cat:"bowl"},
+    // carrier & transport
+    {id:"carrier_backpack",   name:"Carrier backpack",       cat:"carrier"},
+    {id:"carrier_sling",      name:"Dog sling",              cat:"carrier"},
+    {id:"carrier_bag",        name:"Carrier bag",            cat:"carrier"},
+    {id:"stroller",           name:"Pet stroller",           cat:"carrier"},
   ],
   cat:[
-    {id:"collar_bell",   name:"Bell collar",       cat:"collar"},
-    {id:"collar_safe",   name:"Safety collar",     cat:"collar"},
-    {id:"harness_cat",   name:"Cat harness",       cat:"harness"},
-    {id:"scratcher_v",   name:"Vertical scratcher",cat:"scratcher"},
-    {id:"scratcher_wall",name:"Wall scratcher",    cat:"scratcher"},
-    {id:"cat_tree",      name:"Cat tree",          cat:"scratcher"},
-    {id:"bed_cave",      name:"Cave bed",          cat:"bed"},
-    {id:"toy_mouse",     name:"Mouse toy",         cat:"toy"},
-    {id:"toy_wand",      name:"Feather wand",      cat:"toy"},
-    {id:"carrier_hard",  name:"Hard carrier",      cat:"carrier"},
-    {id:"carrier_soft",  name:"Soft carrier",      cat:"carrier"},
+    {id:"collar_bell",        name:"Bell collar",            cat:"collar"},
+    {id:"collar_breakaway",   name:"Breakaway safety collar",cat:"collar"},
+    {id:"collar_bow",         name:"Bow tie collar",         cat:"collar"},
+    {id:"harness_cat",        name:"Cat harness",            cat:"harness",   variants:["H-style","vest","escape-proof"]},
+    {id:"leash_cat",          name:"Cat leash",              cat:"leash"},
+    {id:"scratcher_v",        name:"Vertical scratcher",     cat:"scratcher"},
+    {id:"scratcher_horiz",    name:"Horizontal scratcher",   cat:"scratcher"},
+    {id:"scratcher_wall",     name:"Wall-mounted scratcher", cat:"scratcher"},
+    {id:"cat_tree",           name:"Cat tree",               cat:"furniture"},
+    {id:"cat_shelf",          name:"Wall shelf",             cat:"furniture"},
+    {id:"cat_tunnel",         name:"Cat tunnel",             cat:"furniture"},
+    {id:"bed_cave",           name:"Cave bed",               cat:"bed"},
+    {id:"bed_hammock",        name:"Hammock bed",            cat:"bed"},
+    {id:"bed_heated",         name:"Heated bed",             cat:"bed"},
+    {id:"toy_mouse",          name:"Mouse toy",              cat:"toy"},
+    {id:"toy_wand",           name:"Feather wand",           cat:"toy"},
+    {id:"toy_laser",          name:"Laser pointer",          cat:"toy"},
+    {id:"toy_ball_cat",       name:"Ball with bell",         cat:"toy"},
+    {id:"carrier_hard",       name:"Hard carrier",           cat:"carrier"},
+    {id:"carrier_soft",       name:"Soft carrier bag",       cat:"carrier"},
+    {id:"carrier_backpack_cat",name:"Bubble backpack",       cat:"carrier"},
+    {id:"bow_tie",            name:"Bow tie",                cat:"clothing"},
+    {id:"hat_cat",            name:"Hat",                    cat:"clothing"},
   ],
   horse:[
-    {id:"saddle_eng",    name:"English saddle",    cat:"saddle"},
-    {id:"saddle_west",   name:"Western saddle",    cat:"saddle"},
-    {id:"bridle",        name:"Bridle",            cat:"bridle"},
-    {id:"halter",        name:"Halter",            cat:"halter"},
-    {id:"blanket",       name:"Blanket",           cat:"blanket"},
-    {id:"leg_wraps",     name:"Leg wraps",         cat:"protection"},
+    {id:"saddle_english",     name:"English saddle",         cat:"saddle"},
+    {id:"saddle_western",     name:"Western saddle",         cat:"saddle"},
+    {id:"saddle_dressage",    name:"Dressage saddle",        cat:"saddle"},
+    {id:"saddle_pad",         name:"Saddle pad / numnah",    cat:"saddle"},
+    {id:"bridle",             name:"Bridle",                 cat:"bridle"},
+    {id:"bridle_bitless",     name:"Bitless bridle",         cat:"bridle"},
+    {id:"halter",             name:"Halter",                 cat:"halter",   variants:["rope","leather","nylon"]},
+    {id:"lead_rope",          name:"Lead rope",              cat:"halter"},
+    {id:"blanket_turnout",    name:"Turnout rug",            cat:"blanket"},
+    {id:"blanket_stable",     name:"Stable blanket",         cat:"blanket"},
+    {id:"blanket_fleece",     name:"Fleece cooler",          cat:"blanket"},
+    {id:"leg_wraps",          name:"Leg wraps / bandages",   cat:"protection"},
+    {id:"boots_splint",       name:"Splint boots",           cat:"protection"},
+    {id:"boots_hoof",         name:"Hoof boots",             cat:"protection"},
+    {id:"fly_mask",           name:"Fly mask",               cat:"protection"},
+    {id:"martingale",         name:"Martingale",             cat:"bridle"},
+    {id:"breastplate",        name:"Breastplate",            cat:"saddle"},
+  ],
+  rabbit:[
+    {id:"harness_rabbit",     name:"Rabbit harness",         cat:"harness"},
+    {id:"leash_rabbit",       name:"Leash",                  cat:"leash"},
+    {id:"run_playpen",        name:"Exercise pen",           cat:"enclosure"},
+    {id:"hutch",              name:"Hutch",                  cat:"enclosure"},
+    {id:"tunnel_rabbit",      name:"Tunnel",                 cat:"toy"},
+    {id:"toy_chew_rabbit",    name:"Chew toy",               cat:"toy"},
+    {id:"bowl_rabbit",        name:"Food bowl",              cat:"bowl"},
+    {id:"hay_rack",           name:"Hay rack",               cat:"bowl"},
+    {id:"water_bottle",       name:"Water bottle",           cat:"bowl"},
+  ],
+  hamster:[
+    {id:"wheel",              name:"Exercise wheel",         cat:"enrichment"},
+    {id:"ball_hamster",       name:"Exercise ball",          cat:"enrichment"},
+    {id:"hideout",            name:"Hideout / house",        cat:"enrichment"},
+    {id:"chew_wooden",        name:"Wooden chew toy",        cat:"enrichment"},
+    {id:"bowl_hamster",       name:"Food bowl",              cat:"bowl"},
+    {id:"bottle_hamster",     name:"Water bottle",           cat:"bowl"},
   ],
   parrot:[
-    {id:"cage_large",    name:"Large cage",        cat:"cage"},
-    {id:"play_stand",    name:"Play stand",        cat:"stand"},
-    {id:"perch_wood",    name:"Wood perch",        cat:"perch"},
-    {id:"toy_foraging",  name:"Foraging toy",      cat:"toy"},
+    {id:"cage_large",         name:"Large cage",             cat:"cage"},
+    {id:"travel_cage",        name:"Travel cage",            cat:"cage"},
+    {id:"play_stand",         name:"Play stand / gym",       cat:"stand"},
+    {id:"perch_wood",         name:"Wooden perch",           cat:"perch"},
+    {id:"perch_rope",         name:"Rope perch",             cat:"perch"},
+    {id:"perch_mineral",      name:"Mineral perch",          cat:"perch"},
+    {id:"toy_foraging",       name:"Foraging toy",           cat:"toy"},
+    {id:"toy_bell_parrot",    name:"Bell toy",               cat:"toy"},
+    {id:"toy_shredding",      name:"Shredding toy",          cat:"toy"},
+    {id:"toy_foot",           name:"Foot toy",               cat:"toy"},
+    {id:"harness_parrot",     name:"Parrot harness",         cat:"harness"},
+  ],
+  turtle:[
+    {id:"basking_platform",   name:"Basking platform",       cat:"habitat"},
+    {id:"filter",             name:"Filter",                 cat:"habitat"},
+    {id:"basking_lamp",       name:"Basking lamp",           cat:"habitat"},
+    {id:"uvb_bulb",           name:"UVB bulb",               cat:"habitat"},
+    {id:"hide_turtle",        name:"Hide / cave",            cat:"habitat"},
+    {id:"food_dish",          name:"Food dish",              cat:"bowl"},
   ],
   fish:[
-    {id:"aquarium_sm",   name:"Small aquarium",    cat:"aquarium"},
-    {id:"aquarium_lg",   name:"Large aquarium",    cat:"aquarium"},
-    {id:"castle_deco",   name:"Castle decoration", cat:"decoration"},
-    {id:"plants_live",   name:"Live plants",       cat:"plants"},
+    {id:"aquarium_sm",        name:"Small aquarium",         cat:"aquarium"},
+    {id:"aquarium_lg",        name:"Large aquarium",         cat:"aquarium"},
+    {id:"aquarium_nano",      name:"Nano aquarium",          cat:"aquarium"},
+    {id:"castle_deco",        name:"Castle decoration",      cat:"decor"},
+    {id:"plants_live",        name:"Live plants",            cat:"decor"},
+    {id:"plants_silk",        name:"Silk plants",            cat:"decor"},
+    {id:"rock_deco",          name:"Rock formation",         cat:"decor"},
+    {id:"shipwreck_deco",     name:"Shipwreck ornament",     cat:"decor"},
+  ],
+  hedgehog:[
+    {id:"wheel_hedgehog",     name:"Silent wheel",           cat:"enrichment"},
+    {id:"hideout_hedgehog",   name:"Hideout",                cat:"enrichment"},
+    {id:"bath_hedgehog",      name:"Bath tub",               cat:"enrichment"},
+    {id:"bowl_hedgehog",      name:"Food bowl",              cat:"bowl"},
+    {id:"water_bottle_hedgehog",name:"Water bottle",         cat:"bowl"},
   ],
   default:[
-    {id:"generic_bed",   name:"Bed",               cat:"bed"},
-    {id:"generic_toy",   name:"Toy",               cat:"toy"},
-    {id:"generic_bowl",  name:"Bowl",              cat:"bowl"},
+    {id:"generic_collar",     name:"Collar",                 cat:"collar"},
+    {id:"generic_harness",    name:"Harness",                cat:"harness"},
+    {id:"generic_bed",        name:"Bed",                    cat:"bed"},
+    {id:"generic_toy",        name:"Toy",                    cat:"toy"},
+    {id:"generic_bowl",       name:"Bowl",                   cat:"bowl"},
   ],
 };
 const PET_OUTPUT_LAYOUTS=[
@@ -3638,6 +3746,7 @@ function PetPage(){
   // ── ACCESSORIES ──
   const[accMode,setAccMode]=useState("product");
   const[accSelected,setAccSelected]=useState([]);
+  const[accVariants,setAccVariants]=useState({}); // id -> chosen variant
   const[accPrimary,setAccPrimary]=useState("");
   const[accProductMode,setAccProductMode]=useState("existing");
   const[accProductDesc,setAccProductDesc]=useState("");
@@ -3848,7 +3957,7 @@ function PetPage(){
       L.push("Professional product photography lighting: main light highlights material texture and construction details.");
       L.push("");
     }else if(accMode==="standard"&&accSelected.length){
-      const names=accSelected.map(id=>accList.find(a=>a.id===id)?.name||id).join(", ");
+      const names=accSelected.map(id=>{const a=accList.find(x=>x.id===id);const v=accVariants[id];return(a?.name||id)+(v?" ("+v+")":"");}).join(", ");
       L.push("=== ACCESSORIES ===");
       L.push(names);
       L.push("The animal is the main subject. Accessories are natural additions to the scene.");
@@ -3989,73 +4098,40 @@ function PetPage(){
           placeholder="Describe the scene — e.g. my dog sitting in a park wearing a new harness, golden hour lighting — or skip and configure below"/>
       </div>
 
-      {/* 2. STARTING POINT */}
+      {/* 2. STARTING POINT — 4 boxes */}
       <div className="sec">
         <div className="sh"><span className="st">Starting point</span></div>
-
-        {/* Primary: scratch vs photo — mutually exclusive */}
-        <div style={{display:"flex",gap:8,marginBottom:10}}>
-          <button onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setEnhanced("");}}
-            style={{flex:1,padding:"11px 16px",borderRadius:9,cursor:"pointer",textAlign:"left",
-              border:"2px solid "+(useScratch&&!usePetPhoto?"var(--acc)":"rgba(255,255,255,.2)"),
-              background:useScratch&&!usePetPhoto?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-            <div style={{fontSize:13,fontWeight:700,color:useScratch&&!usePetPhoto?"var(--acc)":"#fff"}}>🐾 Generate from scratch</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginTop:2}}>fully virtual — no photos needed</div>
-          </button>
-          <button onClick={()=>{setUseScratch(false);setUsePetPhoto(true);setEnhanced("");}}
-            style={{flex:1,padding:"11px 16px",borderRadius:9,cursor:"pointer",textAlign:"left",
-              border:"2px solid "+(usePetPhoto?"var(--acc)":"rgba(255,255,255,.2)"),
-              background:usePetPhoto?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-            <div style={{fontSize:13,fontWeight:700,color:usePetPhoto?"var(--acc)":"#fff"}}>📸 I have a pet photo</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginTop:2}}>attach when generating — used as identity reference</div>
-          </button>
-        </div>
-
-        {/* Optional additions — always available */}
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-
-          {/* My photo */}
-          <div onClick={()=>{setUseMyPhoto(v=>!v);setEnhanced("");}}
-            style={{flex:"1 1 160px",cursor:"pointer",borderRadius:9,overflow:"hidden",
-              border:"2px solid "+(useMyPhoto?"var(--acc)":"rgba(255,255,255,.15)"),
-              background:useMyPhoto?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-            <div style={{width:"100%",height:70,overflow:"hidden"}}>
-              <div style={{width:"100%",height:70,backgroundImage:"url(/pet-inputs.png)",
-                backgroundSize:"480px 127px",backgroundPosition:"-320px -28px",backgroundRepeat:"no-repeat"}}/>
-            </div>
-            <div style={{padding:"7px 10px 9px",display:"flex",alignItems:"flex-start",gap:7}}>
-              <div style={{width:16,height:16,borderRadius:3,flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center",
-                border:"2px solid "+(useMyPhoto?"var(--acc)":"rgba(255,255,255,.35)"),background:useMyPhoto?"var(--acc)":"transparent"}}>
-                {useMyPhoto&&<span style={{color:"#000",fontSize:10,fontWeight:900}}>✓</span>}
-              </div>
+          {[
+            {key:"scratch", icon:"🐾", title:"Generate from scratch", sub:"fully virtual — no photos needed",
+             active:useScratch&&!usePetPhoto, onClick:()=>{setUseScratch(true);setUsePetPhoto(false);setEnhanced("");}},
+            {key:"petphoto",icon:"📸", title:"I have a pet photo",    sub:"attach when generating",
+             active:usePetPhoto, onClick:()=>{setUseScratch(false);setUsePetPhoto(true);setEnhanced("");}},
+            {key:"me",      icon:"🧑", title:"I'm in the scene",      sub:"my photo — attach when generating",
+             checkbox:true, active:useMyPhoto, onClick:()=>{setUseMyPhoto(v=>!v);setEnhanced("");}},
+            {key:"product", icon:"🛍", title:"I have a product",      sub:"collar, harness, toy…",
+             checkbox:true, active:useProduct, onClick:()=>{setUseProduct(v=>!v);if(!useProduct)setAccOpen(true);setEnhanced("");}},
+          ].map(b=>(
+            <div key={b.key} onClick={b.onClick}
+              style={{flex:"1 1 180px",cursor:"pointer",borderRadius:10,padding:"14px 16px",
+                border:"2px solid "+(b.active?"var(--acc)":"rgba(255,255,255,.18)"),
+                background:b.active?"var(--acdim)":"var(--s1)",transition:"all .15s",
+                display:"flex",alignItems:"flex-start",gap:10}}>
+              {b.checkbox&&(
+                <div style={{width:17,height:17,borderRadius:3,flexShrink:0,marginTop:2,display:"flex",alignItems:"center",justifyContent:"center",
+                  border:"2px solid "+(b.active?"var(--acc)":"rgba(255,255,255,.35)"),background:b.active?"var(--acc)":"transparent"}}>
+                  {b.active&&<span style={{color:"#000",fontSize:10,fontWeight:900}}>✓</span>}
+                </div>
+              )}
+              {!b.checkbox&&(
+                <span style={{fontSize:22,flexShrink:0,lineHeight:1,marginTop:1}}>{b.icon}</span>
+              )}
               <div>
-                <div style={{fontSize:12,fontWeight:700,color:useMyPhoto?"var(--acc)":"#fff"}}>{"I\u2019m in the scene"}</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:1}}>my photo — attach when generating</div>
+                <div style={{fontSize:13,fontWeight:700,color:b.active?"var(--acc)":"#fff"}}>{b.title}</div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.6)",marginTop:2}}>{b.sub}</div>
               </div>
             </div>
-          </div>
-
-          {/* Product */}
-          <div onClick={()=>{setUseProduct(v=>!v);if(!useProduct)setAccOpen(true);setEnhanced("");}}
-            style={{flex:"1 1 160px",cursor:"pointer",borderRadius:9,overflow:"hidden",
-              border:"2px solid "+(useProduct?"var(--acc)":"rgba(255,255,255,.15)"),
-              background:useProduct?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-            <div style={{width:"100%",height:70,overflow:"hidden"}}>
-              <div style={{width:"100%",height:70,backgroundImage:"url(/pet-inputs.png)",
-                backgroundSize:"480px 127px",backgroundPosition:"0px -28px",backgroundRepeat:"no-repeat"}}/>
-            </div>
-            <div style={{padding:"7px 10px 9px",display:"flex",alignItems:"flex-start",gap:7}}>
-              <div style={{width:16,height:16,borderRadius:3,flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center",
-                border:"2px solid "+(useProduct?"var(--acc)":"rgba(255,255,255,.35)"),background:useProduct?"var(--acc)":"transparent"}}>
-                {useProduct&&<span style={{color:"#000",fontSize:10,fontWeight:900}}>✓</span>}
-              </div>
-              <div>
-                <div style={{fontSize:12,fontWeight:700,color:useProduct?"var(--acc)":"#fff"}}>I have a product</div>
-                <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:1}}>collar, harness, toy — attach or describe</div>
-              </div>
-            </div>
-          </div>
-
+          ))}
         </div>
       </div>
 
@@ -4238,7 +4314,7 @@ function PetPage(){
                       const sc=dW/srcCW;
                       const bgW=Math.round(srcCW*srcC*sc);
                       const bgH=Math.round(srcCH*srcR*sc);
-                      const ci=Math.round(Math.abs(b.sx)/100);
+                      const ci=Math.round(Math.abs(b.sx)/(vpSpecies==="horse"?130:100));
                       const ri=b.sy&&b.sy<0?1:0;
                       return(
                         <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
@@ -4314,16 +4390,19 @@ function PetPage(){
                 {companionMode==="animal"&&(
                   <>
                     <SL>Second animal</SL>
-                    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))",gap:8,marginBottom:16}}>
-                      {PET_SPECIES_REAL.filter(s=>s.id!==vpSpecies).map(sp=>(
-                        <button key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
-                          style={{padding:"12px 6px 8px",borderRadius:10,cursor:"pointer",
+                    <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:16}}>
+                      {PET_REAL_SPRITES.filter(s=>s.id!==vpSpecies).map(sp=>(
+                        <div key={sp.id} onClick={()=>{setCompanionSpecies(sp.id);setEnhanced("");}}
+                          style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                             border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                            background:companionSpecies===sp.id?"var(--acdim)":"transparent",
-                            display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                          <span style={{fontSize:24}}>{sp.emoji}</span>
-                          <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
-                        </button>
+                            boxShadow:companionSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                            background:"var(--s1)",transition:"all .15s"}}>
+                          <div style={{width:100,height:100,overflow:"hidden",
+                            backgroundImage:"url(/pet-species-real.png)",
+                            backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
+                          <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
+                            color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
+                        </div>
                       ))}
                     </div>
                   </>
@@ -4566,16 +4645,29 @@ function PetPage(){
 
             {/* Extra accessories multi-select */}
             <div>
-              <SL>Extra items in scene <span style={{fontWeight:400,opacity:.6,fontSize:9}}>(optional)</span></SL>
+              <SL>Accessories <span style={{fontWeight:400,opacity:.6,fontSize:9}}>(multi-select)</span></SL>
               {[...new Set(accList.map(a=>a.cat))].map(cat=>(
-                <div key={cat} style={{marginBottom:10}}>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:5}}>{cat}</div>
-                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    {accList.filter(a=>a.cat===cat).map(a=>(
-                      <Pill key={a.id} active={accSelected.includes(a.id)} onClick={()=>{toggleAccSel(a.id);setEnhanced("");}}>
-                        {accSelected.includes(a.id)?"✓ ":""}{a.name}
-                      </Pill>
-                    ))}
+                <div key={cat} style={{marginBottom:12}}>
+                  <div style={{fontSize:10,color:"rgba(255,255,255,.55)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:700,marginBottom:6}}>{cat}</div>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+                    {accList.filter(a=>a.cat===cat).map(a=>{
+                      const sel=accSelected.includes(a.id);
+                      return(
+                        <div key={a.id} style={{display:"flex",alignItems:"center",gap:0}}>
+                          <Pill active={sel} onClick={()=>{toggleAccSel(a.id);setEnhanced("");}}>
+                            {sel?"✓ ":""}{a.name}
+                          </Pill>
+                          {sel&&a.variants&&(
+                            <select value={accVariants[a.id]||""} onChange={e=>setAccVariants(v=>({...v,[a.id]:e.target.value}))}
+                              style={{marginLeft:4,padding:"5px 8px",borderRadius:6,border:"1px solid var(--acc)",
+                                background:"var(--s2)",color:"var(--acc)",fontSize:11,outline:"none",cursor:"pointer",fontWeight:600}}>
+                              <option value="">— variant</option>
+                              {a.variants.map(vr=><option key={vr} value={vr}>{vr}</option>)}
+                            </select>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
