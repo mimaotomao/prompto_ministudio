@@ -3290,13 +3290,13 @@ function HowItWorksPage(){
 // ─── PET STUDIO ───────────────────────────────────────────────────────────────
 
 // ── PET SPRITE DATA ──────────────────────────────────────────────────────────
-// pet-inputs.png: 300×80, 3 cells 100×80
+// pet-inputs.png: 2000×528, 3 cells 666.7×528 → display 160×126
 const PET_INPUT_SPRITES=[
   {key:"product",label:"I have a product",   sub:"photo / description / concept",  sx:0},
-  {key:"pet",    label:"I have a pet photo",  sub:"real animal — used as reference", sx:-100},
-  {key:"human",  label:"I have a person photo",sub:"replaced by virtual figure",    sx:-200},
+  {key:"pet",    label:"I have a pet photo",  sub:"real animal — used as reference", sx:-160},
+  {key:"human",  label:"I have a person photo",sub:"replaced by virtual figure",    sx:-320},
 ];
-// pet-species-real.png: 900×100, 9 cells 100×100
+// pet-species-real.png: 1408×768, 9 cells 156.4×768 → display 100×100 (bgSize 900×491, posY -156)
 const PET_REAL_SPRITES=[
   {id:"dog",      name:"Dog",      sx:0},
   {id:"cat",      name:"Cat",      sx:-100},
@@ -3308,67 +3308,67 @@ const PET_REAL_SPRITES=[
   {id:"fish",     name:"Fish",     sx:-700},
   {id:"hedgehog", name:"Hedgehog", sx:-800},
 ];
-// pet-species-fantasy.png: 1400×200, 7 cells 200×200
+// pet-species-fantasy.png: 2000×280, 7 cells 285.7×280 → display 100×98 (bgSize 700×98)
 const PET_FANTASY_SPRITES=[
   {id:"dragon",   name:"Dragon",         sx:0},
-  {id:"unicorn",  name:"Unicorn",        sx:-200},
-  {id:"griffin",  name:"Griffin",        sx:-400},
-  {id:"phoenix",  name:"Phoenix",        sx:-600},
-  {id:"fluffy",   name:"Fluffy Creature",sx:-800},
-  {id:"hellhound",name:"Hellhound",      sx:-1000},
-  {id:"imp",      name:"Imp",            sx:-1200},
+  {id:"unicorn",  name:"Unicorn",        sx:-100},
+  {id:"griffin",  name:"Griffin",        sx:-200},
+  {id:"phoenix",  name:"Phoenix",        sx:-300},
+  {id:"fluffy",   name:"Fluffy Creature",sx:-400},
+  {id:"hellhound",name:"Hellhound",      sx:-500},
+  {id:"imp",      name:"Imp",            sx:-600},
 ];
-// pet-breeds-dog.png: 1000×200, 10×2 cells 100×100, 19 breeds (cell 20 excluded)
+// pet-breeds-dog.png: 2000×400, 10×2 cells 200×200 → display 100×100 (bgSize 1000×200)
 const PET_DOG_BREED_SPRITES=[
-  {id:"Golden Retriever",  sx:0,    sy:0,    desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
-  {id:"German Shepherd",   sx:-100, sy:0,    desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
-  {id:"French Bulldog",    sx:-200, sy:0,    desc:"bat ears wide at base, flat face, wrinkled skin, brindle color"},
-  {id:"Labrador",          sx:-300, sy:0,    desc:"broad head, kind expression, floppy ears, short dense coat, chocolate brown"},
-  {id:"Beagle",            sx:-400, sy:0,    desc:"long floppy ears set low, domed head, tricolor black white brown"},
-  {id:"Dachshund",         sx:-500, sy:0,    desc:"long narrow snout, long droopy ears, elongated head, red solid color"},
-  {id:"Husky",             sx:-600, sy:0,    desc:"erect triangular ears, masked face, blue almond-shaped eyes, gray and white"},
-  {id:"Boxer",             sx:-700, sy:0,    desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
-  {id:"Poodle",            sx:-800, sy:0,    desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
-  {id:"Mixed breed",       sx:-900, sy:0,    desc:"medium-sized mixed breed, black with white markings"},
-  {id:"Pomeranian",        sx:0,    sy:-100, desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
-  {id:"Shih Tzu",          sx:-100, sy:-100, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
-  {id:"Maltese",           sx:-200, sy:-100, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
-  {id:"Cavalier",          sx:-300, sy:-100, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
-  {id:"Havanese",          sx:-400, sy:-100, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
-  {id:"Boston Terrier",    sx:-500, sy:-100, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
-  {id:"Yorkshire Terrier", sx:-600, sy:-100, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
-  {id:"Pug",               sx:-700, sy:-100, desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
-  {id:"Mini Schnauzer",    sx:-800, sy:-100, desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+  {id:"Golden Retriever",  sx:0,    sy:0,   desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
+  {id:"German Shepherd",   sx:-100, sy:0,   desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
+  {id:"French Bulldog",    sx:-200, sy:0,   desc:"bat ears wide at base, flat face, wrinkled skin, brindle color"},
+  {id:"Labrador",          sx:-300, sy:0,   desc:"broad head, kind expression, floppy ears, short dense coat, chocolate brown"},
+  {id:"Beagle",            sx:-400, sy:0,   desc:"long floppy ears set low, domed head, tricolor black white brown"},
+  {id:"Dachshund",         sx:-500, sy:0,   desc:"long narrow snout, long droopy ears, elongated head, red solid color"},
+  {id:"Husky",             sx:-600, sy:0,   desc:"erect triangular ears, masked face, blue almond-shaped eyes, gray and white"},
+  {id:"Boxer",             sx:-700, sy:0,   desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
+  {id:"Poodle",            sx:-800, sy:0,   desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
+  {id:"Mixed breed",       sx:-900, sy:0,   desc:"medium-sized mixed breed, black with white markings"},
+  {id:"Pomeranian",        sx:0,    sy:-100,desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
+  {id:"Shih Tzu",          sx:-100, sy:-100,desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
+  {id:"Maltese",           sx:-200, sy:-100,desc:"silky pure white coat, black button eyes and nose, small drop ears"},
+  {id:"Cavalier",          sx:-300, sy:-100,desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
+  {id:"Havanese",          sx:-400, sy:-100,desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
+  {id:"Boston Terrier",    sx:-500, sy:-100,desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
+  {id:"Yorkshire Terrier", sx:-600, sy:-100,desc:"small erect ears, long straight silky coat, steel blue and tan color"},
+  {id:"Pug",               sx:-700, sy:-100,desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
+  {id:"Mini Schnauzer",    sx:-800, sy:-100,desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
 ];
-// pet-breeds-cat.png: 900×200, 9×2 cells 100×100
+// pet-breeds-cat.png: 2000×437, 9×2 cells 222.2×218.5 → display 100×100 (bgSize 900×197, row2 sy:-98)
 const PET_CAT_BREED_SPRITES=[
-  {id:"European Shorthair", sx:0,    sy:0,    desc:"tabby pattern with M marking on forehead, medium upright ears, green eyes, short dense coat"},
-  {id:"Maine Coon",         sx:-100, sy:0,    desc:"large tufted ears with lynx tips, square muzzle, heavy mane and ruff, long shaggy brown tabby coat"},
-  {id:"Persian",            sx:-200, sy:0,    desc:"completely flat brachycephalic face, tiny rounded ears set low, extremely long flowing white coat, large round copper eyes"},
-  {id:"Siamese",            sx:-300, sy:0,    desc:"extreme wedge-shaped triangular head, large triangular ears, deep vivid blue eyes, dark brown points on cream body"},
-  {id:"British Shorthair",  sx:-400, sy:0,    desc:"round massive head with prominent chubby cheeks, round copper eyes, dense plush teddy-bear coat, solid blue-gray"},
-  {id:"Ragdoll",            sx:-500, sy:0,    desc:"large oval brilliant blue eyes, semi-long silky coat, colorpoint with distinctive pure white mittens on paws"},
-  {id:"Sphynx",             sx:-600, sy:0,    desc:"completely hairless wrinkled skin, enormous bat-like ears, lemon-shaped eyes, black skin visible"},
-  {id:"Scottish Fold",      sx:-700, sy:0,    desc:"tiny ears folded forward and downward, round owl-like face, huge round copper eyes, short dense blue-gray coat"},
-  {id:"Bengal",             sx:-800, sy:0,    desc:"dramatic leopard-like spotted and rosette pattern, small wild head, pronounced whisker pads, glittered gold coat"},
-  {id:"Abyssinian",         sx:0,    sy:-100, desc:"ticked coat with each hair banded multiple colors ruddy brown with black tipping, large alert ears, elegant wedge head"},
-  {id:"Exotic Shorthair",   sx:-100, sy:-100, desc:"flat face like Persian but short plush coat, large round copper eyes, silver tabby pattern on silver background"},
-  {id:"Burmese",            sx:-200, sy:-100, desc:"glossy satin-like coat, rich sable brown solid color, rounded head with full cheeks, large round gold eyes"},
-  {id:"Russian Blue",       sx:-300, sy:-100, desc:"silver-tipped blue coat that shimmers, triangular head with flat plane, vivid green eyes, large ears wide at base"},
-  {id:"Devon Rex",          sx:-400, sy:-100, desc:"pixie-like elfin head, huge low-set bat ears, wavy and curly short black coat, high prominent cheekbones"},
-  {id:"Turkish Angora",     sx:-500, sy:-100, desc:"long fine silky white coat, elegant wedge head, large pointed ears, brilliant blue eyes"},
-  {id:"Norwegian Forest Cat",sx:-600,sy:-100, desc:"triangular head with long nose, large tufted ears with lynx tips, heavy neck ruff, long water-resistant coat black and silver tabby"},
-  {id:"Birman",             sx:-700, sy:-100, desc:"semi-long silky coat, colorpoint pattern with pure white gloves on all four paws, deep blue eyes, round head with full cheeks"},
-  {id:"Oriental Shorthair", sx:-800, sy:-100, desc:"extreme wedge-shaped triangular head, hugely exaggerated ears, long slender muzzle, solid black short coat, vivid green eyes"},
+  {id:"European Shorthair",  sx:0,    sy:0,   desc:"tabby pattern with M marking on forehead, medium upright ears, green eyes, short dense coat"},
+  {id:"Maine Coon",          sx:-100, sy:0,   desc:"large tufted ears with lynx tips, square muzzle, heavy mane and ruff, long shaggy brown tabby coat"},
+  {id:"Persian",             sx:-200, sy:0,   desc:"completely flat brachycephalic face, tiny rounded ears set low, extremely long flowing white coat, large round copper eyes"},
+  {id:"Siamese",             sx:-300, sy:0,   desc:"extreme wedge-shaped triangular head, large triangular ears, deep vivid blue eyes, dark brown points on cream body"},
+  {id:"British Shorthair",   sx:-400, sy:0,   desc:"round massive head with prominent chubby cheeks, round copper eyes, dense plush teddy-bear coat, solid blue-gray"},
+  {id:"Ragdoll",             sx:-500, sy:0,   desc:"large oval brilliant blue eyes, semi-long silky coat, colorpoint with distinctive pure white mittens on paws"},
+  {id:"Sphynx",              sx:-600, sy:0,   desc:"completely hairless wrinkled skin, enormous bat-like ears, lemon-shaped eyes, black skin visible"},
+  {id:"Scottish Fold",       sx:-700, sy:0,   desc:"tiny ears folded forward and downward, round owl-like face, huge round copper eyes, short dense blue-gray coat"},
+  {id:"Bengal",              sx:-800, sy:0,   desc:"dramatic leopard-like spotted and rosette pattern, small wild head, pronounced whisker pads, glittered gold coat"},
+  {id:"Abyssinian",          sx:0,    sy:-98, desc:"ticked coat each hair banded multiple colors ruddy brown with black tipping, large alert ears, elegant wedge head"},
+  {id:"Exotic Shorthair",    sx:-100, sy:-98, desc:"flat face like Persian but short plush coat, large round copper eyes, silver tabby pattern on silver background"},
+  {id:"Burmese",             sx:-200, sy:-98, desc:"glossy satin-like coat, rich sable brown solid color, rounded head with full cheeks, large round gold eyes"},
+  {id:"Russian Blue",        sx:-300, sy:-98, desc:"silver-tipped blue coat that shimmers, triangular head with flat plane, vivid green eyes, large ears wide at base"},
+  {id:"Devon Rex",           sx:-400, sy:-98, desc:"pixie-like elfin head, huge low-set bat ears, wavy and curly short black coat, high prominent cheekbones"},
+  {id:"Turkish Angora",      sx:-500, sy:-98, desc:"long fine silky white coat, elegant wedge head, large pointed ears, brilliant blue eyes"},
+  {id:"Norwegian Forest Cat",sx:-600, sy:-98, desc:"triangular head with long nose, large tufted ears with lynx tips, heavy neck ruff, long water-resistant black and silver tabby coat"},
+  {id:"Birman",              sx:-700, sy:-98, desc:"semi-long silky coat, colorpoint pattern with pure white gloves on all four paws, deep blue eyes, round head with full cheeks"},
+  {id:"Oriental Shorthair",  sx:-800, sy:-98, desc:"extreme wedge-shaped triangular head, hugely exaggerated ears, long slender muzzle, solid black short coat, vivid green eyes"},
 ];
-// pet-breeds-horse.png: 900×120, 6 cells 150×120
+// pet-breeds-horse.png: 2000×327, 6 cells 333.3×327 → display 130×127 (bgSize 780×128)
 const PET_HORSE_BREED_SPRITES=[
-  {id:"Arabian",       sx:0,    desc:"chestnut color, refined dished profile, large nostrils, arched neck, high tail carriage"},
-  {id:"Thoroughbred",  sx:-150, desc:"bay color, long elegant neck, lean athletic build, deep chest"},
-  {id:"Quarter Horse", sx:-300, desc:"palomino color, broad forehead, short refined head, muscular compact build"},
-  {id:"Friesian",      sx:-450, desc:"jet black color, thick flowing mane, feathered lower legs, arched powerful neck"},
-  {id:"Appaloosa",     sx:-600, desc:"spotted coat pattern brown spots on light background, strong sturdy build"},
-  {id:"Andalusian",    sx:-750, desc:"grey dappled color, slightly convex profile, thick wavy mane, compact powerful body"},
+  {id:"Arabian",      sx:0,    desc:"chestnut color, refined dished profile, large nostrils, arched neck, high tail carriage"},
+  {id:"Thoroughbred", sx:-130, desc:"bay color, long elegant neck, lean athletic build, deep chest"},
+  {id:"Quarter Horse",sx:-260, desc:"palomino color, broad forehead, short refined head, muscular compact build"},
+  {id:"Friesian",     sx:-390, desc:"jet black color, thick flowing mane, feathered lower legs, arched powerful neck"},
+  {id:"Appaloosa",    sx:-520, desc:"spotted coat pattern brown spots on light background, strong sturdy build"},
+  {id:"Andalusian",   sx:-650, desc:"grey dappled color, slightly convex profile, thick wavy mane, compact powerful body"},
 ];
 
 const PET_SPECIES_REAL=[
@@ -3622,35 +3622,43 @@ function PetPage(){
       L.push("=== GENERATE ===");L.push("");
       if(vpIsFantasy){
         const sp=PET_SPECIES_FANTASY.find(s=>s.id===vpSpecies)||PET_SPECIES_FANTASY[0];
-        const emp=EMPATHY_STYLES.find(e=>e.id===vpEmpathy)||EMPATHY_STYLES[1];
         let vLine="VIRTUAL CREATURE: "+sp.name;
-        if(sp.sizeOptions)vLine+=", size: "+vpFantasySize;
+        if(vpFantasySize)vLine+=", size: "+vpFantasySize;
         L.push(vLine);
-        L.push("Mood / empathy: "+emp.label+" — "+emp.visual);
+        if(vpEmpathy){const emp=EMPATHY_STYLES.find(e=>e.id===vpEmpathy);if(emp)L.push("Mood / empathy: "+emp.label+" — "+emp.visual);}
         if(sp.hasFire)L.push("Fire / flames: active.");
-        if(sp.hasWings)L.push("Wings: present.");
-        if(sp.hasHorns)L.push("Horns: present.");
+        if(sp.hasWings&&vpEars)L.push("Wings: "+vpEars);
+        else if(sp.hasWings)L.push("Wings: present.");
+        if(sp.hasHorns&&vpTail)L.push("Horns: "+vpTail);
+        else if(sp.hasHorns)L.push("Horns: present.");
         if(sp.hybrid)L.push("Hybrid form: "+sp.hybrid);
+        if(vpCoatColors)L.push("Color / appearance: "+vpCoatColors);
       }else{
         const sp=PET_SPECIES_REAL.find(s=>s.id===vpSpecies)||PET_SPECIES_REAL[0];
-        // Find breed with description
         let breedDesc="";
-        if(sp.breedSprites){
-          const bData=sp.breedSprites.find(b=>b.id===vpBreed);
-          if(bData&&bData.desc)breedDesc=" — "+bData.desc;
-        }
+        if(sp.breedSprites){const bData=sp.breedSprites.find(b=>b.id===vpBreed);if(bData&&bData.desc)breedDesc=bData.desc;}
         const breedStr=(sp.hasBreeds&&vpBreed)?" ("+vpBreed+")":"";
-        L.push("VIRTUAL PET: "+sp.name+breedStr+(breedDesc?"\nBreed characteristics: "+breedDesc.slice(3):""));
-        if(sp.hasCoat)L.push("Coat: "+vpCoatType+", "+vpCoatPattern+" pattern, color: "+vpCoatColors);
-        if(sp.hasTail)L.push("Tail: "+vpTail);
-        if(sp.hasEars)L.push("Ears: "+vpEars);
-        if(sp.hasBeak)L.push("Beak: "+vpBeak);
+        L.push("VIRTUAL PET: "+sp.name+breedStr);
+        if(breedDesc)L.push("Breed characteristics: "+breedDesc);
+        if(sp.hasCoat&&(vpCoatType||vpCoatPattern||vpCoatColors)){
+          const parts=[];
+          if(vpCoatType)parts.push(vpCoatType+" coat");
+          if(vpCoatPattern)parts.push(vpCoatPattern+" pattern");
+          if(vpCoatColors)parts.push("color: "+vpCoatColors);
+          L.push("Coat: "+parts.join(", "));
+        }
+        if(sp.hasTail&&vpTail)L.push("Tail: "+vpTail);
+        if(sp.hasEars&&vpEars)L.push("Ears: "+vpEars);
+        if(sp.hasBeak&&vpBeak)L.push("Beak: "+vpBeak);
         if(sp.hasWings)L.push("Wings: "+vpPose==="in flight"?"spread, in flight":"folded");
         if(sp.hasSpines)L.push("Spines: raised, detailed texture");
         if(sp.hasShell)L.push("Shell: prominent, detailed");
         if(sp.hasFins)L.push("Fins: detailed, semi-transparent");
       }
-      L.push("Pose: "+vpPose+". Gaze: "+vpGaze);
+      const poseParts=[];
+      if(vpPose)poseParts.push("Pose: "+vpPose);
+      if(vpGaze)poseParts.push("Gaze: "+vpGaze);
+      if(poseParts.length)L.push(poseParts.join(". "));
       L.push("");
     }
 
@@ -3764,7 +3772,7 @@ function PetPage(){
   };
 
   const prompt=buildPetPrompt();
-  const hasContent=prompt.length>150;
+  const hasContent=true; // prompt always shown
 
   const copy=async()=>{
     const ok=await copyText(enhanced||prompt);
@@ -3792,7 +3800,7 @@ function PetPage(){
     <button onClick={onClick} style={{padding:"7px 13px",borderRadius:20,cursor:"pointer",fontSize:12,fontWeight:600,transition:"all .15s",
       border:"1px solid "+(active?"var(--acc)":"rgba(255,255,255,.22)"),
       background:active?"var(--acdim)":"rgba(255,255,255,.05)",
-      color:active?"var(--acc)":"var(--t)",...style}}>
+      color:active?"var(--acc)":"#fff",...style}}>
       {children}
     </button>
   );
@@ -3845,19 +3853,42 @@ function PetPage(){
             const active=stateMap[item.key];
             return(
               <div key={item.key} onClick={()=>{setMap[item.key](v=>!v);setEnhanced("");}}
-                style={{flex:"1 1 140px",cursor:"pointer",borderRadius:10,overflow:"hidden",
+                style={{flex:"1 1 160px",cursor:"pointer",borderRadius:10,overflow:"hidden",
                   border:"2px solid "+(active?"var(--acc)":"rgba(255,255,255,.2)"),
                   background:active?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                <div style={{width:"100%",height:80,backgroundImage:"url(/pet-inputs.png)",
-                  backgroundSize:"300px 80px",backgroundPosition:item.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                <div style={{width:"100%",height:127,overflow:"hidden",position:"relative"}}>
+                  <div style={{width:160,height:127,margin:"0 auto",
+                    backgroundImage:"url(/pet-inputs.png)",
+                    backgroundSize:"480px 127px",backgroundPosition:item.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                </div>
                 <div style={{padding:"8px 10px 10px"}}>
-                  <div style={{fontSize:12,fontWeight:700,color:active?"var(--acc)":"var(--t)"}}>{item.label}</div>
-                  <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{item.sub}</div>
+                  <div style={{fontSize:13,fontWeight:700,color:active?"var(--acc)":"#fff"}}>{item.label}</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>{item.sub}</div>
                 </div>
                 {active&&<div style={{height:3,background:"var(--acc)"}}/>}
               </div>
             );
           })}
+          {/* 4th card — build from scratch */}
+          {(()=>{
+            const scratchActive=!hasProduct&&!hasPetPhoto&&!hasHumanPhoto;
+            return(
+              <div onClick={()=>{setHasProduct(false);setHasPetPhoto(false);setHasHumanPhoto(false);setPTab("species");setEnhanced("");}}
+                style={{flex:"1 1 160px",cursor:"pointer",borderRadius:10,overflow:"hidden",
+                  border:"2px solid "+(scratchActive?"var(--acc)":"rgba(255,255,255,.2)"),
+                  background:scratchActive?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
+                <div style={{width:"100%",height:127,display:"flex",alignItems:"center",justifyContent:"center",
+                  background:"rgba(255,255,255,.04)"}}>
+                  <span style={{fontSize:52,lineHeight:1}}>🐾</span>
+                </div>
+                <div style={{padding:"8px 10px 10px"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:scratchActive?"var(--acc)":"#fff"}}>Build my pet from scratch</div>
+                  <div style={{fontSize:11,color:"rgba(255,255,255,.8)",marginTop:2}}>no photos — fully virtual</div>
+                </div>
+                {scratchActive&&<div style={{height:3,background:"var(--acc)"}}/>}
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -3876,17 +3907,17 @@ function PetPage(){
               "Describe concept: 'retractable leash with LED lighting, cyberpunk aesthetic, matte black'"}/>
           <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
             <input placeholder="Material / finish (optional)" value={productMaterial} onChange={e=>setProductMaterial(e.target.value)}
-              style={{flex:"1 1 160px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+              style={{flex:"1 1 160px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
             {productType!=="concept"&&(
               <select value={productCondition} onChange={e=>setProductCondition(e.target.value)}
-                style={{flex:"1 1 150px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+                style={{flex:"1 1 150px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
                 <option value="new">Keep as shown</option>
                 <option value="upgrade">Restore to pristine</option>
                 <option value="pristine">Idealize — perfect</option>
               </select>
             )}
             <select value={productFocus} onChange={e=>setProductFocus(e.target.value)}
-              style={{flex:"1 1 140px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+              style={{flex:"1 1 140px",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
               <option value="hero">Hero (main focus)</option>
               <option value="co_star">Co-star with pet</option>
               <option value="background">Background element</option>
@@ -3903,7 +3934,7 @@ function PetPage(){
             placeholder="Describe your pet photo: 'my golden retriever lying on couch, dim lighting, slightly blurry'"/>
           <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap",alignItems:"center"}}>
             <select value={petPhotoQuality} onChange={e=>setPetPhotoQuality(e.target.value)}
-              style={{padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12}}>
+              style={{padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12}}>
               <option value="poor">Poor (dark/blurry)</option>
               <option value="average">Average</option>
               <option value="good">Good, needs polish</option>
@@ -3943,7 +3974,7 @@ function PetPage(){
             <button key={t.id} onClick={()=>setPTab(t.id)}
               style={{padding:"8px 14px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,transition:"all .15s",
                 border:"none",background:pTab===t.id?"var(--acc)":"transparent",
-                color:pTab===t.id?"#000":"var(--t4)"}}>
+                color:pTab===t.id?"#000":"rgba(255,255,255,.85)"}}>
               {t.label}
             </button>
           ))}
@@ -3957,13 +3988,13 @@ function PetPage(){
               <button onClick={()=>{setVpIsFantasy(false);setVpSpecies("dog");setEnhanced("");}}
                 style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
                   border:"2px solid "+(!vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
-                  background:!vpIsFantasy?"var(--acdim)":"transparent",color:!vpIsFantasy?"var(--acc)":"var(--t)"}}>
+                  background:!vpIsFantasy?"var(--acdim)":"transparent",color:!vpIsFantasy?"var(--acc)":"#fff"}}>
                 Real animal
               </button>
               <button onClick={()=>{setVpIsFantasy(true);setVpSpecies("dragon");setEnhanced("");}}
                 style={{flex:1,padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
                   border:"2px solid "+(vpIsFantasy?"var(--acc)":"rgba(255,255,255,.2)"),
-                  background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"var(--t)"}}>
+                  background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"#fff"}}>
                 Fantasy creature
               </button>
             </div>
@@ -3978,18 +4009,19 @@ function PetPage(){
                       style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                         border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
                         boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                        background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                      <div style={{width:100,height:100,backgroundImage:"url(/pet-species-real.png)",
-                        backgroundSize:"900px 100px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                        background:"var(--s1)",transition:"all .15s"}}>
+                      <div style={{width:100,height:100,overflow:"hidden",
+                        backgroundImage:"url(/pet-species-real.png)",
+                        backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -156px",backgroundRepeat:"no-repeat"}}/>
                       <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
-                        color:vpSpecies===sp.id?"var(--acc)":"var(--t)"}}>{sp.name}</div>
+                        color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                     </div>
                   ))}
                 </div>
               </>
             )}
 
-            {/* Fantasy species — sprite strip */}
+            {/* Fantasy species — sprite strip, same 100px size */}
             {vpIsFantasy&&(
               <>
                 <SL>Creature</SL>
@@ -3999,39 +4031,53 @@ function PetPage(){
                       style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                         border:"2px solid "+(vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
                         boxShadow:vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                        background:vpSpecies===sp.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                      <div style={{width:200,height:200,backgroundImage:"url(/pet-species-fantasy.png)",
-                        backgroundSize:"1400px 200px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+                        background:"var(--s1)",transition:"all .15s"}}>
+                      <div style={{width:100,height:98,overflow:"hidden",
+                        backgroundImage:"url(/pet-species-fantasy.png)",
+                        backgroundSize:"700px 98px",backgroundPosition:sp.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
                       <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
-                        color:vpSpecies===sp.id?"var(--acc)":"var(--t)"}}>{sp.name}</div>
+                        color:vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                     </div>
                   ))}
                 </div>
               </>
             )}
 
-            {/* Breed — sprite grid */}
+            {/* Breed — sprite grid, 7 per row, properly sized */}
             {!vpIsFantasy&&spData.breedSprites&&(
               <div style={{marginBottom:16}}>
                 <SL>Breed</SL>
                 <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                   {spData.breedSprites.map(b=>{
-                    const isHorse=vpSpecies==="horse";
-                    const w=isHorse?150:100, h=isHorse?120:100;
-                    const bgW=isHorse?900:vpSpecies==="cat"?900:1000;
-                    const bgH=isHorse?120:200;
+                    // Actual cell sizes in source PNG:
+                    //   dog:   200×200  (2000×400,  10 cols, 2 rows)
+                    //   cat:   222×218  (2000×437,   9 cols, 2 rows)
+                    //   horse: 333×327  (2000×327,   6 cols, 1 row)
+                    // Display size: 158×158 for dog/cat, 190×185 for horse
+                    let srcCellW, srcCellH, srcCols, srcRows, dispW, dispH;
+                    if(vpSpecies==="dog"){    srcCellW=200;srcCellH=200;srcCols=10;srcRows=2;dispW=158;dispH=158;}
+                    else if(vpSpecies==="cat"){srcCellW=222;srcCellH=218;srcCols=9; srcRows=2;dispW=158;dispH=154;}
+                    else{                     srcCellW=333;srcCellH=327;srcCols=6; srcRows=1;dispW=190;dispH=185;}
+                    const scale=dispW/srcCellW;
+                    const bgW=Math.round(srcCellW*srcCols*scale);
+                    const bgH=Math.round(srcCellH*srcRows*scale);
+                    // col index from sx (sx = -colIdx * 100 in old data, needs rescaling)
+                    const colIdx=Math.round(Math.abs(b.sx)/(vpSpecies==="horse"?130:100));
+                    const rowIdx=b.sy&&b.sy<0?1:0;
+                    const posX=-(colIdx*dispW);
+                    const posY=-(rowIdx*dispH);
                     return(
                       <div key={b.id} onClick={()=>{setVpBreed(b.id);setEnhanced("");}}
                         style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                           border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
                           boxShadow:vpBreed===b.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                          background:vpBreed===b.id?"var(--acdim)":"var(--s1)",transition:"all .15s"}}>
-                        <div style={{width:w,height:h,
-                          backgroundImage:"url(/pet-breeds-"+(vpSpecies==="horse"?"horse":vpSpecies)+".png)",
+                          background:"var(--s1)",transition:"all .15s",width:dispW,flexShrink:0}}>
+                        <div style={{width:dispW,height:dispH,overflow:"hidden",
+                          backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
                           backgroundSize:bgW+"px "+bgH+"px",
-                          backgroundPosition:b.sx+"px "+(b.sy||0)+"px",backgroundRepeat:"no-repeat"}}/>
-                        <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:10,fontWeight:600,
-                          color:vpBreed===b.id?"var(--acc)":"var(--t)",maxWidth:w}}>{b.id}</div>
+                          backgroundPosition:posX+"px "+posY+"px",backgroundRepeat:"no-repeat"}}/>
+                        <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
+                          color:vpBreed===b.id?"var(--acc)":"#fff"}}>{b.id}</div>
                       </div>
                     );
                   })}
@@ -4044,6 +4090,14 @@ function PetPage(){
               <>
                 <SL>Mood / Empathy</SL>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+                  <button onClick={()=>{setVpEmpathy("");setEnhanced("");}}
+                    style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
+                      border:"2px solid "+(vpEmpathy===""?"var(--acc)":"rgba(255,255,255,.2)"),
+                      background:vpEmpathy===""?"var(--acdim)":"transparent",
+                      display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
+                    <span style={{fontSize:24}}>—</span>
+                    <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>None</span>
+                  </button>
                   {EMPATHY_STYLES.map(e=>(
                     <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
                       style={{padding:"12px 14px",borderRadius:10,cursor:"pointer",
@@ -4051,88 +4105,125 @@ function PetPage(){
                         background:vpEmpathy===e.id?"var(--acdim)":"transparent",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
                       <span style={{fontSize:24}}>{e.emoji}</span>
-                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"var(--t)"}}>{e.label}</span>
+                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===e.id?"var(--acc)":"#fff"}}>{e.label}</span>
                     </button>
                   ))}
                 </div>
-                {spData.sizeOptions&&(
-                  <div>
-                    <SL>Size</SL>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      {spData.sizeOptions.map(s=>(
-                        <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
-                      ))}
-                    </div>
+                <div>
+                  <SL>Size</SL>
+                  <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                    <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
+                    {["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"].map(s=>(
+                      <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
+                    ))}
                   </div>
-                )}
+                </div>
               </>
             )}
           </div>
         )}
 
-        {/* TAB: LOOK */}
+        {/* TAB: LOOK — universal: real animals + fantasy creatures */}
         {pTab==="look"&&(
           <div>
-            {!vpIsFantasy&&(
+            {/* Coat — real animals only */}
+            {!vpIsFantasy&&spData.hasCoat&&(
+              <div style={{marginBottom:16}}>
+                <SL>Coat</SL>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+                  <div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Type</div>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      <Pill active={vpCoatType===""} onClick={()=>{setVpCoatType("");setEnhanced("");}}>— none</Pill>
+                      {PET_COAT_TYPES.map(t=><Pill key={t} active={vpCoatType===t} onClick={()=>{setVpCoatType(t);setEnhanced("");}}>{t}</Pill>)}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Pattern</div>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      <Pill active={vpCoatPattern===""} onClick={()=>{setVpCoatPattern("");setEnhanced("");}}>— none</Pill>
+                      {PET_COAT_PATTERNS.map(t=><Pill key={t} active={vpCoatPattern===t} onClick={()=>{setVpCoatPattern(t);setEnhanced("");}}>{t}</Pill>)}
+                    </div>
+                  </div>
+                </div>
+                <input placeholder="Colors (e.g. golden, white chest)" value={vpCoatColors}
+                  onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
+                  style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+              </div>
+            )}
+            {/* Tail */}
+            {spData.hasTail&&(
+              <div style={{marginBottom:16}}>
+                <SL>Tail</SL>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  <Pill active={vpTail===""} onClick={()=>{setVpTail("");setEnhanced("");}}>— none</Pill>
+                  {PET_TAIL_TYPES.map(t=><Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>)}
+                </div>
+              </div>
+            )}
+            {/* Ears */}
+            {spData.hasEars&&(
+              <div style={{marginBottom:16}}>
+                <SL>Ears</SL>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  <Pill active={vpEars===""} onClick={()=>{setVpEars("");setEnhanced("");}}>— none</Pill>
+                  {(spData.earOptions||PET_EAR_TYPES).map(t=><Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>)}
+                </div>
+              </div>
+            )}
+            {/* Beak */}
+            {spData.hasBeak&&(
+              <div style={{marginBottom:16}}>
+                <SL>Beak</SL>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  {spData.beakOptions.map(t=><Pill key={t} active={vpBeak===t} onClick={()=>{setVpBeak(t);setEnhanced("");}}>{t}</Pill>)}
+                </div>
+              </div>
+            )}
+            {/* Fantasy extras */}
+            {vpIsFantasy&&(
               <>
-                {spData.hasCoat&&(
+                {spData.hasWings&&(
                   <div style={{marginBottom:16}}>
-                    <SL>Coat</SL>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
-                      <div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Type</div>
-                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                          {PET_COAT_TYPES.map(t=><Pill key={t} active={vpCoatType===t} onClick={()=>{setVpCoatType(t);setEnhanced("");}}>{t}</Pill>)}
-                        </div>
-                      </div>
-                      <div>
-                        <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Pattern</div>
-                        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                          {PET_COAT_PATTERNS.map(t=><Pill key={t} active={vpCoatPattern===t} onClick={()=>{setVpCoatPattern(t);setEnhanced("");}}>{t}</Pill>)}
-                        </div>
-                      </div>
-                    </div>
-                    <input placeholder="Colors (e.g. golden, white chest)" value={vpCoatColors}
-                      onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
-                      style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
-                  </div>
-                )}
-                {spData.hasTail&&(
-                  <div style={{marginBottom:16}}>
-                    <SL>Tail</SL>
+                    <SL>Wings</SL>
                     <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {PET_TAIL_TYPES.map(t=><Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>)}
+                      {["folded","spread","in flight","tattered","glowing"].map(t=>(
+                        <Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>
+                      ))}
                     </div>
                   </div>
                 )}
-                {spData.hasEars&&(
+                {spData.hasHorns&&(
                   <div style={{marginBottom:16}}>
-                    <SL>Ears</SL>
+                    <SL>Horns</SL>
                     <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {(spData.earOptions||PET_EAR_TYPES).map(t=><Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>)}
+                      {["small","curved","spiral","massive","jagged","glowing"].map(t=>(
+                        <Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>
+                      ))}
                     </div>
                   </div>
                 )}
-                {spData.hasBeak&&(
-                  <div style={{marginBottom:16}}>
-                    <SL>Beak</SL>
-                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {spData.beakOptions.map(t=><Pill key={t} active={vpBeak===t} onClick={()=>{setVpBeak(t);setEnhanced("");}}>{t}</Pill>)}
-                    </div>
-                  </div>
-                )}
+                <div style={{marginBottom:16}}>
+                  <SL>Color / fur / scales</SL>
+                  <input placeholder="e.g. purple fur with orange horns, iridescent scales"
+                    value={vpCoatColors} onChange={e=>{setVpCoatColors(e.target.value);setEnhanced("");}}
+                    style={{width:"100%",padding:"8px 12px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:12,outline:"none",fontFamily:"inherit"}}/>
+                </div>
               </>
             )}
+            {/* Pose & Gaze — universal */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
               <div>
                 <SL>Pose</SL>
                 <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  <Pill active={vpPose===""} onClick={()=>{setVpPose("");setEnhanced("");}}>— none</Pill>
                   {poses.map(p=><Pill key={p} active={vpPose===p} onClick={()=>{setVpPose(p);setEnhanced("");}}>{p}</Pill>)}
                 </div>
               </div>
               <div>
                 <SL>Gaze</SL>
                 <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  <Pill active={vpGaze===""} onClick={()=>{setVpGaze("");setEnhanced("");}}>— none</Pill>
                   {["toward viewer","toward owner / hand","into distance","at product"].map(g=>(
                     <Pill key={g} active={vpGaze===g} onClick={()=>{setVpGaze(g);setEnhanced("");}}>{g}</Pill>
                   ))}
@@ -4150,14 +4241,14 @@ function PetPage(){
                 style={{flex:1,padding:"11px 16px",borderRadius:8,cursor:"pointer",textAlign:"left",
                   border:"2px solid "+(accMode==="product"?"var(--acc)":"var(--bd)"),
                   background:accMode==="product"?"var(--acdim)":"var(--s1)"}}>
-                <div style={{fontSize:12,fontWeight:800,color:accMode==="product"?"var(--acc)":"var(--t)"}}>🛍 Product Placement</div>
+                <div style={{fontSize:12,fontWeight:800,color:accMode==="product"?"var(--acc)":"#fff"}}>🛍 Product Placement</div>
                 <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3}}>Product is the hero — animal is context</div>
               </button>
               <button onClick={()=>{setAccMode("standard");setEnhanced("");}}
                 style={{flex:1,padding:"11px 16px",borderRadius:8,cursor:"pointer",textAlign:"left",
                   border:"2px solid "+(accMode==="standard"?"var(--acc)":"var(--bd)"),
                   background:accMode==="standard"?"var(--acdim)":"var(--s1)"}}>
-                <div style={{fontSize:12,fontWeight:800,color:accMode==="standard"?"var(--acc)":"var(--t)"}}>🐾 Standard Accessories</div>
+                <div style={{fontSize:12,fontWeight:800,color:accMode==="standard"?"var(--acc)":"#fff"}}>🐾 Standard Accessories</div>
                 <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3}}>Animal is hero — accessories are additions</div>
               </button>
             </div>
@@ -4177,7 +4268,7 @@ function PetPage(){
                         style={{flex:"1 1 160px",padding:"10px 12px",borderRadius:8,cursor:"pointer",textAlign:"left",
                           border:"2px solid "+(accDepthHandler===d.id?"var(--acc)":"var(--bd)"),
                           background:accDepthHandler===d.id?"var(--acdim)":"var(--s1)"}}>
-                        <div style={{fontSize:12,fontWeight:700,color:accDepthHandler===d.id?"var(--acc)":"var(--t)"}}>{d.label}</div>
+                        <div style={{fontSize:12,fontWeight:700,color:accDepthHandler===d.id?"var(--acc)":"#fff"}}>{d.label}</div>
                         <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3,lineHeight:1.4}}>{d.sub}</div>
                       </button>
                     ))}
@@ -4268,7 +4359,7 @@ function PetPage(){
                     border:"2px solid "+(companionMode===m.id?"var(--acc)":"var(--bd)"),
                     background:companionMode===m.id?"var(--acdim)":"var(--s1)"}}>
                   <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
-                  <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"var(--t)"}}>{m.label.split(" ").slice(1).join(" ")}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
                   <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:2}}>{m.sub}</div>
                 </button>
               ))}
@@ -4285,7 +4376,7 @@ function PetPage(){
                         background:companionSpecies===sp.id?"var(--acdim)":"var(--s1)",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
                       <span style={{fontSize:24}}>{sp.emoji}</span>
-                      <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"var(--t)"}}>{sp.name}</span>
+                      <span style={{fontSize:10,fontWeight:700,color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</span>
                     </button>
                   ))}
                 </div>
@@ -4358,7 +4449,7 @@ function PetPage(){
                     border:"2px solid "+(light===r.id?"var(--acc)":"var(--bd)"),
                     boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                   <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:light===r.id?"var(--acc)":"var(--t)"}} translate="no">{r.name}</div>
+                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:light===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
                 </div>
               ))}
             </div>
@@ -4372,7 +4463,7 @@ function PetPage(){
                     border:"2px solid "+(bg===r.id?"var(--acc)":"var(--bd)"),
                     boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                   <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:bg===r.id?"var(--acc)":"var(--t)"}} translate="no">{r.name}</div>
+                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:bg===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
                 </div>
               ))}
             </div>
@@ -4386,7 +4477,7 @@ function PetPage(){
                     border:"2px solid "+(lens===r.mm?"var(--acc)":"var(--bd)"),
                     boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                   <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:lens===r.mm?"var(--acc)":"var(--t)"}} translate="no">{r.mm}</div>
+                  <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:lens===r.mm?"var(--acc)":"#fff"}} translate="no">{r.mm}</div>
                 </div>
               ))}
             </div>
@@ -4401,7 +4492,7 @@ function PetPage(){
                       border:"2px solid "+(filmStock===r.id?"var(--acc)":"var(--bd)"),
                       boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                     <div style={{width:150,height:167,backgroundImage:"url(/film.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:filmStock===r.id?"var(--acc)":"var(--t)"}} translate="no">{r.name}</div>
+                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:filmStock===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
                   </div>
                 ))}
               </div>
@@ -4415,7 +4506,7 @@ function PetPage(){
                       border:"2px solid "+(colorGrade===r.id?"var(--acc)":"var(--bd)"),
                       boxShadow:colorGrade===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                     <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
-                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:colorGrade===r.id?"var(--acc)":"var(--t)"}} translate="no">{r.name}</div>
+                    <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:colorGrade===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
                   </div>
                 ))}
               </div>
@@ -4431,7 +4522,7 @@ function PetPage(){
                     boxShadow:aspectRatio===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
                     display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
                   <div style={{width:80,height:80,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px"}}/>
-                  <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"var(--t)"}} translate="no">{r.name}</div>
+                  <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
                 </div>
               ))}
             </div>
@@ -4449,7 +4540,7 @@ function PetPage(){
                   border:"2px solid "+(outputLayout===l.id?"var(--acc)":"var(--bd)"),
                   background:outputLayout===l.id?"var(--acdim)":"var(--s1)"}}>
                 <div style={{fontSize:18,marginBottom:5}}>{l.icon}</div>
-                <div style={{fontSize:12,fontWeight:800,color:outputLayout===l.id?"var(--acc)":"var(--t)"}}>{l.name}</div>
+                <div style={{fontSize:12,fontWeight:800,color:outputLayout===l.id?"var(--acc)":"#fff"}}>{l.name}</div>
                 <div style={{fontSize:10,color:"rgba(255,255,255,.72)",marginTop:3,lineHeight:1.4}}>{l.desc}</div>
               </button>
             ))}
@@ -4470,10 +4561,10 @@ function PetPage(){
                 <div className="sh">
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <span className="st">3D Camera Control</span>
-                    <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,padding:"2px 7px",borderRadius:3,border:"1px solid var(--bd)",color:"var(--t)"}}>BETA</span>
+                    <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,padding:"2px 7px",borderRadius:3,border:"1px solid var(--bd)",color:"#fff"}}>BETA</span>
                   </div>
                   <div onClick={e=>{e.stopPropagation();setUse3D(v=>!v);}} style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",userSelect:"none"}}>
-                    <span style={{fontSize:11,color:use3D?"var(--acc)":"var(--t)"}}>{use3D?"Active — panel 1":"Disabled"}</span>
+                    <span style={{fontSize:11,color:use3D?"var(--acc)":"#fff"}}>{use3D?"Active — panel 1":"Disabled"}</span>
                     <div style={{width:44,height:24,borderRadius:12,position:"relative",background:use3D?"#e8780a":"var(--s3)",border:"1px solid "+(use3D?"#e8780a":"var(--bd)"),transition:"all .2s",flexShrink:0}}>
                       <div style={{position:"absolute",top:4,left:use3D?24:4,width:16,height:16,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
                     </div>
@@ -4534,7 +4625,7 @@ function PetPage(){
         <div className="pbar" translate="no">
           <button className="btn" onClick={reset}>Reset</button>
           <button className="btn" onClick={enhance} disabled={!hasContent||enhancing}
-            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"var(--t4)":"var(--acc)",background:"var(--acdim)"}}>
+            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.85)":"var(--acc)",background:"var(--acdim)"}}>
             {enhancing?"ENHANCING…":"✦ AI Prompt Enhance"}
           </button>
           <button className={`btn${hasContent?" pri":""}`} onClick={copy} disabled={!hasContent}>
@@ -4556,10 +4647,10 @@ function PetPage(){
             </div>
             <div style={{borderTop:"1px solid var(--bd)",paddingTop:12,display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
               <span style={{fontSize:11,color:"rgba(255,255,255,.72)"}}>💡 Next step:</span>
-              <button onClick={()=>setPage("angles")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              <button onClick={()=>setPage("angles")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
                 🎬 Multi-Shot — create grid
               </button>
-              <button onClick={()=>setPage("video")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:11,fontWeight:600,cursor:"pointer"}}>
+              <button onClick={()=>setPage("video")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer"}}>
                 🎥 Video — animate it
               </button>
             </div>
@@ -4633,25 +4724,26 @@ const MAP_DATA={
       {id:"pi",label:"Inputs",color:"#34d399",children:[
         {id:"pi1",label:"Product — photo / description / creative concept"},
         {id:"pi2",label:"Pet reference photo — quality enhancement, identity preservation"},
-        {id:"pi3",label:"Person photo — replaced by virtual figure in scene"},
+        {id:"pi3",label:"Person photo — environment preserved, people replaced by virtual figure"},
       ]},
       {id:"pv",label:"Virtual Pet",color:"#34d399",children:[
-        {id:"pv1",label:"9 real species — Dog, Cat, Rabbit, Horse, Hamster, Parrot, Turtle, Fish, Hedgehog"},
+        {id:"pv1",label:"9 real species — Dog (19 breeds), Cat (18 breeds), Horse (6 breeds), Rabbit, Hamster, Parrot, Turtle, Fish, Hedgehog"},
         {id:"pv2",label:"7 fantasy creatures — Dragon, Unicorn, Griffin, Phoenix, Fluffy, Hellhound, Imp"},
-        {id:"pv3",label:"Coat type · Pattern · Colors · Tail · Ears · Pose · Gaze"},
-        {id:"pv4",label:"5 empathy levels for fantasy (Cute → Menacing)"},
-        {id:"pv5",label:"4 size options (dog-sized → gigantic)"},
+        {id:"pv3",label:"Look tab: coat type/pattern/color · tail · ears · wings · horns · pose · gaze — real AND fantasy"},
+        {id:"pv4",label:"5 empathy levels (+ none) for fantasy: Cute → Menacing"},
+        {id:"pv5",label:"4 size options (+ none): tiny (dog-sized) → gigantic"},
       ]},
       {id:"pa",label:"Accessories",color:"#34d399",children:[
-        {id:"pa1",label:"Product Placement — 3 depth handlers"},
-        {id:"pa2",label:"🤲 Hand presenting · 🐾 Pet wearing · 🔗 Being attached"},
+        {id:"pa1",label:"Product Placement — 3 depth handlers: Hand presenting · Pet wearing · Being attached"},
+        {id:"pa2",label:"Depth stack auto-generated per handler type"},
         {id:"pa3",label:"Standard multi-select — grouped by category per species"},
         {id:"pa4",label:"Existing product / Description / Creative concept mode"},
       ]},
-      {id:"pc",label:"Companion & Scene",color:"#34d399",children:[
-        {id:"pc1",label:"Alone / With second animal / With human"},
-        {id:"pc2",label:"14 lighting · 17 environments · 16 lenses"},
-        {id:"pc3",label:"Output: Single · 1×3 Grid · 2×2 Grid · Product Showcase · Custom Multi-Shot"},
+      {id:"pc",label:"Scene & Output",color:"#34d399",children:[
+        {id:"pc1",label:"Companion: alone / with second animal / with human (virtual person lite)"},
+        {id:"pc2",label:"14 lighting · 17 environments · 16 lenses · 8 film stocks · 8 color grades"},
+        {id:"pc3",label:"Output: Single · 1×3 Grid · 2×2 Grid · Product Showcase · Custom Multi-Shot + 3D camera"},
+        {id:"pc4",label:"Prompt always visible — live preview, Copy + AI Enhance"},
       ]},
     ]},
     {id:"common",label:"Common Features",color:"#f472b6",children:[
@@ -4661,6 +4753,7 @@ const MAP_DATA={
       {id:"cm4",label:"🌐 EN toggle — force English UI, disable Chrome auto-translate"},
       {id:"cm5",label:"Visual sprite selectors — all options shown as thumbnail previews"},
       {id:"cm6",label:"Live prompt preview — updates in real time as you configure"},
+      {id:"cm7",label:"App Map — interactive feature overview with navigation"},
     ]},
   ]
 };
