@@ -3823,6 +3823,28 @@ function PetPage(){
   };
   const disabledLightIds = new Set(BG_LIGHT_CONFLICTS[bg] || []);
 
+  // ── HUMAN CONFLICTS ──
+  // H1: implied visibility → all actions require visible body parts
+  const conflictH1_impliedAction = vhVisibility==="implied" && vhAction!=="";
+  // H2: hands_only → kneeling/standing need legs/full body
+  const disabledActions_handsOnly = vhVisibility==="hands_only" ? ["kneeling","standing"] : [];
+  const conflictH2_handsAction = vhVisibility==="hands_only" && ["kneeling","standing"].includes(vhAction);
+  // H3: useMyPhoto + companionMode human → two conflicting human sources
+  const conflictH3_photoHuman = useMyPhoto && companionMode==="human";
+  // H4: product virtual_hand + companion human → two human entities in prompt
+  const hasActiveProduct=!!(accProductDesc||accCreativeDesc);
+  const conflictH4_productHuman = hasActiveProduct && accDepthHandler==="virtual_hand" && companionMode==="human";
+  // H5: product virtual_hand + full/upper_body visibility → depth stack says hands only
+  const conflictH5_visDepth = hasActiveProduct && accDepthHandler==="virtual_hand"
+    && (vhVisibility==="full"||vhVisibility==="upper_body");
+
+  // auto-fixes on state change
+  useEffect(()=>{
+    if(conflictH2_handsAction) setVhAction("extended_hand");
+  },[vhVisibility]);
+  useEffect(()=>{
+    if(conflictH5_visDepth) setVhVisibility("hands_only");
+  },[accDepthHandler,accProductDesc,accCreativeDesc]);
   // auto-clear light when bg change makes it incompatible
   useEffect(()=>{
     if(light && disabledLightIds.has(light)) setLight(null);
@@ -3950,11 +3972,13 @@ function PetPage(){
         const csp=PET_SPECIES_REAL.find(s=>s.id===companionSpecies)||PET_SPECIES_REAL[1];
         L.push("Second animal: "+csp.name+" — same photorealistic standard as primary subject.");
         L.push("Interaction: "+companionInteraction+" — natural, unposed, emotionally authentic.");
-      }else if(companionMode==="human"){
+      }else if(companionMode==="human"&&!conflictH3_photoHuman&&!conflictH4_productHuman){
         const visMap={full:"full body, head to toe",upper_body:"upper body and torso, from waist up",hands_only:"hands and forearms only — presence implied, face not shown",implied:"presence suggested through shadow, touch point, or partial element only"};
         const actMap={extended_hand:"extending hand with open palm toward the animal — gesture warm and inviting",holding_leash:"holding leash with relaxed, natural grip",kneeling:"kneeling at animal eye level — connection and equality",standing:"standing nearby in relaxed posture — calm guardian presence"};
         const styleMap={casual:"casual attire — soft fabrics, relaxed fit, subtly textured (e.g. chambray, brushed cotton) with slightly rolled sleeves suggesting ease",outdoorsy:"outdoor/active attire — practical, weathered, functional layers",smart_casual:"smart casual — clean lines, quality fabric, polished but relaxed"};
-        L.push("Human figure: "+visMap[vhVisibility]+". "+actMap[vhAction]+".");
+        const safeVis=(conflictH1_impliedAction||conflictH2_handsAction)?"hands_only":vhVisibility;
+        const safeAct=(conflictH1_impliedAction||conflictH2_handsAction)?"extended_hand":vhAction;
+        L.push("Human figure: "+visMap[safeVis]+". "+actMap[safeAct]+".");
         L.push("Style: "+(styleMap[vhStyle]||vhStyle)+". Gender and age: neutral, AI discretion — emphasize warmth and authenticity. Natural skin texture, no perfect model appearance.");
         L.push("Interaction: "+companionInteraction+".");
       }
@@ -4000,7 +4024,8 @@ function PetPage(){
       L.push("=== VIRTUAL PERSON ===");
       const visMap={full:"full body",upper_body:"upper body",hands_only:"hands and forearms only",implied:"implied presence"};
       const styleMap={casual:"casual",outdoorsy:"outdoorsy",smart_casual:"smart casual"};
-      L.push("Visibility: "+(visMap[vhVisibility]||vhVisibility)+". Style: "+(styleMap[vhStyle]||vhStyle)+". Gender and age: neutral, AI discretion.");
+      const safeVis=conflictH5_visDepth?"hands_only":vhVisibility;
+      L.push("Visibility: "+(visMap[safeVis]||safeVis)+". Style: "+(styleMap[vhStyle]||vhStyle)+". Gender and age: neutral, AI discretion.");
       L.push("");
     }
 
@@ -4455,16 +4480,20 @@ function PetPage(){
               <div style={{borderTop:"1px solid var(--bd)",paddingTop:20,marginTop:8}}>
                 <SL>Who is in the scene?</SL>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-                  {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Virtual person"}].map(m=>(
-                    <button key={m.id} onClick={()=>{setCompanionMode(m.id);setEnhanced("");}}
-                      style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:"pointer",textAlign:"center",
+                {[{id:"alone",label:"🐾 Alone",sub:"Just the animal"},{id:"animal",label:"🐕🐈 With animal",sub:"Second pet"},{id:"human",label:"🤝 With human",sub:"Virtual person"}].map(m=>{
+                    const humanBlocked=m.id==="human"&&(conflictH3_photoHuman||conflictH4_productHuman);
+                    return(
+                    <button key={m.id} onClick={()=>{if(!humanBlocked){setCompanionMode(m.id);setEnhanced("");}}}
+                      style={{flex:"1 1 120px",padding:"12px 14px",borderRadius:10,cursor:humanBlocked?"not-allowed":"pointer",textAlign:"center",
+                        opacity:humanBlocked?.25:1,
                         border:"2px solid "+(companionMode===m.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                        background:companionMode===m.id?"var(--acdim)":"transparent"}}>
+                        background:companionMode===m.id?"var(--acdim)":"transparent",transition:"opacity .2s"}}>
                       <div style={{fontSize:16,marginBottom:4}}>{m.label.split(" ")[0]}</div>
                       <div style={{fontSize:12,fontWeight:700,color:companionMode===m.id?"var(--acc)":"#fff"}}>{m.label.split(" ").slice(1).join(" ")}</div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.6)",marginTop:2}}>{m.sub}</div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
                 {companionMode==="animal"&&(
                   <>
@@ -4493,17 +4522,33 @@ function PetPage(){
                       <div>
                         <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>VISIBILITY</div>
                         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                          {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>(
-                            <Pill key={o.v} active={vhVisibility===o.v} onClick={()=>setVhVisibility(o.v)}>{o.l}</Pill>
-                          ))}
+                          {[{v:"full",l:"Full body"},{v:"upper_body",l:"Upper body"},{v:"hands_only",l:"Hands only"},{v:"implied",l:"Implied"}].map(o=>{
+                            const blocked=conflictH5_visDepth&&(o.v==="full"||o.v==="upper_body");
+                            return(
+                            <Pill key={o.v} active={vhVisibility===o.v&&!blocked}
+                              onClick={()=>{if(!blocked){setVhVisibility(o.v);setEnhanced("");}}}
+                              style={{opacity:blocked?.22:1,cursor:blocked?"not-allowed":"pointer"}}>
+                              {o.l}
+                            </Pill>
+                            );
+                          })}
                         </div>
                       </div>
                       <div>
                         <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:5}}>ACTION</div>
                         <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                          {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>(
-                            <Pill key={o.v} active={vhAction===o.v} onClick={()=>setVhAction(o.v)}>{o.l}</Pill>
-                          ))}
+                          {[{v:"extended_hand",l:"Extending hand"},{v:"holding_leash",l:"Holding leash"},{v:"kneeling",l:"Kneeling"},{v:"standing",l:"Standing"}].map(o=>{
+                            const isImplied=vhVisibility==="implied";
+                            const isHandsOnly=vhVisibility==="hands_only"&&["kneeling","standing"].includes(o.v);
+                            const blocked=isImplied||isHandsOnly;
+                            return(
+                            <Pill key={o.v} active={vhAction===o.v&&!blocked}
+                              onClick={()=>{if(!blocked){setVhAction(o.v);setEnhanced("");}}}
+                              style={{opacity:blocked?.22:1,cursor:blocked?"not-allowed":"pointer"}}>
+                              {o.l}
+                            </Pill>
+                            );
+                          })}
                         </div>
                       </div>
                       <div>
