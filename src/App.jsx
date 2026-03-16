@@ -1727,11 +1727,11 @@ const COLOR_SPRITES=[
   {id:"warm",name:"Warm Vintage",sx:-450,sy:-167},
 ];
 const FORMAT_SPRITES=[
-  {id:"16:9",name:"16:9",fw:130,sx:0},
-  {id:"9:16",name:"9:16",fw:55,sx:-80},
-  {id:"2.39:1",name:"2.39:1",fw:170,sx:-160},
-  {id:"4:3",name:"4:3",fw:110,sx:-240},
-  {id:"1:1",name:"1:1",fw:90,sx:-320},
+  {id:"16:9",  name:"16:9",   fw:130, sx:0},
+  {id:"9:16",  name:"9:16",   fw:90,  sx:-80},
+  {id:"2.39:1",name:"2.39:1", fw:170, sx:-160},
+  {id:"4:3",   name:"4:3",    fw:115, sx:-240},
+  {id:"1:1",   name:"1:1",    fw:115, sx:-320},
 ];
 const UNIVERSE_SPRITES=[
   {id:"realism",name:"Photorealism",sx:0,sy:0},
@@ -2976,9 +2976,12 @@ function VideoPromptPage(){
   const copy=async()=>{const ok=await copyText(prompt);doToast(ok?"COPIED":"COPY FAILED");};
   const reset=()=>{setScene("");setFirstFrame("");setLastFrame("");setCamMove("Static");setPacing("Normal Flow");setDuration("8s");setSound("Ambient Sound");setStyle("Cinematic");setLighting(null);setColorGrade(null);setLens(null);setFilmStock(null);setCustom("");doToast("RESET");};
   const videoRandom=()=>{
+    const scenes=["A lone wanderer crossing a neon-soaked cyberpunk bridge at midnight","Golden hour over ancient ruins, dust motes drifting in warm amber light","A spacecraft departing a space station, Earth visible below","Deep underwater, bioluminescent creatures drifting through dark coral","A mountaintop monastery in heavy snowfall, lanterns glowing orange"];
+    setScene(scenes[~~(Math.random()*scenes.length)]);
     setCamMove(VP_CAM_MOVES[~~(Math.random()*VP_CAM_MOVES.length)]);
     setPacing(VP_PACING_OPTS[~~(Math.random()*VP_PACING_OPTS.length)]);
     setDuration(VP_DURATION[~~(Math.random()*VP_DURATION.length)]);
+    setSound(VP_SOUND[~~(Math.random()*VP_SOUND.length)]);
     setStyle(VP_STYLE_OPTS[~~(Math.random()*VP_STYLE_OPTS.length)]);
     setLighting(LIGHT_SPRITES[~~(Math.random()*LIGHT_SPRITES.length)].id);
     setColorGrade(COLOR_SPRITES[~~(Math.random()*COLOR_SPRITES.length)].id);
@@ -5137,7 +5140,7 @@ const MAP_DATA={
         {id:"cw1",label:"10 clothing categories — studio neutral to fantasy armor"},
         {id:"cw2",label:"10 layout templates — Style Sheet, Headshot, Full Body, Action Pose…"},
         {id:"cw3",label:"Lighting · Environment · Lens per character"},
-        {id:"cw4",label:"From scratch or from reference photo"},
+        {id:"cw4",label:"From scratch or from reference photo · Random configuration"},
       ]},
     ]},
     {id:"multi",label:"Multi-Shot",color:"#4fa3e0",page:"angles",children:[
@@ -5152,6 +5155,7 @@ const MAP_DATA={
         {id:"ms2",label:"17 environments — Sci-Fi Megacity, Cyberpunk Alley, Crystal Cave…"},
         {id:"ms3",label:"16 focal lengths — 8mm fisheye to 600mm extreme telephoto"},
         {id:"ms4",label:"8 film stocks · 8 color grades · 5 aspect ratios"},
+        {id:"ms5",label:"Conflict resolution — fisheye locks 1:1, Ilford B&W disables color grades, B/L incompatible pairs dimmed"},
       ]},
       {id:"mw",label:"Workflow",color:"#4fa3e0",children:[
         {id:"mw1",label:"Step 1: generate multi-panel grid — copy prompt, attach photo"},
@@ -5163,8 +5167,9 @@ const MAP_DATA={
       {id:"v1",label:"txt2vid — Text to Video (describe from zero)"},
       {id:"v2",label:"img2vid — Image to Video (attach reference)"},
       {id:"v3",label:"Frames — First + Last Frame from Multi-Shot grid"},
-      {id:"v4",label:"Generators: Sora · Runway · Kling · Pika"},
-      {id:"v5",label:"Frame generators: Grok Imagine · Gemini · Arena.ai"},
+      {id:"v4",label:"Random — instant full configuration with scene"},
+      {id:"v5",label:"Generators: Sora · Runway · Kling · Pika"},
+      {id:"v6",label:"Frame generators: Grok Imagine · Gemini · Arena.ai"},
     ]},
     {id:"pet",label:"Pet Studio",color:"#34d399",page:"pet",children:[
       {id:"pi",label:"Inputs",color:"#34d399",children:[
@@ -5174,32 +5179,34 @@ const MAP_DATA={
       ]},
       {id:"pv",label:"Virtual Pet",color:"#34d399",children:[
         {id:"pv1",label:"9 real species — Dog (19 breeds), Cat (18 breeds), Horse (6 breeds), Rabbit, Hamster, Parrot, Turtle, Fish, Hedgehog"},
-        {id:"pv2",label:"7 fantasy creatures — Dragon, Unicorn, Griffin, Phoenix, Fluffy, Hellhound, Imp"},
-        {id:"pv3",label:"Look tab: coat type/pattern/color · tail · ears · wings · horns · pose · gaze — real AND fantasy"},
-        {id:"pv4",label:"5 empathy levels (+ none) for fantasy: Cute → Menacing"},
-        {id:"pv5",label:"4 size options (+ none): tiny (dog-sized) → gigantic"},
+        {id:"pv2",label:"110+ extended species via Other panel — rodents, parrots, lizards, snakes, amphibians, fish"},
+        {id:"pv3",label:"7 fantasy creatures — Dragon, Unicorn, Griffin, Phoenix, Fluffy, Hellhound, Imp"},
+        {id:"pv4",label:"Look tab (framed) — coat type/pattern/color · tail · ears · wings · horns · pose · gaze"},
+        {id:"pv5",label:"6 empathy/mood levels · 4 size options · conflict resolution (breed overrides coat)"},
       ]},
       {id:"pa",label:"Accessories",color:"#34d399",children:[
-        {id:"pa1",label:"Product Placement — 3 depth handlers: Hand presenting · Pet wearing · Being attached"},
-        {id:"pa2",label:"Depth stack auto-generated per handler type"},
-        {id:"pa3",label:"Standard multi-select — grouped by category per species"},
-        {id:"pa4",label:"Existing product / Description / Creative concept mode"},
+        {id:"pa1",label:"Toggle switch header — hover previews, click locks open permanently"},
+        {id:"pa2",label:"Product Placement — 3 depth handlers: Hand presenting · Pet wearing · Being attached"},
+        {id:"pa3",label:"Standard multi-select — grouped by category per species, variants inline"},
+        {id:"pa4",label:"Human conflict resolution — implied/hands-only locks incompatible actions"},
       ]},
       {id:"pc",label:"Scene & Output",color:"#34d399",children:[
         {id:"pc1",label:"Companion: alone / with second animal / with human (virtual person lite)"},
         {id:"pc2",label:"14 lighting · 17 environments · 16 lenses · 8 film stocks · 8 color grades"},
-        {id:"pc3",label:"Output: Single · 1×3 Grid · 2×2 Grid · Product Showcase · Custom Multi-Shot + 3D camera"},
-        {id:"pc4",label:"Prompt always visible — live preview, Copy + AI Enhance"},
+        {id:"pc3",label:"Optical conflict resolution — fisheye/anamorphic lock aspect ratio, B&W disables grades"},
+        {id:"pc4",label:"Output: Single · 1×3 Grid · 2×2 Grid · Product Showcase · Custom Multi-Shot + 3D camera"},
+        {id:"pc5",label:"Random — one click full configuration"},
       ]},
     ]},
     {id:"common",label:"Common Features",color:"#f472b6",children:[
-      {id:"cm1",label:"✦ AI Prompt Enhance — Gemini rewrites prompt cinematically"},
-      {id:"cm2",label:"Google Sign-In — free, no credit card"},
-      {id:"cm3",label:"Copy Prompt — always copies English regardless of browser translation"},
-      {id:"cm4",label:"🌐 EN toggle — force English UI, disable Chrome auto-translate"},
-      {id:"cm5",label:"Visual sprite selectors — all options shown as thumbnail previews"},
-      {id:"cm6",label:"Live prompt preview — updates in real time as you configure"},
-      {id:"cm7",label:"App Map — interactive feature overview with navigation"},
+      {id:"cm1",label:"✦ AI Prompt Enhance — Gemini rewrites prompt as artistic/narrative version"},
+      {id:"cm2",label:"Dual prompt view — Original (green tab) / AI Enhanced (orange tab) always preserved"},
+      {id:"cm3",label:"Auto-enhance after Google Sign-In — no second click needed"},
+      {id:"cm4",label:"Copy Orig. Prompt · Copy Enhanced Prompt — separate actions"},
+      {id:"cm5",label:"🌐 EN toggle — force English UI, disable Chrome auto-translate"},
+      {id:"cm6",label:"Visual sprite selectors — all options shown as thumbnail previews"},
+      {id:"cm7",label:"Live prompt preview — updates in real time as you configure"},
+      {id:"cm8",label:"App Map — interactive feature overview with navigation"},
     ]},
   ]
 };
