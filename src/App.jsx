@@ -4212,7 +4212,7 @@ function PetPage(){
                           background:"var(--s1)",transition:"all .15s"}}>
                         <div style={{width:100,height:100,overflow:"hidden",
                           backgroundImage:"url(/pet-species-real.png)",
-                          backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -120px",backgroundRepeat:"no-repeat"}}/>
+                          backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -170px",backgroundRepeat:"no-repeat"}}/>
                         <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
                           color:!vpOtherSpecies&&vpSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                       </div>
@@ -4323,7 +4323,9 @@ function PetPage(){
                             <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
                               style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
                                 flexShrink:0,width:dW,
-                                border:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                                border:"none",
+                                outline:"2px solid "+(vpBreed===b.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                                outlineOffset:"-2px",
                                 boxShadow:vpBreed===b.id?"0 0 12px rgba(232,120,10,.4)":"none",
                                 background:"var(--s1)",transition:"all .15s",
                                 opacity:vpBreed&&vpBreed!==b.id?.55:1}}>
@@ -4442,7 +4444,7 @@ function PetPage(){
                             background:"var(--s1)",transition:"all .15s"}}>
                           <div style={{width:100,height:100,overflow:"hidden",
                             backgroundImage:"url(/pet-species-real.png)",
-                            backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -120px",backgroundRepeat:"no-repeat"}}/>
+                            backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -170px",backgroundRepeat:"no-repeat"}}/>
                           <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
                             color:companionSpecies===sp.id?"var(--acc)":"#fff"}}>{sp.name}</div>
                         </div>
