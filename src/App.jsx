@@ -3820,8 +3820,8 @@ function PetPage(){
   const[vpIsFantasy,setVpIsFantasy]=useState(false);
   const[vpSpecies,setVpSpecies]=useState("dog");
   const[vpBreed,setVpBreed]=useState("Golden Retriever");
-  const[vpFantasySize,setVpFantasySize]=useState("medium (horse-sized)");
-  const[vpEmpathy,setVpEmpathy]=useState("playful");
+  const[vpFantasySize,setVpFantasySize]=useState("");
+  const[vpEmpathy,setVpEmpathy]=useState("");
   const[vpCoatType,setVpCoatType]=useState("long");
   const[vpCoatPattern,setVpCoatPattern]=useState("solid");
   const[vpCoatColors,setVpCoatColors]=useState("golden");
@@ -3991,8 +3991,8 @@ function PetPage(){
     setProductType("photo");setProductDesc("");setProductMaterial("");setProductCondition("new");setProductFocus("hero");
     setPetPhotoDesc("");setPetPhotoQuality("average");setPetEnhancements([]);setHumanPhotoDesc("");
     setPTab("species");
-    setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpFantasySize("medium (horse-sized)");
-    setVpEmpathy("playful");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");
+    setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpFantasySize("");
+    setVpEmpathy("");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");
     setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setVpJokeLegs(false);
     setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");
     setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");
@@ -4088,6 +4088,9 @@ function PetPage(){
         if(sp.hasSpines)L.push("Spines/quills: erect, individual spine detail, natural color banding.");
         if(sp.hasShell)L.push("Shell: prominent — scute pattern, surface texture, and natural weathering.");
         if(sp.hasFins)L.push("Fins: extended naturally — semi-transparent membranes with visible vasculature.");
+        // empathy/mood + size for real animals too
+        if(vpEmpathy){const emp=EMPATHY_STYLES.find(e=>e.id===vpEmpathy);if(emp)L.push("Visual mood & temperament: "+emp.label+" — "+emp.visual+".");}
+        if(vpFantasySize)L.push("Size scale: "+vpFantasySize+" — render all anatomy and proportions accordingly.");
       }
       const poseParts=[];
       if(vpPose)poseParts.push("Pose: "+vpPose);
@@ -4525,7 +4528,7 @@ function PetPage(){
                         background:vpEmpathy===""?"var(--acdim)":"transparent",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:5,minWidth:70}}>
                       <span style={{fontSize:24}}>—</span>
-                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>None</span>
+                      <span style={{fontSize:11,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>Default</span>
                     </button>
                     {EMPATHY_STYLES.map(e=>(
                       <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
@@ -4541,7 +4544,7 @@ function PetPage(){
                   <div style={{marginBottom:24}}>
                     <SL>Size</SL>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
+                      <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— default</Pill>
                       {["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"].map(s=>(
                         <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
                       ))}
@@ -4561,7 +4564,7 @@ function PetPage(){
                         background:vpEmpathy===""?"var(--acdim)":"transparent",
                         display:"flex",flexDirection:"column",alignItems:"center",gap:4,minWidth:64}}>
                       <span style={{fontSize:20}}>—</span>
-                      <span style={{fontSize:10,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>None</span>
+                      <span style={{fontSize:10,fontWeight:700,color:vpEmpathy===""?"var(--acc)":"#fff"}}>Default</span>
                     </button>
                     {EMPATHY_STYLES.map(e=>(
                       <button key={e.id} onClick={()=>{setVpEmpathy(e.id);setEnhanced("");}}
@@ -4577,7 +4580,7 @@ function PetPage(){
                   <div style={{marginBottom:20}}>
                     <SL>Size</SL>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                      <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— none</Pill>
+                      <Pill active={vpFantasySize===""} onClick={()=>{setVpFantasySize("");setEnhanced("");}}>— default</Pill>
                       {["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"].map(s=>(
                         <Pill key={s} active={vpFantasySize===s} onClick={()=>{setVpFantasySize(s);setEnhanced("");}}>{s}</Pill>
                       ))}
@@ -4707,14 +4710,14 @@ function PetPage(){
                     <div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Type</div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                        <Pill active={vpCoatType===""} onClick={()=>{setVpCoatType("");setEnhanced("");}}>— none</Pill>
+                        <Pill active={vpCoatType===""} onClick={()=>{setVpCoatType("");setEnhanced("");}}>— default</Pill>
                         {PET_COAT_TYPES.map(t=><Pill key={t} active={vpCoatType===t} onClick={()=>{setVpCoatType(t);setEnhanced("");}}>{t}</Pill>)}
                       </div>
                     </div>
                     <div>
                       <div style={{fontSize:10,color:"rgba(255,255,255,.7)",marginBottom:6,textTransform:"uppercase",letterSpacing:1}}>Pattern</div>
                       <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                        <Pill active={vpCoatPattern===""} onClick={()=>{setVpCoatPattern("");setEnhanced("");}}>— none</Pill>
+                        <Pill active={vpCoatPattern===""} onClick={()=>{setVpCoatPattern("");setEnhanced("");}}>— default</Pill>
                         {PET_COAT_PATTERNS.map(t=><Pill key={t} active={vpCoatPattern===t} onClick={()=>{setVpCoatPattern(t);setEnhanced("");}}>{t}</Pill>)}
                       </div>
                     </div>
@@ -4728,7 +4731,7 @@ function PetPage(){
                 <div style={{marginBottom:16}}>
                   <SL>Tail</SL>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    <Pill active={vpTail===""} onClick={()=>{setVpTail("");setEnhanced("");}}>— none</Pill>
+                    <Pill active={vpTail===""} onClick={()=>{setVpTail("");setEnhanced("");}}>— default</Pill>
                     {PET_TAIL_TYPES.map(t=><Pill key={t} active={vpTail===t} onClick={()=>{setVpTail(t);setEnhanced("");}}>{t}</Pill>)}
                   </div>
                 </div>
@@ -4737,7 +4740,7 @@ function PetPage(){
                 <div style={{marginBottom:16}}>
                   <SL>Ears</SL>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    <Pill active={vpEars===""} onClick={()=>{setVpEars("");setEnhanced("");}}>— none</Pill>
+                    <Pill active={vpEars===""} onClick={()=>{setVpEars("");setEnhanced("");}}>— default</Pill>
                     {(spData.earOptions||PET_EAR_TYPES).map(t=><Pill key={t} active={vpEars===t} onClick={()=>{setVpEars(t);setEnhanced("");}}>{t}</Pill>)}
                   </div>
                 </div>
@@ -4784,14 +4787,14 @@ function PetPage(){
                 <div>
                   <SL>Pose</SL>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    <Pill active={vpPose===""} onClick={()=>{setVpPose("");setEnhanced("");}}>— none</Pill>
+                    <Pill active={vpPose===""} onClick={()=>{setVpPose("");setEnhanced("");}}>— default</Pill>
                     {poses.map(p=><Pill key={p} active={vpPose===p} onClick={()=>{setVpPose(p);setEnhanced("");}}>{p}</Pill>)}
                   </div>
                 </div>
                 <div>
                   <SL>Gaze</SL>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    <Pill active={vpGaze===""} onClick={()=>{setVpGaze("");setEnhanced("");}}>— none</Pill>
+                    <Pill active={vpGaze===""} onClick={()=>{setVpGaze("");setEnhanced("");}}>— default</Pill>
                     {["toward viewer","toward owner / hand","into distance","at product"].map(g=>(
                       <Pill key={g} active={vpGaze===g} onClick={()=>{setVpGaze(g);setEnhanced("");}}>{g}</Pill>
                     ))}
@@ -5089,7 +5092,7 @@ function PetPage(){
           onToast={doToast}
           extraButtons={
             <>
-              <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
+              <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("");setVpFantasySize("");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
               <button className="btn" onClick={petRandom}>Random</button>
             </>
           }
