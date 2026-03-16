@@ -3781,10 +3781,23 @@ function PetPage(){
   const[enhancing,setEnhancing]=useState(false);
   const[petPromptView,setPetPromptView]=useState("base"); // "base"|"enhanced"
   const[showAuthModal,setShowAuthModal]=useState(false);
+  const[pendingEnhance,setPendingEnhance]=useState(false);
   const[toast,setToast]=useState("");
   const{user}=React.useContext(AuthCtx);
   const setPage=React.useContext(PageCtx);
   const MAX_A=9;
+
+  // auto-start enhance after login if pending
+  const doEnhance=useCallback(async(idToken)=>{
+    setEnhancing(true);setEnhanced("");setPetPromptView("enhanced");
+    try{const r=await callEnhance(prompt,custom,idToken);setEnhanced(r);doToast("ENHANCED BY GEMINI");}
+    catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}
+    setEnhancing(false);
+  },[prompt,custom]);
+
+  useEffect(()=>{
+    if(user&&pendingEnhance){setPendingEnhance(false);doEnhance(user.idToken);}
+  },[user,pendingEnhance]);
 
   const tog1=(setter,id)=>setter(p=>p===id?null:id);
   const togAngle=(i)=>setSel(p=>p.includes(i)?p.filter(x=>x!==i):p.length>=MAX_A?p:[...p,i]);
@@ -5006,14 +5019,19 @@ function PetPage(){
 
           {/* Enhance + inline disclaimer → becomes Copy Enhanced after done */}
           {!enhanced?(
-            <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-              <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");setPetPromptView("enhanced");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
+            <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+              <button className="btn" onClick={async()=>{if(!user){setPendingEnhance(true);setShowAuthModal(true);return;}doEnhance(user.idToken);}} disabled={enhancing}
                 style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)",flexShrink:0}}>
-                {enhancing?"ENHANCING\u2026":"\u2726 AI Prompt Enhance"}
+                {enhancing?"ENHANCING\u2026":"\u2192 AI Prompt Enhance"}
               </button>
-              <span style={{fontSize:10,color:"rgba(255,255,255,.35)",lineHeight:1.55,maxWidth:260}} translate="no">
-                Generates an artistic, narrative version — richer mood, less technical precision. Some params (lens, lighting, ratio) may be rewritten. <span style={{color:"rgba(255,255,255,.5)",fontWeight:600}}>Requires Google sign-in.</span>
-              </span>
+              <div style={{display:"flex",flexDirection:"column",gap:3,maxWidth:280}} translate="no">
+                <span style={{fontSize:11,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
+                  <span style={{color:"var(--acc)",marginRight:5}}>▸</span>Generates artistic, narrative version — richer mood, more cinematic.
+                </span>
+                <span style={{fontSize:11,color:"rgba(255,255,255,.6)",lineHeight:1.5}}>
+                  <span style={{color:"rgba(255,100,100,.7)",marginRight:5}}>▸</span>Some technical params (lens, lighting, ratio) may be rewritten. <span style={{color:"rgba(255,255,255,.75)",fontWeight:600}}>Requires Google sign-in.</span>
+                </span>
+              </div>
             </div>
           ):(
             <button className="btn pri" onClick={async()=>{const ok=await copyText(enhanced);doToast(ok?"ENHANCED PROMPT COPIED":"COPY FAILED");}}>
