@@ -3432,8 +3432,9 @@ const PET_FANTASY_SPRITES=[
   {id:"hellhound",name:"Hellhound",      sx:-500},
   {id:"imp",      name:"Imp",            sx:-600},
 ];
-// pet-breeds-dog.png: 2000×400, 10 cols × 2 rows, each cell 200×200
-// Display: 158×158 → scale=0.79 → bgSize 1580×316 → row0 posY=0, row1 posY=-158, colX=-(col×158)
+// pet-breeds-dog.png: 2000×400, row0: 10 uniform cols × 200px, row1: 10 non-uniform cols (measured from screenshot)
+// row0: scale=0.79 → bgSize 1580×316, dH=158, py=0, px=-(col×158)
+// row1: per-card [bgW,bgH,dH,bx,by] based on actual sprite cell widths
 const PET_DOG_BREED_SPRITES=[
   {id:"Golden Retriever",  row:0,col:0, desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
   {id:"German Shepherd",   row:0,col:1, desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
@@ -3445,15 +3446,17 @@ const PET_DOG_BREED_SPRITES=[
   {id:"Boxer",             row:0,col:7, desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
   {id:"Poodle",            row:0,col:8, desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
   {id:"Mixed breed",       row:0,col:9, desc:"medium-sized mixed breed, black with white markings"},
-  {id:"Pomeranian",        row:1,col:0, desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
-  {id:"Shih Tzu",          row:1,col:1, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
-  {id:"Maltese",           row:1,col:2, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
-  {id:"Cavalier",          row:1,col:3, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
-  {id:"Havanese",          row:1,col:4, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
-  {id:"Boston Terrier",    row:1,col:5, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
-  {id:"Yorkshire Terrier", row:1,col:6, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
-  {id:"Pug",               row:1,col:7, desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
-  {id:"Mini Schnauzer",    row:1,col:8, desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+  // row1: non-uniform widths → r1=[bgW,bgH,dH,bx,by] per card
+  {id:"Pomeranian",        row:1, r1:[1541,308,154,0,-154],    desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
+  {id:"Shih Tzu",          row:1, r1:[1621,324,162,-166,-162], desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
+  {id:"Maltese",           row:1, r1:[1572,314,157,-314,-157], desc:"silky pure white coat, black button eyes and nose, small drop ears"},
+  {id:"Cavalier",          row:1, r1:[1411,282,141,-424,-141], desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
+  {id:"Havanese",          row:1, r1:[1244,249,124,-513,-124], desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
+  {id:"Boston Terrier",    row:1, r1:[1756,351,176,-947,-176], desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
+  {id:"Yorkshire Terrier", row:1, r1:[1708,342,171,-1075,-171],desc:"small erect ears, long straight silky coat, steel blue and tan color"},
+  {id:"Pug",               row:1, r1:[1637,327,164,-1182,-164],desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
+  {id:"Mini Schnauzer",    row:1, r1:[1785,357,179,-1461,-179],desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+  {id:"Toy Poodle",        row:1, r1:[1746,349,175,-1583,-175],desc:"small elegant muzzle, very curly dense white coat, drop ears covered in curls, compact size"},
 ];
 // pet-breeds-cat.png: 2000×437, 9 cols × 2 rows, each cell 222×218
 // Display: 158×154 → scale=0.712 → bgSize 1422×311 → row0 posY=0, row1 posY=-154, colX=-(col×158)
@@ -4210,7 +4213,7 @@ function PetPage(){
                           border:"2px solid "+(!vpOtherSpecies&&vpSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
                           boxShadow:!vpOtherSpecies&&vpSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
                           background:"var(--s1)",transition:"all .15s"}}>
-                        <div style={{width:100,height:100,overflow:"hidden",
+                        <div style={{width:100,height:120,overflow:"hidden",
                           backgroundImage:"url(/pet-species-real.png)",
                           backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -170px",backgroundRepeat:"no-repeat"}}/>
                         <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
@@ -4223,7 +4226,7 @@ function PetPage(){
                         border:"2px solid "+(vpOtherSpecies?"var(--acc)":"rgba(255,255,255,.2)"),
                         boxShadow:vpOtherSpecies?"0 0 14px rgba(232,120,10,.4)":"none",
                         background:"var(--s1)",transition:"all .15s",width:100}}>
-                      <div style={{width:100,height:100,display:"flex",alignItems:"center",justifyContent:"center",
+                      <div style={{width:100,height:120,display:"flex",alignItems:"center",justifyContent:"center",
                         background:"rgba(255,255,255,.03)",fontSize:32}}>…</div>
                       <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
                         color:vpOtherSpecies?"var(--acc)":"#fff"}}>Other</div>
@@ -4317,8 +4320,9 @@ function PetPage(){
                     return rows.map((row,ri)=>(
                       <div key={ri} style={{display:"flex",gap:8,marginBottom:8}}>
                         {row.map(b=>{
-                          const px=-(b.col*dW);
-                          const py=-(b.row*dH);
+                          // row1 dog cards have per-card r1=[bgW,bgH,dH,bx,by] (non-uniform sprite widths)
+                          let bBgW=bgW,bBgH=bgH,bDH=dH,px=-(b.col*dW),py=-(b.row*dH);
+                          if(b.r1){const[w,h,hdh,hbx,hby]=b.r1;bBgW=w;bBgH=h;bDH=hdh;px=hbx;py=hby;}
                           return(
                             <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
                               style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
@@ -4329,9 +4333,9 @@ function PetPage(){
                                 boxShadow:vpBreed===b.id?"0 0 12px rgba(232,120,10,.4)":"none",
                                 background:"var(--s1)",transition:"all .15s",
                                 opacity:vpBreed&&vpBreed!==b.id?.55:1}}>
-                              <div style={{width:dW,height:dH,
+                              <div style={{width:dW,height:bDH,
                                 backgroundImage:"url(/pet-breeds-"+vpSpecies+".png)",
-                                backgroundSize:bgW+"px "+bgH+"px",
+                                backgroundSize:bBgW+"px "+bBgH+"px",
                                 backgroundPosition:px+"px "+py+"px",
                                 backgroundRepeat:"no-repeat"}}/>
                               <div style={{padding:"5px 6px 7px",textAlign:"center",fontSize:10,fontWeight:600,lineHeight:1.2,
@@ -4442,7 +4446,7 @@ function PetPage(){
                             border:"2px solid "+(companionSpecies===sp.id?"var(--acc)":"rgba(255,255,255,.2)"),
                             boxShadow:companionSpecies===sp.id?"0 0 14px rgba(232,120,10,.4)":"none",
                             background:"var(--s1)",transition:"all .15s"}}>
-                          <div style={{width:100,height:100,overflow:"hidden",
+                          <div style={{width:100,height:120,overflow:"hidden",
                             backgroundImage:"url(/pet-species-real.png)",
                             backgroundSize:"900px 491px",backgroundPosition:sp.sx+"px -170px",backgroundRepeat:"no-repeat"}}/>
                           <div style={{padding:"4px 4px 6px",textAlign:"center",fontSize:11,fontWeight:700,
