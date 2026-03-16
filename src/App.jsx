@@ -3799,6 +3799,40 @@ function PetPage(){
   const accList=PET_ACCESSORIES[vpSpecies]||(vpIsFantasy?PET_ACCESSORIES.dog:PET_ACCESSORIES.default);
   const poses=PET_POSES[vpSpecies]||PET_POSES.default;
 
+  // ── CONFLICT RESOLUTION — priority rules, no errors shown ──
+  // 1. Breed → Coat (breed has priority, coat is redundant when breed desc exists)
+  const breedDesc_current=(()=>{if(vpIsFantasy||vpOtherSpecies)return null;const bData=spData?.breedSprites?.find(b=>b.id===vpBreed);return bData?.desc||null;})();
+  const conflictCoat = !vpIsFantasy && !!breedDesc_current;
+
+  // 2. Lens 8mm / Anamorphic filmstock → Aspect Ratio (optical characteristics override)
+  const conflictAR_fisheye  = lens === "8mm";
+  const conflictAR_anamorphic = filmStock === "anamorphic";
+  const conflictAspectRatio = conflictAR_fisheye || conflictAR_anamorphic;
+  // fisheye beats anamorphic (more physically constrained)
+  const effectiveAspectRatio = conflictAR_fisheye ? "1:1" : conflictAR_anamorphic ? "2.39:1" : aspectRatio;
+
+  // 3. Ilford B&W → Color Grade (monochrome film eliminates color grading)
+  const conflictColorGrade = filmStock === "ilford";
+
+  // 4. Background → Lighting incompatible pairs (bg is environment = higher priority)
+  const BG_LIGHT_CONFLICTS = {
+    underwater: ["fire","golden","sunrise","magic"],
+    space:      ["golden","sunrise","magic","fire","storm"],
+    studio:     ["storm","fog","fire"],
+    arctic:     ["fire","golden"],
+  };
+  const disabledLightIds = new Set(BG_LIGHT_CONFLICTS[bg] || []);
+
+  // auto-clear light when bg change makes it incompatible
+  useEffect(()=>{
+    if(light && disabledLightIds.has(light)) setLight(null);
+  },[bg]);
+  // auto-clear colorGrade when ilford selected
+  useEffect(()=>{
+    if(conflictColorGrade && colorGrade) setColorGrade(null);
+  },[filmStock]);
+  // ── END CONFLICT RESOLUTION ──
+
   const reset=()=>{
     setHasProduct(false);setHasPetPhoto(false);setHasHumanPhoto(false);
     setProductType("photo");setProductDesc("");setProductMaterial("");setProductCondition("new");setProductFocus("hero");
@@ -3887,7 +3921,7 @@ function PetPage(){
         L.push("SUBJECT: "+petName+" — rendered with full photorealistic fidelity.");
         if(otherData&&otherData.desc)L.push("Visual characteristics: "+otherData.desc+".");
         if(breedDesc)L.push("Breed-specific traits to reproduce precisely: "+breedDesc+".");
-        if(sp.hasCoat&&(vpCoatType||vpCoatPattern||vpCoatColors)){
+        if(!breedDesc&&sp.hasCoat&&(vpCoatType||vpCoatPattern||vpCoatColors)){
           const cParts=[];
           if(vpCoatType)cParts.push(vpCoatType+" coat texture");
           if(vpCoatPattern)cParts.push(vpCoatPattern+" pattern");
@@ -3973,19 +4007,19 @@ function PetPage(){
     // ── SCENE PARAMETERS ──
     const techParts=[];
     if(bg){const b=BACKGROUNDS.find(x=>x.id===bg);if(b)techParts.push(b.p);}
-    if(light){const l=LIGHTING.find(x=>x.id===light);if(l)techParts.push(l.p);}
+    if(light&&!disabledLightIds.has(light)){const l=LIGHTING.find(x=>x.id===light);if(l)techParts.push(l.p);}
     if(lens){const l=LENSES.find(x=>x.mm===lens);if(l)techParts.push(l.p);}
     if(filmStock){const f=FILM_STOCKS.find(x=>x.id===filmStock);if(f)techParts.push(f.p);}
-    if(colorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)techParts.push(c.p);}
+    if(colorGrade&&!conflictColorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)techParts.push(c.p);}
     if(techParts.length){
       L.push("=== SCENE PARAMETERS ===");
       if(hasPetPhotoVal||hasHumanPhotoVal)L.push("Note: People from reference photos are replaced by virtual figures. Environment and props preserved.");
       L.push(techParts.join(". ")+".");
-      L.push("Aspect ratio: "+aspectRatio+". All subjects and environment share identical lighting direction, consistent color temperature, and matching perspective.");
+      L.push("Aspect ratio: "+effectiveAspectRatio+". All subjects and environment share identical lighting direction, consistent color temperature, and matching perspective.");
       L.push("");
     } else {
       L.push("=== SCENE PARAMETERS ===");
-      L.push("Aspect ratio: "+aspectRatio+". Natural, unobtrusive studio or lifestyle environment.");
+      L.push("Aspect ratio: "+effectiveAspectRatio+". Natural, unobtrusive studio or lifestyle environment.");
       L.push("");
     }
 
@@ -4504,7 +4538,12 @@ function PetPage(){
           {pTab==="look"&&(
             <div>
               {!vpIsFantasy&&spData.hasCoat&&(
-                <div style={{marginBottom:16}}>
+                <div style={{marginBottom:16,position:"relative"}}>
+                  {conflictCoat&&(
+                    <div style={{position:"absolute",inset:0,zIndex:10,borderRadius:8,background:"rgba(6,6,6,.65)",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(1px)"}}>
+                      <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)"}}>Defined by breed</span>
+                    </div>
+                  )}
                   <SL>Coat</SL>
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
                     <div>
@@ -4730,15 +4769,20 @@ function PetPage(){
         <div style={{marginBottom:22}}>
           <SL>Lighting</SL>
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-            {LIGHT_SPRITES.map(r=>(
-              <div key={r.id} onClick={()=>{tog1(setLight,r.id);setEnhanced("");}}
-                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+            {LIGHT_SPRITES.map(r=>{
+              const isConflict=disabledLightIds.has(r.id);
+              return(
+              <div key={r.id} onClick={()=>{if(!isConflict){tog1(setLight,r.id);setEnhanced("");}}}
+                style={{cursor:isConflict?"not-allowed":"pointer",borderRadius:8,overflow:"hidden",width:150,
+                  opacity:isConflict?.22:1,
                   border:"2px solid "+(light===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                  boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
+                  boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                  transition:"opacity .2s"}}>
                 <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
                 <div style={{padding:"4px 4px 5px",textAlign:"center",fontSize:10,fontWeight:600,color:light===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <div style={{marginBottom:22}}>
@@ -4786,10 +4830,15 @@ function PetPage(){
           </div>
           <div style={{flex:"1 1 280px"}}>
             <SL>Color Grade</SL>
-            <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+            <div style={{display:"flex",flexWrap:"wrap",gap:8,position:"relative"}}>
+              {conflictColorGrade&&(
+                <div style={{position:"absolute",inset:0,zIndex:10,borderRadius:8,background:"rgba(6,6,6,.65)",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(1px)"}}>
+                  <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)"}}>B&W film active</span>
+                </div>
+              )}
               {COLOR_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>{tog1(setColorGrade,r.id);setEnhanced("");}}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:150,
+                <div key={r.id} onClick={()=>{if(!conflictColorGrade){tog1(setColorGrade,r.id);setEnhanced("");}}}
+                  style={{cursor:conflictColorGrade?"not-allowed":"pointer",borderRadius:8,overflow:"hidden",width:150,
                     border:"2px solid "+(colorGrade===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
                     boxShadow:colorGrade===r.id?"0 0 14px rgba(232,120,10,.4)":"none"}}>
                   <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px"}}/>
@@ -4801,15 +4850,22 @@ function PetPage(){
         </div>
         <div>
           <SL>Aspect Ratio</SL>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",position:"relative"}}>
+            {conflictAspectRatio&&(
+              <div style={{position:"absolute",inset:0,zIndex:10,borderRadius:8,background:"rgba(6,6,6,.65)",display:"flex",alignItems:"center",justifyContent:"center",backdropFilter:"blur(1px)"}}>
+                <span style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"rgba(255,255,255,.45)"}}>
+                  {conflictAR_fisheye?"Fisheye forces 1:1":"Anamorphic forces 2.39:1"}
+                </span>
+              </div>
+            )}
             {FORMAT_SPRITES.map(r=>(
-              <div key={r.id} onClick={()=>{setAspectRatio(r.id);setEnhanced("");}}
-                style={{cursor:"pointer",borderRadius:8,overflow:"hidden",width:r.fw,
-                  border:"2px solid "+(aspectRatio===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
-                  boxShadow:aspectRatio===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+              <div key={r.id} onClick={()=>{if(!conflictAspectRatio){setAspectRatio(r.id);setEnhanced("");}}}
+                style={{cursor:conflictAspectRatio?"not-allowed":"pointer",borderRadius:8,overflow:"hidden",width:r.fw,
+                  border:"2px solid "+((conflictAspectRatio?effectiveAspectRatio:aspectRatio)===r.id?"var(--acc)":"rgba(255,255,255,.2)"),
+                  boxShadow:(conflictAspectRatio?effectiveAspectRatio:aspectRatio)===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
                   display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
                 <div style={{width:80,height:80,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px"}}/>
-                <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:aspectRatio===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
+                <div style={{paddingBottom:6,textAlign:"center",fontSize:10,fontWeight:600,color:(conflictAspectRatio?effectiveAspectRatio:aspectRatio)===r.id?"var(--acc)":"#fff"}} translate="no">{r.name}</div>
               </div>
             ))}
           </div>
