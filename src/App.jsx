@@ -4961,49 +4961,64 @@ function PetPage(){
         <div className="sh"><span className="st">Generated Prompt</span><span className="sb" translate="no">LIVE</span></div>
 
         <div style={{borderRadius:"var(--r2)",border:"1px solid "+(enhanced?"var(--bd2)":"var(--bd)"),overflow:"hidden",background:"var(--s2)",transition:"border-color .2s"}}>
-          {enhanced&&(
-            <div style={{display:"flex",borderBottom:"1px solid var(--bd)",background:"var(--s1)"}}>
-              <button onClick={()=>setPetPromptView("base")}
-                style={{padding:"8px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",borderRight:"1px solid var(--bd)",
-                  background:petPromptView==="base"?"var(--s3)":"transparent",
-                  color:petPromptView==="base"?"#fff":"rgba(255,255,255,.4)",transition:"all .15s",letterSpacing:.5}}>
-                Technical
-              </button>
-              <button onClick={()=>setPetPromptView("enhanced")}
-                style={{padding:"8px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",
-                  background:petPromptView==="enhanced"?"var(--acdim)":"transparent",
-                  color:petPromptView==="enhanced"?"var(--acc)":"rgba(255,255,255,.4)",transition:"all .15s",letterSpacing:.5}}>
-                {"\u2726"} AI Enhanced
-              </button>
+          {/* Tab strip — always visible, colours activate only after enhance */}
+          <div style={{display:"flex",borderBottom:"1px solid var(--bd)",background:"var(--s1)"}}>
+            {/* Original tab — neutral before enhance, GREEN after */}
+            <button onClick={()=>setPetPromptView("base")}
+              style={{padding:"9px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",borderRight:"1px solid var(--bd)",
+                background:enhanced&&petPromptView==="base"?"rgba(34,197,94,.12)":"transparent",
+                color:enhanced?(petPromptView==="base"?"#4ade80":"rgba(255,255,255,.38)"):(petPromptView==="base"?"#fff":"rgba(255,255,255,.38)"),
+                transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
+              Original Prompt
+            </button>
+            {/* AI Enhanced tab — shown greyed out before enhance, ORANGE after */}
+            <button onClick={()=>{if(enhanced)setPetPromptView("enhanced");}}
+              style={{padding:"9px 18px",cursor:enhanced?"pointer":"default",fontSize:11,fontWeight:700,border:"none",
+                background:enhanced&&petPromptView==="enhanced"?"var(--acdim)":"transparent",
+                color:enhanced?(petPromptView==="enhanced"?"var(--acc)":"rgba(255,255,255,.38)"):"rgba(255,255,255,.2)",
+                transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
+              {"\u2726"} AI Enhanced Prompt
+            </button>
+            {enhanced&&(
               <button onClick={()=>{setEnhanced("");setPetPromptView("base");}}
-                style={{marginLeft:"auto",padding:"8px 14px",cursor:"pointer",fontSize:10,fontWeight:600,
-                  border:"none",borderLeft:"1px solid var(--bd)",background:"transparent",color:"rgba(255,255,255,.25)"}}>
+                style={{marginLeft:"auto",padding:"9px 14px",cursor:"pointer",fontSize:10,fontWeight:600,
+                  border:"none",borderLeft:"1px solid var(--bd)",background:"transparent",color:"rgba(255,255,255,.22)"}}>
                 {"\u2715"} discard
               </button>
-            </div>
-          )}
+            )}
+          </div>
           <div style={{fontFamily:"var(--mono)",fontSize:12,lineHeight:1.9,color:"var(--t)",padding:"14px 16px",
             whiteSpace:"pre-wrap",wordBreak:"break-word",userSelect:"text",cursor:"text",minHeight:120}}>
             {(enhanced&&petPromptView==="enhanced")?enhanced:prompt}
           </div>
         </div>
 
+        {/* Button bar — order: Reset | Copy Prompt (pri) | Enhance+ℹ  →  after enhance: Copy Prompt | ✦ Copy Enhanced (pri) */}
         <div className="pbar" translate="no">
           <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setEnhanced("");setPetEnhancements([]);setAccOpen(false);setPetPromptView("base");doToast("RESET COMPLETE");}}>Reset</button>
-          {!enhanced?(
-            <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");setPetPromptView("enhanced");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
-              style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)"}}>
-              {enhancing?"ENHANCING\u2026":"\u2726 AI Prompt Enhance"}
-            </button>
-          ):(
-            <button className="btn" onClick={async()=>{const ok=await copyText(enhanced);doToast(ok?"ENHANCED PROMPT COPIED":"COPY FAILED");}}
-              style={{borderColor:"var(--acc)",color:"var(--acc)",background:"var(--acdim)"}}>
-              {"\u2726"} Copy Enhanced
-            </button>
-          )}
-          <button className="btn pri" onClick={async()=>{const ok=await copyText(prompt);doToast(ok?"PROMPT COPIED":"COPY FAILED");}}>
+
+          {/* Copy Prompt — always primary orange, first action button */}
+          <button className="btn pri" onClick={async()=>{const ok=await copyText(prompt);doToast(ok?"ORIGINAL PROMPT COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");}}>
             Copy Prompt
           </button>
+
+          {/* Enhance → after done becomes Copy Enhanced (primary) */}
+          {!enhanced?(
+            <div style={{display:"flex",alignItems:"center",gap:6}}>
+              <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");setPetPromptView("enhanced");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
+                style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)"}}>
+                {enhancing?"ENHANCING\u2026":"\u2726 AI Prompt Enhance"}
+              </button>
+              <span title="AI Enhance rewrites the prompt in a more artistic, narrative style — richer descriptions but less technically precise. Some technical details (lens, lighting, aspect ratio) may be reinterpreted or overwritten by the AI."
+                style={{cursor:"help",fontSize:15,opacity:.4,lineHeight:1,userSelect:"none",fontStyle:"normal"}}>
+                &#9432;
+              </span>
+            </div>
+          ):(
+            <button className="btn pri" onClick={async()=>{const ok=await copyText(enhanced);doToast(ok?"ENHANCED PROMPT COPIED":"COPY FAILED");}}>
+              {"\u2726"} Copy Enhanced Prompt
+            </button>
+          )}
         </div>
         <div style={{marginTop:14,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Generate with</div>
