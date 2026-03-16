@@ -3779,6 +3779,7 @@ function PetPage(){
   const[custom,setCustom]=useState("");
   const[enhanced,setEnhanced]=useState("");
   const[enhancing,setEnhancing]=useState(false);
+  const[petPromptView,setPetPromptView]=useState("base"); // "base"|"enhanced"
   const[showAuthModal,setShowAuthModal]=useState(false);
   const[toast,setToast]=useState("");
   const{user}=React.useContext(AuthCtx);
@@ -4958,23 +4959,59 @@ function PetPage(){
       {/* 8. PROMPT OUTPUT */}
       <div className="sec">
         <div className="sh"><span className="st">Generated Prompt</span><span className="sb" translate="no">LIVE</span></div>
-        <div className="pbox live">
-          {enhanced||prompt}
-        </div>
+
+        {/* Tabs — only when enhanced exists */}
         {enhanced&&(
-          <div style={{marginTop:8,fontSize:11,color:"var(--acc)",fontWeight:600,letterSpacing:1}}>
-            ✦ Enhanced by Gemini — <button onClick={()=>setEnhanced("")} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",fontSize:11,cursor:"pointer",textDecoration:"underline"}}>revert</button>
+          <div style={{display:"flex",gap:4,marginBottom:10}}>
+            <button onClick={()=>setPetPromptView("base")}
+              style={{padding:"6px 14px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:700,border:"none",
+                background:petPromptView==="base"?"var(--s3)":"transparent",
+                color:petPromptView==="base"?"#fff":"rgba(255,255,255,.45)",transition:"all .15s"}}>
+              Technical
+            </button>
+            <button onClick={()=>setPetPromptView("enhanced")}
+              style={{padding:"6px 14px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:700,border:"none",
+                background:petPromptView==="enhanced"?"var(--acdim)":"transparent",
+                color:petPromptView==="enhanced"?"var(--acc)":"rgba(255,255,255,.45)",transition:"all .15s"}}>
+              ✦ Enhanced
+            </button>
+            <button onClick={()=>setEnhanced("")}
+              style={{marginLeft:"auto",padding:"4px 10px",borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,
+                border:"1px solid rgba(255,255,255,.12)",background:"transparent",color:"rgba(255,255,255,.35)"}}>
+              discard enhanced
+            </button>
           </div>
         )}
-        <div className="pbar" translate="no">
-          <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setEnhanced("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
-          <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("✦ ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
-            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)"}}>
-            {enhancing?"ENHANCING…":"✦ AI Prompt Enhance"}
-          </button>
-          <button className="btn pri" onClick={async()=>{const ok=await copyText(enhanced||prompt);doToast(ok?"COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");}}>
-            <span translate="no">Copy Prompt</span> <span style={{fontSize:10,opacity:.6,fontWeight:400}}>EN</span>
-          </button>
+
+        <div className="pbox live">
+          {(enhanced&&petPromptView==="enhanced")?enhanced:prompt}
+        </div>
+
+        <div className="pbar" translate="no" style={{flexWrap:"wrap",gap:8}}>
+          <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setEnhanced("");setPetEnhancements([]);setAccOpen(false);setPetPromptView("base");doToast("RESET COMPLETE");}}>Reset</button>
+
+          {/* Enhance block */}
+          <div style={{display:"flex",flexDirection:"column",gap:4,flex:"1 1 200px"}}>
+            <div style={{fontSize:10,color:"rgba(255,255,255,.35)",lineHeight:1.5,letterSpacing:.3}} translate="no">
+              ✦ AI Enhance rewrites in a more <em>artistic, narrative style</em> — richer but less technically precise.
+            </div>
+            <button className="btn" onClick={async()=>{if(!user){setShowAuthModal(true);return;}setEnhancing(true);setEnhanced("");setPetPromptView("enhanced");try{const r=await callEnhance(prompt,custom,user.idToken);setEnhanced(r);doToast("✦ ENHANCED BY GEMINI");}catch(e){if(e.status===401)setShowAuthModal(true);else doToast("ERROR: "+e.message);}setEnhancing(false);}} disabled={enhancing}
+              style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)",alignSelf:"flex-start"}}>
+              {enhancing?"ENHANCING…":"✦ AI Prompt Enhance"}
+            </button>
+          </div>
+
+          {/* Copy buttons */}
+          <div style={{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}}>
+            <button className="btn" onClick={async()=>{const ok=await copyText(prompt);doToast(ok?"TECHNICAL PROMPT COPIED":"COPY FAILED");}}>
+              <span translate="no">Copy Technical</span>
+            </button>
+            {enhanced&&(
+              <button className="btn pri" onClick={async()=>{const ok=await copyText(enhanced);doToast(ok?"ENHANCED PROMPT COPIED — ATTACH YOUR PHOTOS":"COPY FAILED");}}>
+                <span translate="no">Copy Enhanced ✦</span>
+              </button>
+            )}
+          </div>
         </div>
         <div style={{marginTop:14,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>Generate with</div>
