@@ -4961,21 +4961,21 @@ function PetPage(){
         <div className="sh"><span className="st">Generated Prompt</span><span className="sb" translate="no">LIVE</span></div>
 
         <div style={{borderRadius:"var(--r2)",border:"1px solid "+(enhanced?"var(--bd2)":"var(--bd)"),overflow:"hidden",background:"var(--s2)",transition:"border-color .2s"}}>
-          {/* Tab strip — always visible, colours activate only after enhance */}
+          {/* Tab strip — always visible */}
           <div style={{display:"flex",borderBottom:"1px solid var(--bd)",background:"var(--s1)"}}>
-            {/* Original tab — neutral before enhance, GREEN after */}
+            {/* Original — ALWAYS GREEN */}
             <button onClick={()=>setPetPromptView("base")}
               style={{padding:"9px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",borderRight:"1px solid var(--bd)",
-                background:enhanced&&petPromptView==="base"?"rgba(34,197,94,.12)":"transparent",
-                color:enhanced?(petPromptView==="base"?"#4ade80":"rgba(255,255,255,.38)"):(petPromptView==="base"?"#fff":"rgba(255,255,255,.38)"),
+                background:petPromptView==="base"?"rgba(34,197,94,.12)":"transparent",
+                color:petPromptView==="base"?"#4ade80":"rgba(74,222,128,.5)",
                 transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
               Original Prompt
             </button>
-            {/* AI Enhanced tab — shown greyed out before enhance, ORANGE after */}
+            {/* AI Enhanced — greyed until available, orange after */}
             <button onClick={()=>{if(enhanced)setPetPromptView("enhanced");}}
               style={{padding:"9px 18px",cursor:enhanced?"pointer":"default",fontSize:11,fontWeight:700,border:"none",
                 background:enhanced&&petPromptView==="enhanced"?"var(--acdim)":"transparent",
-                color:enhanced?(petPromptView==="enhanced"?"var(--acc)":"rgba(255,255,255,.38)"):"rgba(255,255,255,.2)",
+                color:enhanced?(petPromptView==="enhanced"?"var(--acc)":"rgba(255,255,255,.38)"):"rgba(255,255,255,.18)",
                 transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
               {"\u2726"} AI Enhanced Prompt
             </button>
@@ -5009,7 +5009,7 @@ function PetPage(){
                 style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)"}}>
                 {enhancing?"ENHANCING\u2026":"\u2726 AI Prompt Enhance"}
               </button>
-              <span title="AI Enhance rewrites the prompt in a more artistic, narrative style — richer descriptions but less technically precise. Some technical details (lens, lighting, aspect ratio) may be reinterpreted or overwritten by the AI."
+              <span title="Generates an artistic, narrative version of your prompt — richer visual descriptions, cinematic language, more evocative mood. Less technically precise: some parameters (lens, lighting, aspect ratio) may be reinterpreted by the AI. Requires a free Google account sign-in."
                 style={{cursor:"help",fontSize:15,opacity:.4,lineHeight:1,userSelect:"none",fontStyle:"normal"}}>
                 &#9432;
               </span>
