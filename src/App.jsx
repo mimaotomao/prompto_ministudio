@@ -3432,8 +3432,8 @@ const PET_FANTASY_SPRITES=[
   {id:"hellhound",name:"Hellhound",      sx:-500},
   {id:"imp",      name:"Imp",            sx:-600},
 ];
-// pet-breeds-dog.png: 2000×400, 10 cols × 2 rows, each cell 200×200
-// Display: 158×158 → scale=0.79 → bgSize 1580×316 → row0 posY=0, row1 posY=-158, colX=-(col×158)
+// pet-breeds-dog.png: 2000×400, row0: 10 uniform cols 200px, row1: 9 non-uniform cols (10th+11th are extra poodles)
+// Display: 158×158, scale=0.79, bgSize 1580×316. Row0: px=-(col×158). Row1: cpx = round(79 - centerX×0.79)
 const PET_DOG_BREED_SPRITES=[
   {id:"Golden Retriever",  row:0,col:0, desc:"broad head, friendly expression, floppy ears, long luxurious golden coat"},
   {id:"German Shepherd",   row:0,col:1, desc:"pointed erect ears, wolf-like profile, tan with black saddle pattern"},
@@ -3445,15 +3445,15 @@ const PET_DOG_BREED_SPRITES=[
   {id:"Boxer",             row:0,col:7, desc:"wrinkled forehead, strong square jaw, black mask, fawn with white chest"},
   {id:"Poodle",            row:0,col:8, desc:"long elegant muzzle, curly dense coat, drop ears covered in curls, apricot"},
   {id:"Mixed breed",       row:0,col:9, desc:"medium-sized mixed breed, black with white markings"},
-  {id:"Pomeranian",        row:1,col:0, desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
-  {id:"Shih Tzu",          row:1,col:1, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
-  {id:"Maltese",           row:1,col:2, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
-  {id:"Cavalier",          row:1,col:3, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
-  {id:"Havanese",          row:1,col:4, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
-  {id:"Boston Terrier",    row:1,col:5, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
-  {id:"Yorkshire Terrier", row:1,col:6, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
-  {id:"Pug",               row:1,col:7, desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
-  {id:"Mini Schnauzer",    row:1,col:8, desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
+  {id:"Pomeranian",        row:1,cpx:5,    desc:"foxy face, abundant fluffy mane, small pointed ears, orange-red"},
+  {id:"Shih Tzu",          row:1,cpx:-140, desc:"flat face, huge dark eyes, long flowing coat, white and gold"},
+  {id:"Maltese",           row:1,cpx:-284, desc:"silky pure white coat, black button eyes and nose, small drop ears"},
+  {id:"Cavalier",          row:1,cpx:-432, desc:"large round eyes, long feathered ears, soft wavy coat, Blenheim chestnut and white"},
+  {id:"Havanese",          row:1,cpx:-606, desc:"silky wavy coat, dark button eyes, plumed tail over back, cream color"},
+  {id:"Boston Terrier",    row:1,cpx:-765, desc:"bat ears, large round eyes, short square face, black and white tuxedo markings"},
+  {id:"Yorkshire Terrier", row:1,cpx:-896, desc:"small erect ears, long straight silky coat, steel blue and tan color"},
+  {id:"Pug",               row:1,cpx:-1031,desc:"flat wrinkled face, large prominent eyes, fawn with black mask"},
+  {id:"Mini Schnauzer",    row:1,cpx:-1162,desc:"bushy beard and eyebrows, wiry coat, rectangular head, salt and pepper"},
 ];
 // pet-breeds-cat.png: 2000×437, 9 cols × 2 rows, each cell 222×218
 // Display: 158×154 → scale=0.712 → bgSize 1422×311 → row0 posY=0, row1 posY=-154, colX=-(col×158)
@@ -4317,7 +4317,7 @@ function PetPage(){
                     return rows.map((row,ri)=>(
                       <div key={ri} style={{display:"flex",gap:8,marginBottom:8}}>
                         {row.map(b=>{
-                          const px=-(b.col*dW);
+                          const px=b.cpx!==undefined?b.cpx:-(b.col*dW);
                           const py=-(b.row*dH);
                           return(
                             <div key={b.id} onClick={()=>{setVpBreed(vpBreed===b.id?"":b.id);setEnhanced("");}}
