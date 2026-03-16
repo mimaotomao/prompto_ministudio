@@ -378,7 +378,7 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
         {/* Copy Original — always primary */}
         <button className={`btn${hasAny?" pri":""}`} disabled={!hasAny}
           onClick={async()=>{const ok=await copyText(prompt);toast(ok?"ORIGINAL PROMPT COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");}}>
-          Copy Original Prompt
+          Copy Orig. Prompt
         </button>
 
         {/* Enhance → Copy Enhanced after done */}
@@ -2822,7 +2822,7 @@ function AvatarsPage(){
           extraButtons={
             <>
               <button className="btn" onClick={()=>{setC(AV_DEF);setITab("universe");setFTab("hair");setBTab("bodyType");doToast("RESET");}}>Reset</button>
-              <button className="btn" onClick={surprise}>Surprise Me</button>
+              <button className="btn" onClick={surprise}>Random</button>
             </>
           }
         />
@@ -2975,6 +2975,16 @@ function VideoPromptPage(){
 
   const copy=async()=>{const ok=await copyText(prompt);doToast(ok?"COPIED":"COPY FAILED");};
   const reset=()=>{setScene("");setFirstFrame("");setLastFrame("");setCamMove("Static");setPacing("Normal Flow");setDuration("8s");setSound("Ambient Sound");setStyle("Cinematic");setLighting(null);setColorGrade(null);setLens(null);setFilmStock(null);setCustom("");doToast("RESET");};
+  const videoRandom=()=>{
+    setCamMove(VP_CAM_MOVES[~~(Math.random()*VP_CAM_MOVES.length)]);
+    setPacing(VP_PACING_OPTS[~~(Math.random()*VP_PACING_OPTS.length)]);
+    setDuration(VP_DURATION[~~(Math.random()*VP_DURATION.length)]);
+    setStyle(VP_STYLE_OPTS[~~(Math.random()*VP_STYLE_OPTS.length)]);
+    setLighting(LIGHT_SPRITES[~~(Math.random()*LIGHT_SPRITES.length)].id);
+    setColorGrade(COLOR_SPRITES[~~(Math.random()*COLOR_SPRITES.length)].id);
+    setLens(LENS_SPRITES[~~(Math.random()*LENS_SPRITES.length)].mm);
+    doToast("RANDOM CONFIGURATION");
+  };
   const tog1=(setter,id)=>setter(p=>p===id?null:id);
 
   const ORow=({label,stateKey,val,onSet,opts})=>(
@@ -3136,13 +3146,18 @@ function VideoPromptPage(){
 
       <div className="sec">
         <div className="sh"><span className="st">Video Prompt</span>{hasAny&&<span className="sb" translate="no">LIVE</span>}</div>
-        <div className={`pbox${hasAny?" live":""}`}>
-          {hasAny?prompt:<span className="pbox-empty">Fill scene above to generate your video prompt.</span>}
-        </div>
-        <div className="pbar" translate="no">
-          <button className="btn" onClick={reset}>Reset</button>
-          <button className={`btn${hasAny?" pri":""}`} onClick={copy} disabled={!hasAny}><span translate="no">Copy Prompt</span> <span style={{fontSize:10,opacity:.6,fontWeight:400}}>EN</span></button>
-        </div>
+        <PromptOutputPanel
+          prompt={prompt}
+          custom={custom}
+          hasAny={hasAny}
+          onToast={doToast}
+          extraButtons={
+            <>
+              <button className="btn" onClick={reset}>Reset</button>
+              <button className="btn" onClick={videoRandom}>Random</button>
+            </>
+          }
+        />
         {hasAny&&<GenWithLinks getPrompt={()=>prompt} onCopy={()=>doToast("VIDEO PROMPT COPIED")} targets={VID_GEN_TARGETS}/>}
       </div>
 
@@ -3241,19 +3256,19 @@ function HowItWorksPage(){
           const num = i+1;
           const isLast = i===3;
           const configs = [
-            {icon:"🧬", title:"Build your character", sub:"Character Sheet tab", page:"avatars",
-             body:"Design a character from scratch using traits, region, body type and clothing — or skip if you already have a reference photo.",
+            {icon:"🧬", title:"Character Sheet", sub:"Build your character or pet", page:"avatars",
+             body:"Design a human character or choose your pet, breed, coat, and accessories. Use Random to explore — or skip straight to Pet Studio if you already know what you want.",
              note:null,
              links:null,
              cta:"Open Character Sheet →"},
-            {icon:"🎬", title:"Create a multi-shot grid prompt", sub:"Multi-Shot tab", page:"angles",
-             body:"Pick camera angles, lighting, environment and lens. The tool builds a prompt instructing the AI to generate multiple numbered shots of the same character in a single composite grid.",
+            {icon:"🎬", title:"Multi-Shot", sub:"Compose cinematic camera angles", page:"angles",
+             body:"Pick camera angles, lighting, environment, lens and film stock. The tool builds a structured prompt that tells the AI to produce multiple numbered shots of the same subject in one composite grid.",
              note:null,
              links:null,
              cta:"Open Multi-Shot →"},
-            {icon:"✦", title:"Generate in your AI of choice", sub:"Grok · Gemini · Midjourney",
-             body:"Paste the prompt into an AI image generator. Attach your reference photo or character sheet if you have one. The AI returns a numbered grid — one image, multiple cinematic shots.",
-             note:"📎 Always attach your reference photo for character consistency.",
+            {icon:"✦", title:"Generate in your AI of choice", sub:"Grok · Gemini · Arena.ai",
+             body:"Copy the prompt, paste it into an image generator, and attach your reference photo if you have one. The AI returns a numbered composite grid — one image, multiple cinematic shots.",
+             note:"📎 Attach your reference photo every time for consistent character identity.",
              links:[
                {label:"Grok Imagine ↗", url:"https://grok.com/imagine"},
                {label:"Gemini ↗", url:"https://gemini.google.com"},
@@ -3262,8 +3277,8 @@ function HowItWorksPage(){
              ],
              cta:null},
             {icon:"🔍", title:"Expand any panel to full resolution", sub:"Back in Multi-Shot",  page:"angles",
-             body:"Take your generated grid and attach it back to the generator. In Multi-Shot → Expand Panel to Full Shot, each numbered panel has its own prompt. Click, attach the grid, get one full-quality cinematic image.",
-             note:"💡 The grid is your reference — attach it every time you expand a panel.",
+             body:"Attach your generated grid back to the AI. In Multi-Shot → Expand Panel to Full Shot, each numbered panel has its own expansion prompt. Click the panel number, attach the grid, get a single full-quality image.",
+             note:"💡 The grid is your consistency anchor — always attach it when expanding.",
              links:null,
              cta:"Open Multi-Shot →"},
           ];
@@ -3872,6 +3887,28 @@ function PetPage(){
   const toggleEnh=(e)=>setPetEnhancements(p=>p.includes(e)?p.filter(x=>x!==e):[...p,e]);
   const toggleAccSel=(id)=>setAccSelected(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500);};
+  const petRandom=()=>{
+    const useF=Math.random()>.5;
+    setVpIsFantasy(useF);
+    if(useF){
+      const sp=PET_SPECIES_FANTASY[Math.floor(Math.random()*PET_SPECIES_FANTASY.length)];
+      setVpSpecies(sp.id);
+      setVpEmpathy(EMPATHY_STYLES[Math.floor(Math.random()*EMPATHY_STYLES.length)].id);
+      setVpFantasySize(["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"][Math.floor(Math.random()*4)]);
+    }else{
+      const sp=PET_SPECIES_REAL[Math.floor(Math.random()*PET_SPECIES_REAL.length)];
+      setVpSpecies(sp.id);
+      if(sp.breedSprites)setVpBreed(sp.breedSprites[Math.floor(Math.random()*sp.breedSprites.length)].id);
+      setVpCoatType(PET_COAT_TYPES[Math.floor(Math.random()*PET_COAT_TYPES.length)]);
+      setVpCoatPattern(PET_COAT_PATTERNS[Math.floor(Math.random()*PET_COAT_PATTERNS.length)]);
+    }
+    setVpPose((PET_POSES[vpSpecies]||PET_POSES.default)[Math.floor(Math.random()*((PET_POSES[vpSpecies]||PET_POSES.default).length))]);
+    setVpGaze(["toward viewer","toward owner / hand","into distance","at product"][Math.floor(Math.random()*4)]);
+    setLight(LIGHT_SPRITES[Math.floor(Math.random()*LIGHT_SPRITES.length)].id);
+    setBg(ENV_SPRITES[Math.floor(Math.random()*ENV_SPRITES.length)].id);
+    setOutputLayout(PET_OUTPUT_LAYOUTS[Math.floor(Math.random()*PET_OUTPUT_LAYOUTS.length)].id);
+    doToast("RANDOM CONFIGURATION");
+  };
   // source drives photo logic
   const showVirtualPet=!usePetPhoto;  // generate virtual if no pet photo
   const hasPetPhotoVal=usePetPhoto;
@@ -4312,30 +4349,7 @@ function PetPage(){
                     background:vpIsFantasy?"var(--acdim)":"transparent",color:vpIsFantasy?"var(--acc)":"#fff"}}>
                   Fantasy creature
                 </button>
-                <button onClick={()=>{
-                  const allReal=PET_SPECIES_REAL;
-                  const allFantasy=PET_SPECIES_FANTASY;
-                  const useFantasy=Math.random()>.5;
-                  setVpIsFantasy(useFantasy);
-                  if(useFantasy){
-                    const sp=allFantasy[Math.floor(Math.random()*allFantasy.length)];
-                    setVpSpecies(sp.id);
-                    setVpEmpathy(EMPATHY_STYLES[Math.floor(Math.random()*EMPATHY_STYLES.length)].id);
-                    setVpFantasySize(["tiny (dog-sized)","medium (horse-sized)","large (elephant-sized)","gigantic"][Math.floor(Math.random()*4)]);
-                  }else{
-                    const sp=allReal[Math.floor(Math.random()*allReal.length)];
-                    setVpSpecies(sp.id);
-                    if(sp.breedSprites){setVpBreed(sp.breedSprites[Math.floor(Math.random()*sp.breedSprites.length)].id);}
-                    setVpCoatType(PET_COAT_TYPES[Math.floor(Math.random()*PET_COAT_TYPES.length)]);
-                    setVpCoatPattern(PET_COAT_PATTERNS[Math.floor(Math.random()*PET_COAT_PATTERNS.length)]);
-                  }
-                  setVpPose((PET_POSES[vpSpecies]||PET_POSES.default)[Math.floor(Math.random()*((PET_POSES[vpSpecies]||PET_POSES.default).length))]);
-                  setVpGaze(["toward viewer","toward owner / hand","into distance","at product"][Math.floor(Math.random()*4)]);
-                  setLight(LIGHT_SPRITES[Math.floor(Math.random()*LIGHT_SPRITES.length)].id);
-                  setBg(ENV_SPRITES[Math.floor(Math.random()*ENV_SPRITES.length)].id);
-                  setOutputLayout(PET_OUTPUT_LAYOUTS[Math.floor(Math.random()*PET_OUTPUT_LAYOUTS.length)].id);
-                  setEnhanced("");
-                }}
+                <button onClick={petRandom}
                   style={{padding:"10px 16px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:700,
                     border:"2px solid rgba(255,255,255,.2)",background:"transparent",color:"rgba(255,255,255,.8)"}}>
                   🎲 Random
@@ -4665,7 +4679,10 @@ function PetPage(){
 
           {/* TAB: LOOK */}
           {pTab==="look"&&(
-            <div>
+            <div style={{border:"1px solid var(--bd)",borderRadius:10,padding:"16px 18px",background:"var(--s1)"}}>
+              <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t3)",marginBottom:14}}>
+                Coat · Tail · Ears · Pose · Gaze
+              </div>
               {!vpIsFantasy&&spData.hasCoat&&(
                 <div style={{marginBottom:16,position:"relative"}}>
                   {conflictCoat&&(
@@ -4775,15 +4792,26 @@ function PetPage(){
       </div>
 
       {/* 4. ACCESSORIES */}
-      <div className="sec" style={{borderRadius:10,border:"1px solid "+(useProduct?"var(--acc)":"var(--bd)"),overflow:"hidden",marginBottom:28}}>
+      <div className="sec" style={{borderRadius:10,border:"1px solid "+(useProduct?"var(--acc)":accOpen?"var(--bdh)":"var(--bd)"),overflow:"hidden",marginBottom:28,transition:"border-color .2s"}}
+        onMouseEnter={e=>{if(!accOpen&&!useProduct)e.currentTarget.style.borderColor="var(--bdh)";}}
+        onMouseLeave={e=>{if(!accOpen&&!useProduct)e.currentTarget.style.borderColor="var(--bd)";}}>
         <div onClick={()=>setAccOpen(v=>!v)}
           style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 18px",cursor:"pointer",background:"var(--s1)",userSelect:"none"}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:700,color:useProduct?"var(--acc)":"#fff"}}>
-              {useProduct?"Product & Accessories":"Accessories (optional)"}
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            {/* Toggle switch */}
+            <div style={{width:34,height:20,borderRadius:10,flexShrink:0,position:"relative",cursor:"pointer",
+              background:accOpen||accProductDesc||accCreativeDesc||accSelected.length?"var(--acc)":"rgba(255,255,255,.15)",
+              transition:"background .2s"}}>
+              <div style={{position:"absolute",top:3,left:accOpen||accProductDesc||accCreativeDesc||accSelected.length?17:3,
+                width:14,height:14,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
             </div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginTop:1}}>
-              {useProduct?"Define your product — describe or design it":"Add collar, harness, toy or other items to the scene"}
+            <div>
+              <div style={{fontSize:13,fontWeight:700,color:useProduct?"var(--acc)":"#fff"}}>
+                {useProduct?"Product & Accessories":"Accessories"}
+              </div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginTop:1}}>
+                {useProduct?"Define your product — describe or design it":"Add collar, harness, toy or other items to the scene"}
+              </div>
             </div>
           </div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
@@ -5048,7 +5076,10 @@ function PetPage(){
           hasAny={true}
           onToast={doToast}
           extraButtons={
-            <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
+            <>
+              <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("playful");setVpFantasySize("medium (horse-sized)");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
+              <button className="btn" onClick={petRandom}>Random</button>
+            </>
           }
         />
         <div style={{marginTop:14,padding:"14px 16px",borderRadius:10,border:"1px solid var(--bd)",background:"var(--s1)"}}>
