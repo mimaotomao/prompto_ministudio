@@ -3239,7 +3239,6 @@ function PipelineStrip({active}){
 // ─── HOW IT WORKS PAGE ────────────────────────────────────────────────────────
 function HowItWorksPage(){
   const setPage = React.useContext(PageCtx);
-
   const acc = ["#e8780a","#4fa3e0","#a78bfa","#34d399"];
 
   return(
@@ -3248,12 +3247,13 @@ function HowItWorksPage(){
         <div style={{fontSize:28,fontWeight:800,color:"var(--t)",letterSpacing:-0.5}}>
           How PrompTo <span style={{color:"var(--acc)"}}>miniStudio</span> works
         </div>
-        <div style={{fontSize:14,color:"var(--t)",opacity:.6,marginTop:8,maxWidth:520,margin:"10px auto 0"}}>
-          From character or product concept to multi-shot grid to cinematic video — one connected pipeline
+        <div style={{fontSize:14,color:"var(--t)",opacity:.6,marginTop:8,maxWidth:560,margin:"10px auto 0"}}>
+          Six tools, one connected pipeline. Build characters, compose shots, animate video — or skip straight to a free-form scene.
         </div>
       </div>
 
-      {/* PIPELINE VISUAL */}
+      {/* ═══ MAIN PIPELINE ═══ */}
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:4,textTransform:"uppercase",color:"var(--t4)",marginBottom:16}}>MAIN PIPELINE</div>
       <div style={{display:"flex",flexDirection:"column",gap:0}}>
         {[0,1,2,3].map(i=>{
           const color = acc[i];
@@ -3262,14 +3262,10 @@ function HowItWorksPage(){
           const configs = [
             {icon:"🧬", title:"Character Sheet", sub:"Build your character or pet", page:"avatars",
              body:"Design a human character or choose your pet, breed, coat, and accessories. Use Random to explore — or skip straight to Pet Studio if you already know what you want.",
-             note:null,
-             links:null,
-             cta:"Open Character Sheet →"},
+             note:null, links:null, cta:"Open Character Sheet →"},
             {icon:"🎬", title:"Multi-Shot", sub:"Compose cinematic camera angles", page:"angles",
              body:"Pick camera angles, lighting, environment, lens and film stock. The tool builds a structured prompt that tells the AI to produce multiple numbered shots of the same subject in one composite grid.",
-             note:null,
-             links:null,
-             cta:"Open Multi-Shot →"},
+             note:null, links:null, cta:"Open Multi-Shot →"},
             {icon:"✦", title:"Generate in your AI of choice", sub:"Grok · Gemini · Arena.ai",
              body:"Copy the prompt, paste it into an image generator, and attach your reference photo if you have one. The AI returns a numbered composite grid — one image, multiple cinematic shots.",
              note:"📎 Attach your reference photo every time for consistent character identity.",
@@ -3278,34 +3274,20 @@ function HowItWorksPage(){
                {label:"Gemini ↗", url:"https://gemini.google.com"},
                {label:"Midjourney ↗", url:"https://midjourney.com"},
                {label:"Arena.ai ↗", url:"https://www.arena.ai"},
-             ],
-             cta:null},
-            {icon:"🔍", title:"Expand any panel to full resolution", sub:"Back in Multi-Shot",  page:"angles",
+             ], cta:null},
+            {icon:"🔍", title:"Expand any panel to full resolution", sub:"Back in Multi-Shot", page:"angles",
              body:"Attach your generated grid back to the AI. In Multi-Shot → Expand Panel to Full Shot, each numbered panel has its own expansion prompt. Click the panel number, attach the grid, get a single full-quality image.",
              note:"💡 The grid is your consistency anchor — always attach it when expanding.",
-             links:null,
-             cta:"Open Multi-Shot →"},
+             links:null, cta:"Open Multi-Shot →"},
           ];
           const c = configs[i];
           return(
             <div key={i} style={{display:"flex",gap:0}}>
-              {/* LEFT: number column + connector */}
               <div style={{display:"flex",flexDirection:"column",alignItems:"center",width:56,flexShrink:0}}>
-                <div style={{
-                  width:44,height:44,borderRadius:"50%",
-                  background:`${color}22`,border:`2px solid ${color}`,
-                  display:"flex",alignItems:"center",justifyContent:"center",
-                  fontSize:18,fontWeight:900,color:color,flexShrink:0,zIndex:1
-                }}>{num}</div>
+                <div style={{width:44,height:44,borderRadius:"50%",background:`${color}22`,border:`2px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,fontWeight:900,color:color,flexShrink:0,zIndex:1}}>{num}</div>
                 {!isLast&&<div style={{width:2,flexGrow:1,background:`linear-gradient(${color}88,${acc[i+1]}44)`,minHeight:32,margin:"4px 0"}}/>}
               </div>
-              {/* RIGHT: card */}
-              <div style={{
-                flexGrow:1,marginBottom:isLast?0:16,marginLeft:16,
-                padding:"18px 20px",borderRadius:8,
-                border:`1px solid ${color}33`,
-                background:`${color}08`
-              }}>
+              <div style={{flexGrow:1,marginBottom:isLast?0:16,marginLeft:16,padding:"18px 20px",borderRadius:8,border:`1px solid ${color}33`,background:`${color}08`}}>
                 <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
                   <span style={{fontSize:20}}>{c.icon}</span>
                   <div>
@@ -3313,21 +3295,13 @@ function HowItWorksPage(){
                     <div style={{fontSize:11,color:color,fontWeight:600,letterSpacing:.5,marginTop:1}}>{c.sub}</div>
                   </div>
                 </div>
-                <div style={{fontSize:13,color:"var(--t)",opacity:.8,lineHeight:1.65,marginBottom:c.note||c.links||c.cta?12:0}}>
-                  {c.body}
-                </div>
-                {c.note&&(
-                  <div style={{fontSize:11,color:"var(--t)",opacity:.6,background:"rgba(255,255,255,.04)",borderRadius:6,padding:"7px 10px",marginBottom:10,lineHeight:1.5}}>
-                    {c.note}
-                  </div>
-                )}
+                <div style={{fontSize:13,color:"var(--t)",opacity:.8,lineHeight:1.65,marginBottom:c.note||c.links||c.cta?12:0}}>{c.body}</div>
+                {c.note&&<div style={{fontSize:11,color:"var(--t)",opacity:.6,background:"rgba(255,255,255,.04)",borderRadius:6,padding:"7px 10px",marginBottom:10,lineHeight:1.5}}>{c.note}</div>}
                 {c.links&&(
                   <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                     {c.links.map(l=>(
                       <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer"
-                        style={{padding:"6px 14px",borderRadius:6,border:`1px solid ${color}55`,
-                          background:`${color}11`,color:color,fontSize:12,fontWeight:700,
-                          textDecoration:"none",transition:"all .2s"}}
+                        style={{padding:"6px 14px",borderRadius:6,border:`1px solid ${color}55`,background:`${color}11`,color:color,fontSize:12,fontWeight:700,textDecoration:"none",transition:"all .2s"}}
                         onMouseOver={e=>{e.currentTarget.style.background=`${color}28`}}
                         onMouseOut={e=>{e.currentTarget.style.background=`${color}11`}}
                       >{l.label}</a>
@@ -3336,9 +3310,7 @@ function HowItWorksPage(){
                 )}
                 {c.cta&&(
                   <button onClick={()=>setPage(c.page)}
-                    style={{marginTop:4,padding:"7px 16px",borderRadius:6,border:`1px solid ${color}`,
-                      background:"transparent",color:color,fontSize:12,fontWeight:700,cursor:"pointer",
-                      transition:"all .2s"}}
+                    style={{marginTop:4,padding:"7px 16px",borderRadius:6,border:`1px solid ${color}`,background:"transparent",color:color,fontSize:12,fontWeight:700,cursor:"pointer",transition:"all .2s"}}
                     onMouseOver={e=>{e.currentTarget.style.background=`${color}22`}}
                     onMouseOut={e=>{e.currentTarget.style.background="transparent"}}
                   >{c.cta}</button>
@@ -3349,30 +3321,103 @@ function HowItWorksPage(){
         })}
       </div>
 
-      {/* BOTTOM CTA */}
+      {/* ═══ STANDALONE TOOLS ═══ */}
+      <div style={{marginTop:56}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:4,textTransform:"uppercase",color:"var(--t4)",marginBottom:16}}>STANDALONE TOOLS</div>
+        <div style={{fontSize:13,color:"var(--t)",opacity:.5,marginBottom:24,lineHeight:1.6}}>Each tool works independently — own prompt builder, visual selectors, AI Enhance. No pipeline steps needed.</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))",gap:16}}>
+          {[
+            {icon:"🐾",title:"Pet Studio",page:"pet",color:"#34d399",
+             desc:"9 real species with breed selectors, 7 fantasy creatures, 110+ extended species. Coat, accessories, companions, product placement. Full cinematic controls shared with Multi-Shot."},
+            {icon:"✦",title:"Scene Universe",page:"universe",color:"#facc15",
+             desc:"Free-form scene generator. Describe any idea — pick art style, mood, composition, then dial in lighting, lens, film stock, environment with thumbnail sprite selectors. No character needed."},
+            {icon:"🎥",title:"Video",page:"video",color:"#a78bfa",
+             desc:"Text-to-video, image-to-video, or first+last frame mode. Camera moves, pacing, duration, sound design. Generates prompts for Sora, Runway, Kling, and Pika."},
+          ].map(t=>(
+            <div key={t.title} onClick={()=>setPage(t.page)}
+              style={{padding:"20px 22px",borderRadius:10,border:`1px solid ${t.color}33`,background:`${t.color}08`,cursor:"pointer",transition:"all .2s"}}
+              onMouseOver={e=>{e.currentTarget.style.borderColor=t.color+"88";e.currentTarget.style.background=t.color+"15";}}
+              onMouseOut={e=>{e.currentTarget.style.borderColor=t.color+"33";e.currentTarget.style.background=t.color+"08";}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                <span style={{fontSize:22}}>{t.icon}</span>
+                <div style={{fontSize:15,fontWeight:800,color:"var(--t)"}}>{t.title}</div>
+              </div>
+              <div style={{fontSize:12,color:"var(--t)",opacity:.7,lineHeight:1.65,marginBottom:12}}>{t.desc}</div>
+              <div style={{fontSize:11,fontWeight:700,color:t.color}}>Open {t.title} →</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ EXAMPLE SCENARIOS ═══ */}
+      <div style={{marginTop:56}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:4,textTransform:"uppercase",color:"var(--t4)",marginBottom:16}}>EXAMPLE WORKFLOWS</div>
+
+        {/* Scenario 1: Product Shoot */}
+        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid var(--bdh)",background:"var(--s2)",marginBottom:20}}>
+          <div style={{fontSize:15,fontWeight:800,color:"var(--t)",marginBottom:4}}>
+            Scenario 1 — <span style={{color:"#34d399"}}>Pet Product Shoot</span>
+          </div>
+          <div style={{fontSize:12,color:"var(--t)",opacity:.6,marginBottom:16,lineHeight:1.5,fontStyle:"italic"}}>
+            "I'm selling a dog harness and need cinematic marketing images with different breeds."
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {[
+              {step:"1",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Pick Dog → Golden Retriever. Toggle 'I have a product' → describe your harness. Set Accessories → check 'Harness (fitted)'. Choose companion mode, environment, lighting."},
+              {step:"2",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Select output: Product Showcase or 2×2 Grid. The prompt auto-builds with depth-plane product placement (pet wearing → mid-ground, hands presenting → foreground)."},
+              {step:"3",tool:"Generate",page:null,color:"#e8780a",text:"Copy prompt → open Grok Imagine or Gemini → attach your product photo → generate. Get a composite grid with your harness on the dog in cinematic lighting."},
+              {step:"4",tool:"Multi-Shot",page:"angles",color:"#4fa3e0",text:"Want more angles of the same shot? Open Multi-Shot, paste your scene, pick 3–4 camera angles, copy the grid prompt. Attach the Pet Studio result as reference."},
+              {step:"5",tool:"Video",page:"video",color:"#a78bfa",text:"Turn your best image into a video clip — open Video tab, set img2vid mode, describe the motion ('dog trots toward camera, harness catches golden light'), generate for Sora or Runway."},
+            ].map(s=>(
+              <div key={s.step} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
+                <div>
+                  <span style={{fontSize:11,fontWeight:700,color:s.color,letterSpacing:.5,cursor:s.page?"pointer":"default"}} onClick={s.page?()=>setPage(s.page):undefined}>{s.tool}{s.page?" ↗":""}</span>
+                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.6,marginTop:2}}>{s.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scenario 2: Concept Art */}
+        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid var(--bdh)",background:"var(--s2)"}}>
+          <div style={{fontSize:15,fontWeight:800,color:"var(--t)",marginBottom:4}}>
+            Scenario 2 — <span style={{color:"#facc15"}}>Concept Art from Scratch</span>
+          </div>
+          <div style={{fontSize:12,color:"var(--t)",opacity:.6,marginBottom:16,lineHeight:1.5,fontStyle:"italic"}}>
+            "I need a series of cinematic concept art shots of a cyberpunk detective for a pitch deck."
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {[
+              {step:"1",tool:"Scene Universe",page:"universe",color:"#facc15",text:"Type your idea: 'a cyberpunk detective in a neon-lit rain-soaked alley, trenchcoat, cybernetic eye'. Pick Photorealism, Dramatic mood, Portrait composition. Set Neon Night lighting, Cyberpunk Alley environment, 85mm lens, Cinestill 800T."},
+              {step:"2",tool:"Generate",page:null,color:"#e8780a",text:"Copy the Scene Universe prompt → generate in Grok Imagine or Midjourney. This gives you the hero shot — single cinematic image establishing the character."},
+              {step:"3",tool:"Character Sheet",page:"avatars",color:"#e8780a",text:"Now systematize the character. Open Character Sheet, build the same detective with traits, cybernetic features, clothing. Use the generated image as reference photo for identity lock."},
+              {step:"4",tool:"Multi-Shot",page:"angles",color:"#4fa3e0",text:"Take the Character Sheet prompt into Multi-Shot. Pick 4 angles (wide establishing, low-angle hero, over-shoulder, extreme close-up on cybernetic eye). Attach your reference image. Generate a 2×2 grid."},
+              {step:"5",tool:"Multi-Shot → Expand",page:"angles",color:"#4fa3e0",text:"Expand each grid panel to full resolution. Panel 1 for the hero shot, Panel 5 close-up for detail. Each one preserves identity from the reference."},
+              {step:"6",tool:"Video",page:"video",color:"#a78bfa",text:"Pick the best expanded shot, switch to Video → img2vid. 'Camera slowly pushes in, neon reflections shimmer on wet pavement, detective turns, cybernetic eye glows.' Export for Sora."},
+            ].map(s=>(
+              <div key={s.step} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
+                <div>
+                  <span style={{fontSize:11,fontWeight:700,color:s.color,letterSpacing:.5,cursor:s.page?"pointer":"default"}} onClick={s.page?()=>setPage(s.page):undefined}>{s.tool}{s.page?" ↗":""}</span>
+                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.6,marginTop:2}}>{s.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ BOTTOM CTA ═══ */}
       <div style={{marginTop:48,padding:"24px 28px",borderRadius:12,border:"1px solid var(--bdh)",background:"var(--s2)",textAlign:"center"}}>
         <div style={{fontSize:13,color:"var(--t)",opacity:.7,marginBottom:16}}>Ready to start?</div>
         <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
-          <button onClick={()=>setPage("avatars")}
-            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",
-              background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-            🧬 Build a character
-          </button>
-          <button onClick={()=>setPage("pet")}
-            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",
-              background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-            🐾 Open Pet Studio
-          </button>
-          <button onClick={()=>setPage("angles")}
-            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--acc)",
-              background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-            🎬 Create multi-shot grid
-          </button>
-          <button onClick={()=>setPage("universe")}
-            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",
-              background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-            ✦ Scene Universe
-          </button>
+          <button onClick={()=>setPage("avatars")} style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>🧬 Character Sheet</button>
+          <button onClick={()=>setPage("angles")} style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}>🎬 Multi-Shot</button>
+          <button onClick={()=>setPage("pet")} style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>🐾 Pet Studio</button>
+          <button onClick={()=>setPage("universe")} style={{padding:"10px 24px",borderRadius:8,border:"1px solid #facc1566",background:"rgba(250,204,21,.08)",color:"#facc15",fontSize:13,fontWeight:700,cursor:"pointer"}}>✦ Scene Universe</button>
+          <button onClick={()=>setPage("video")} style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>🎥 Video</button>
         </div>
       </div>
     </div>
@@ -5227,15 +5272,26 @@ const MAP_DATA={
       {id:"cm8",label:"App Map — interactive feature overview with navigation"},
     ]},
     {id:"univ",label:"Scene Universe",color:"#facc15",page:"universe",children:[
-      {id:"uv1",label:"Free-text idea input — describe any subject, scene, or concept"},
-      {id:"uv2",label:"6 art styles via Universe sprites — Photorealism, Anime, 3D, Vector, Pixel, Oil"},
-      {id:"uv3",label:"6 moods — Serene, Mysterious, Dramatic, Energetic, Ominous, Joyful"},
-      {id:"uv4",label:"5 compositions — Emergence, Portrait, Action, Panoramic, Close-Up"},
-      {id:"uv5",label:"14 lighting · 18 environments · 16 lenses (sprite thumbnails)"},
-      {id:"uv6",label:"8 film stocks · 8 color grades · 5 aspect ratios (sprite thumbnails)"},
-      {id:"uv7",label:"Conflict resolution — B&W disables grades, fisheye→1:1, anamorphic→2.39:1"},
-      {id:"uv8",label:"Quick Ideas Gallery — click to load full presets"},
-      {id:"uv9",label:"Random — one click full configuration"},
+      {id:"uvi",label:"Scene Idea Input",color:"#facc15",children:[
+        {id:"uvi1",label:"Free-text idea — describe any subject, scene, or concept"},
+        {id:"uvi2",label:"Quick Ideas Gallery — 6 preset scenes as inline pill buttons"},
+        {id:"uvi3",label:"Click any idea → loads text + style + mood + composition"},
+      ]},
+      {id:"uvs",label:"Visual Controls",color:"#facc15",children:[
+        {id:"uvs1",label:"6 art styles via Universe sprites — Photorealism, Anime, 3D, Vector, Pixel, Oil"},
+        {id:"uvs2",label:"6 moods — Serene, Mysterious, Dramatic, Energetic, Ominous, Joyful"},
+        {id:"uvs3",label:"5 compositions — Emergence, Portrait, Action, Panoramic, Close-Up"},
+      ]},
+      {id:"uvt",label:"Cinematic Settings (shared sprites)",color:"#facc15",children:[
+        {id:"uvt1",label:"14 lighting · 18 environments · 16 lenses — thumbnail sprite selectors"},
+        {id:"uvt2",label:"8 film stocks · 8 color grades · 5 aspect ratios — thumbnail sprite selectors"},
+        {id:"uvt3",label:"Conflict resolution — B&W disables grades, fisheye→1:1, anamorphic→2.39:1"},
+      ]},
+      {id:"uvo",label:"Output",color:"#facc15",children:[
+        {id:"uvo1",label:"Live prompt preview with PromptOutputPanel"},
+        {id:"uvo2",label:"AI Enhance + Copy + GenWithLinks (Grok, Gemini, Arena.ai)"},
+        {id:"uvo3",label:"Random — one click full configuration · Reset"},
+      ]},
     ]},
   ]
 };
@@ -5275,18 +5331,13 @@ const UNI_GALLERY=[
 
 function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade,aspectRatio}){
   const parts=[];
-  // style prefix
   const prefix=UNI_STYLE_PROMPTS[uStyle]||UNI_STYLE_PROMPTS.realism;
   const mood=UNI_MOODS[uMood]||UNI_MOODS.mysterious;
   const comp=UNI_COMPOSITIONS[uComp]||UNI_COMPOSITIONS.emergence;
   const subj=idea.trim()||"a mysterious figure in an unknown world";
-
-  // Core prompt
   parts.push(`${prefix} of ${subj}.`);
   parts.push(`Composition style: ${comp.desc}`);
   parts.push(`Mood: ${mood.tone}. Color palette: ${mood.color}.`);
-
-  // Technical
   const tech=[];
   if(bg){const b=BACKGROUNDS.find(x=>x.id===bg);if(b)tech.push(b.p);}
   if(light){const l=LIGHTING.find(x=>x.id===light);if(l)tech.push(l.p);}
@@ -5294,14 +5345,9 @@ function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,co
   if(filmStock){const f=FILM_STOCKS.find(x=>x.id===filmStock);if(f)tech.push(f.p);}
   if(colorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)tech.push(c.p);}
   if(tech.length)parts.push(tech.join(". ")+".");
-
-  // Aspect ratio
   if(aspectRatio)parts.push(`Output aspect ratio: ${aspectRatio}.`);
-
-  // Quality suffix per style
   const suffixes={realism:"hyper-detailed, 8k resolution, ray tracing, subsurface scattering",anime:"clean line art, vivid colors, professional anime production quality","3d":"octane render, global illumination, PBR materials, cinematic depth of field","2d":"clean shapes, professional vector quality, balanced composition",pixel:"clean pixel grid, limited palette, retro aesthetic, detailed sprite work",oil:"visible brushwork, impasto technique, museum quality, rich pigments"};
   parts.push(suffixes[uStyle]||suffixes.realism);
-
   return parts.join("\n\n");
 }
 
@@ -5320,17 +5366,14 @@ function UniversePage(){
   const[toast,setToast]=useState("");
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
   const tog1=(setter,id)=>setter(p=>p===id?null:id);
-
-  // ── Conflict resolution ──
   const conflictAR_fisheye=lens==="8mm";
   const conflictAR_anamorphic=filmStock==="anamorphic";
   const conflictAspectRatio=conflictAR_fisheye||conflictAR_anamorphic;
   const effectiveAR=conflictAR_fisheye?"1:1":conflictAR_anamorphic?"2.39:1":aspectRatio;
   const conflictColorGrade=filmStock==="ilford";
-
   const prompt=idea.trim()?buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade:conflictColorGrade?null:colorGrade,aspectRatio:effectiveAR}):"";
   const hasAny=!!prompt;
-
+  const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
   const randomize=()=>{
     setUStyle(["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
     setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);
@@ -5345,7 +5388,6 @@ function UniversePage(){
     doToast("RANDOM CONFIGURATION");
   };
   const reset=()=>{setIdea("");setUStyle("realism");setUMood("mysterious");setUComp("emergence");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setCustom("");doToast("RESET");};
-  const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
 
   return(
     <div className="page">
@@ -5359,6 +5401,17 @@ function UniversePage(){
         <div className="sh"><span className="st">Your Scene Idea</span><span className="sb">REQUIRED</span></div>
         <textarea rows={3} value={idea} onChange={e=>setIdea(e.target.value)} placeholder="e.g. 'A mystical wolf emerging from a smartphone screen' or 'A cyberpunk samurai overlooking Tokyo at night'" style={{fontSize:14}}/>
         <div className="scene-hint">Describe a subject and action. Everything else — lighting, lens, atmosphere — is configured below with visual selectors.</div>
+        {/* Inline scene ideas */}
+        <div style={{marginTop:14,display:"flex",gap:8,flexWrap:"wrap"}}>
+          {UNI_GALLERY.map((g,i)=>(
+            <button key={i} onClick={()=>loadGallery(g)}
+              style={{fontSize:11,fontWeight:600,padding:"6px 14px",borderRadius:20,
+                border:"1px solid var(--bd)",background:"var(--s1)",color:"var(--t)",
+                cursor:"pointer",transition:"all .15s",display:"flex",alignItems:"center",gap:6,whiteSpace:"nowrap"}}>
+              <span style={{color:"var(--acc)"}}>✦</span>{g.title}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Art Style (UNIVERSE_SPRITES) ── */}
@@ -5371,13 +5424,8 @@ function UniversePage(){
                 border:"2px solid "+(uStyle===r.id?"#e8780a":"var(--bd)"),
                 boxShadow:uStyle===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
                 transition:"all .15s",width:100}}>
-              <div style={{width:100,height:98,
-                backgroundImage:"url(/universe.png)",
-                backgroundSize:"600px 98px",
-                backgroundPosition:r.sx+"px 0px",
-                backgroundRepeat:"no-repeat"}}/>
-              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:uStyle===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+              <div style={{width:100,height:98,backgroundImage:"url(/universe.png)",backgroundSize:"600px 98px",backgroundPosition:r.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:uStyle===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
@@ -5388,7 +5436,7 @@ function UniversePage(){
         <div className="av-sec">
           <div className="sh" style={{marginBottom:12}}><span className="st">Mood</span></div>
           <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-            {Object.entries(UNI_MOODS).map(([k,v])=><button key={k} className={`ob${uMood===k?" sel":""}`} onClick={()=>setUMood(k)} style={{textTransform:"capitalize"}}>{k}</button>)}
+            {Object.entries(UNI_MOODS).map(([k])=><button key={k} className={`ob${uMood===k?" sel":""}`} onClick={()=>setUMood(k)} style={{textTransform:"capitalize"}}>{k}</button>)}
           </div>
         </div>
         <div className="av-sec">
@@ -5404,23 +5452,13 @@ function UniversePage(){
         <div className="sh"><span className="st">Lighting & Atmosphere</span>{light&&<span className="sb">ACTIVE</span>}</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {LIGHT_SPRITES.map(r=>(
-            <div key={r.id} onClick={()=>tog1(setLight,r.id)}
-              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                border:"2px solid "+(light===r.id?"#e8780a":"var(--bd)"),
-                boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                transition:"all .15s",width:150}}>
-              <div style={{width:150,height:105,
-                backgroundImage:"url(/lighting.png)",
-                backgroundSize:"750px 315px",
-                backgroundPosition:r.sx+"px "+r.sy+"px",
-                backgroundRepeat:"no-repeat"}}/>
-              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:light===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            <div key={r.id} onClick={()=>tog1(setLight,r.id)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(light===r.id?"#e8780a":"var(--bd)"),boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:150}}>
+              <div style={{width:150,height:105,backgroundImage:"url(/lighting.png)",backgroundSize:"750px 315px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:light===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
       </div>
-
       <div className="divider"/>
 
       {/* ── Environment ── */}
@@ -5428,23 +5466,13 @@ function UniversePage(){
         <div className="sh"><span className="st">Environment / Background</span>{bg&&<span className="sb">ACTIVE</span>}</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {ENV_SPRITES.map(r=>(
-            <div key={r.id} onClick={()=>tog1(setBg,r.id)}
-              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                border:"2px solid "+(bg===r.id?"#e8780a":"var(--bd)"),
-                boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                transition:"all .15s",width:133}}>
-              <div style={{width:133,height:112,
-                backgroundImage:"url(/environment.png)",
-                backgroundSize:"798px 336px",
-                backgroundPosition:r.sx+"px "+r.sy+"px",
-                backgroundRepeat:"no-repeat"}}/>
-              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:bg===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            <div key={r.id} onClick={()=>tog1(setBg,r.id)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(bg===r.id?"#e8780a":"var(--bd)"),boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:133}}>
+              <div style={{width:133,height:112,backgroundImage:"url(/environment.png)",backgroundSize:"798px 336px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:bg===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
       </div>
-
       <div className="divider"/>
 
       {/* ── Lens ── */}
@@ -5452,24 +5480,14 @@ function UniversePage(){
         <div className="sh"><span className="st">Lens / Focal Length</span>{lens&&<span className="sb">ACTIVE</span>}</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           {LENS_SPRITES.map(r=>(
-            <div key={r.mm} onClick={()=>tog1(setLens,r.mm)}
-              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                border:"2px solid "+(lens===r.mm?"#e8780a":"var(--bd)"),
-                boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none",
-                transition:"all .15s",width:150}}>
-              <div style={{width:150,height:83,
-                backgroundImage:"url(/lens.png)",
-                backgroundSize:"600px 332px",
-                backgroundPosition:r.sx+"px "+r.sy+"px",
-                backgroundRepeat:"no-repeat"}}/>
-              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                color:lens===r.mm?"#e8780a":"var(--t)"}}><span translate="no">{r.mm}</span></div>
+            <div key={r.mm} onClick={()=>tog1(setLens,r.mm)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(lens===r.mm?"#e8780a":"var(--bd)"),boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:150}}>
+              <div style={{width:150,height:83,backgroundImage:"url(/lens.png)",backgroundSize:"600px 332px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:lens===r.mm?"#e8780a":"var(--t)"}}><span translate="no">{r.mm}</span></div>
             </div>
           ))}
         </div>
         {conflictAR_fisheye&&<div style={{marginTop:10,fontSize:11,color:"var(--acc)",lineHeight:1.6}}>⚠ Fisheye lens forces 1:1 aspect ratio — circular projection</div>}
       </div>
-
       <div className="divider"/>
 
       {/* ── Film Stock & Color Grade ── */}
@@ -5480,18 +5498,9 @@ function UniversePage(){
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t)",marginBottom:10}}>Film Stock</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {FILM_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>tog1(setFilmStock,r.id)}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                    border:"2px solid "+(filmStock===r.id?"#e8780a":"var(--bd)"),
-                    boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
-                    transition:"all .15s",width:150}}>
-                  <div style={{width:150,height:167,
-                    backgroundImage:"url(/film.png)",
-                    backgroundSize:"600px 334px",
-                    backgroundPosition:r.sx+"px "+r.sy+"px",
-                    backgroundRepeat:"no-repeat"}}/>
-                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                    color:filmStock===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                <div key={r.id} onClick={()=>tog1(setFilmStock,r.id)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(filmStock===r.id?"#e8780a":"var(--bd)"),boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:150}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/film.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:filmStock===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
                 </div>
               ))}
             </div>
@@ -5501,25 +5510,15 @@ function UniversePage(){
             <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:conflictColorGrade?"var(--t4)":"var(--t)",marginBottom:10}}>Color Grade{conflictColorGrade?" — disabled by B&W film":""}</div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap",opacity:conflictColorGrade?.25:1,pointerEvents:conflictColorGrade?"none":"auto"}}>
               {COLOR_SPRITES.map(r=>(
-                <div key={r.id} onClick={()=>tog1(setColorGrade,r.id)}
-                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                    border:"2px solid "+(colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--bd)"),
-                    boxShadow:colorGrade===r.id&&!conflictColorGrade?"0 0 14px rgba(232,120,10,.4)":"none",
-                    transition:"all .15s",width:150}}>
-                  <div style={{width:150,height:167,
-                    backgroundImage:"url(/color.png)",
-                    backgroundSize:"600px 334px",
-                    backgroundPosition:r.sx+"px "+r.sy+"px",
-                    backgroundRepeat:"no-repeat"}}/>
-                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
-                    color:colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                <div key={r.id} onClick={()=>tog1(setColorGrade,r.id)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+(colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--bd)"),boxShadow:colorGrade===r.id&&!conflictColorGrade?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:150}}>
+                  <div style={{width:150,height:167,backgroundImage:"url(/color.png)",backgroundSize:"600px 334px",backgroundPosition:r.sx+"px "+r.sy+"px",backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,color:colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-
       <div className="divider"/>
 
       {/* ── Aspect Ratio ── */}
@@ -5527,25 +5526,13 @@ function UniversePage(){
         <div className="sh"><span className="st">Aspect Ratio</span>{conflictAspectRatio&&<span className="sb">LOCKED BY LENS/FILM</span>}</div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap",opacity:conflictAspectRatio?.4:1,pointerEvents:conflictAspectRatio?"none":"auto"}}>
           {FORMAT_SPRITES.map(r=>(
-            <div key={r.id} onClick={()=>setAspectRatio(r.id)}
-              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
-                border:"2px solid "+((conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--bd)"),
-                boxShadow:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"0 0 14px rgba(232,120,10,.4)":"none",
-                transition:"all .15s",width:r.fw,
-                display:"flex",flexDirection:"column",alignItems:"center",
-                paddingTop:10,background:"var(--s1)",gap:6}}>
-              <div style={{width:80,height:80,flexShrink:0,
-                backgroundImage:"url(/format.png)",
-                backgroundSize:"400px 80px",
-                backgroundPosition:r.sx+"px 0px",
-                backgroundRepeat:"no-repeat"}}/>
-              <div style={{paddingBottom:6,textAlign:"center",fontSize:11,fontWeight:600,
-                color:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            <div key={r.id} onClick={()=>setAspectRatio(r.id)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:"2px solid "+((conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--bd)"),boxShadow:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"0 0 14px rgba(232,120,10,.4)":"none",transition:"all .15s",width:r.fw,display:"flex",flexDirection:"column",alignItems:"center",paddingTop:10,background:"var(--s1)",gap:6}}>
+              <div style={{width:80,height:80,flexShrink:0,backgroundImage:"url(/format.png)",backgroundSize:"400px 80px",backgroundPosition:r.sx+"px 0px",backgroundRepeat:"no-repeat"}}/>
+              <div style={{paddingBottom:6,textAlign:"center",fontSize:11,fontWeight:600,color:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
             </div>
           ))}
         </div>
       </div>
-
       <div className="divider"/>
 
       {/* ── Custom additions ── */}
@@ -5557,37 +5544,9 @@ function UniversePage(){
       {/* ── Output ── */}
       <div className="sec">
         <div className="sh"><span className="st">Scene Prompt</span>{hasAny&&<span className="sb" translate="no">LIVE</span>}</div>
-        <PromptOutputPanel
-          prompt={hasAny?(prompt+(custom.trim()?"\n\n"+custom.trim():"")):prompt}
-          custom={custom}
-          hasAny={hasAny}
-          onToast={doToast}
-          extraButtons={<>
-            <button className="btn" onClick={reset}>Reset</button>
-            <button className="btn" onClick={randomize}>Random</button>
-          </>}
-        />
+        <PromptOutputPanel prompt={hasAny?(prompt+(custom.trim()?"\n\n"+custom.trim():"")):prompt} custom={custom} hasAny={hasAny} onToast={doToast}
+          extraButtons={<><button className="btn" onClick={reset}>Reset</button><button className="btn" onClick={randomize}>Random</button></>}/>
         {hasAny&&<GenWithLinks getPrompt={()=>prompt+(custom.trim()?"\n\n"+custom.trim():"")} onCopy={()=>doToast("SCENE PROMPT COPIED")}/>}
-      </div>
-
-      {/* ── Quick Ideas Gallery ── */}
-      <div className="divider" style={{margin:"40px 0"}}/>
-      <div className="sec">
-        <div className="sh"><span className="st">Quick Ideas Gallery</span></div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",gap:12}}>
-          {UNI_GALLERY.map((g,i)=>(
-            <div key={i} onClick={()=>loadGallery(g)} style={{background:"var(--s1)",border:"1px solid var(--bd)",borderRadius:"var(--r2)",padding:"16px 20px",cursor:"pointer",transition:"all .2s"}}>
-              <div style={{fontSize:14,fontWeight:700,color:"var(--acc)",marginBottom:6}}>{g.title}</div>
-              <div style={{fontSize:12,color:"var(--t)",lineHeight:1.6,opacity:.7,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{g.idea}</div>
-              <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>
-                {g.style&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.style}</span>}
-                {g.mood&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.mood}</span>}
-                {g.comp&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--acc)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.comp}</span>}
-              </div>
-              <div style={{marginTop:10,fontSize:11,color:"var(--acc)"}}>Click to load →</div>
-            </div>
-          ))}
-        </div>
       </div>
 
       {toast&&<div className="toast">{toast}</div>}
