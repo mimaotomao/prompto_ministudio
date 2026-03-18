@@ -696,6 +696,7 @@ const BACKGROUNDS = [
   {id:"cave",name:"Crystal Cave",p:"crystal cave, glowing bioluminescent crystal formations, underground otherworldly light, stalactites"},
   {id:"western",name:"Wild West",p:"Wild West frontier town, dusty main street, wooden storefronts, arid canyon, golden dust in air"},
   {id:"abstract",name:"Abstract Void",p:"abstract void space, floating geometric shapes, gradient backgrounds, surreal minimalist environment"},
+  {id:"black",name:"Black Studio",p:"pure black studio background, deep void, subject isolated against absolute darkness, dramatic separation"},
 ];
 
 const LENSES = [
@@ -3367,6 +3368,11 @@ function HowItWorksPage(){
               background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
             🎬 Create multi-shot grid
           </button>
+          <button onClick={()=>setPage("universe")}
+            style={{padding:"10px 24px",borderRadius:8,border:"1px solid var(--bdh)",
+              background:"var(--s3)",color:"var(--t)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
+            ✦ Scene Universe
+          </button>
         </div>
       </div>
     </div>
@@ -5220,13 +5226,379 @@ const MAP_DATA={
       {id:"cm7",label:"Live prompt preview — updates in real time as you configure"},
       {id:"cm8",label:"App Map — interactive feature overview with navigation"},
     ]},
+    {id:"univ",label:"Scene Universe",color:"#facc15",page:"universe",children:[
+      {id:"uv1",label:"Free-text idea input — describe any subject, scene, or concept"},
+      {id:"uv2",label:"6 art styles via Universe sprites — Photorealism, Anime, 3D, Vector, Pixel, Oil"},
+      {id:"uv3",label:"6 moods — Serene, Mysterious, Dramatic, Energetic, Ominous, Joyful"},
+      {id:"uv4",label:"5 compositions — Emergence, Portrait, Action, Panoramic, Close-Up"},
+      {id:"uv5",label:"14 lighting · 18 environments · 16 lenses (sprite thumbnails)"},
+      {id:"uv6",label:"8 film stocks · 8 color grades · 5 aspect ratios (sprite thumbnails)"},
+      {id:"uv7",label:"Conflict resolution — B&W disables grades, fisheye→1:1, anamorphic→2.39:1"},
+      {id:"uv8",label:"Quick Ideas Gallery — click to load full presets"},
+      {id:"uv9",label:"Random — one click full configuration"},
+    ]},
   ]
 };
+
+// ─── UNIVERSE — FREE-FORM SCENE GENERATOR ──────────────────────────────────
+const UNI_STYLE_PROMPTS={
+  realism:"A photorealistic digital painting",
+  anime:"A high quality anime illustration",
+  "3d":"A professional 3D render (Unreal Engine 5)",
+  "2d":"A clean vector art illustration",
+  pixel:"A detailed pixel art scene",
+  oil:"An oil painting in the style of classical masters depicting",
+};
+const UNI_MOODS={
+  serene:{tone:"peaceful and contemplative",color:"soft pastel tones, gentle gradients"},
+  mysterious:{tone:"enigmatic and intriguing",color:"deep purples and blues, hidden details"},
+  dramatic:{tone:"tense and awe-inspiring",color:"high contrast, intense shadows and highlights"},
+  energetic:{tone:"explosive and powerful",color:"vivid saturated hues, dynamic color splashes"},
+  ominous:{tone:"foreboding and dark",color:"desaturated palette with cold red accents"},
+  joyful:{tone:"uplifting and bright",color:"warm golden tones, vibrant pops of color"},
+};
+const UNI_COMPOSITIONS={
+  emergence:{label:"Emergence",desc:"Subject emerges from or breaks through a boundary — digital interface, portal, mirror, screen. Partial dissolution into particles, fragments, or energy. Dramatic scale contrast."},
+  portrait:{label:"Portrait",desc:"Subject as focal point, direct or near-direct gaze, shallow depth of field. Inner luminescence, ethereal energy wisps. Background softly blurred, intimate framing."},
+  action:{label:"Action",desc:"Subject captured mid-motion — leaping, breaking through, releasing energy. Shards, sparks, halos of light exploding outward. Emergency lighting, dynamic composition."},
+  panoramic:{label:"Panoramic",desc:"Wide establishing shot. Subject small in a vast environment. Emphasis on scale, atmosphere, and world-building. Deep focus, layered depth planes."},
+  closeup:{label:"Close-Up",desc:"Extreme detail focus — textures, materials, surface imperfections. Macro-level intimacy. Background fully dissolved into bokeh. Every pore, fiber, scale visible."},
+};
+const UNI_GALLERY=[
+  {title:"Mystical Wolf",idea:"a majestic wolf with intensely glowing sapphire-blue eyes, mid-stride, emerging from a giant smartphone screen",style:"realism",mood:"mysterious",comp:"emergence"},
+  {title:"Cyberpunk Samurai",idea:"a lone cyberpunk samurai standing on a neon-lit Tokyo rooftop at night, rain falling, katana drawn",style:"realism",mood:"dramatic",comp:"panoramic"},
+  {title:"Floating Library",idea:"a vast magical library with books floating mid-air, golden dust particles, infinite shelves spiraling upward",style:"oil",mood:"mysterious",comp:"panoramic"},
+  {title:"Deep Sea Leviathan",idea:"an ancient bioluminescent sea creature rising from the ocean depths, tentacles unfurling",style:"realism",mood:"ominous",comp:"emergence"},
+  {title:"Mech Pilot",idea:"a young mech pilot in a cockpit, holographic displays reflecting on her visor, ready for launch",style:"anime",mood:"energetic",comp:"closeup"},
+  {title:"Desert Caravan",idea:"a caravan of merchants crossing endless sand dunes at sunset, camels laden with silk and spices",style:"oil",mood:"serene",comp:"panoramic"},
+];
+
+function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade,aspectRatio}){
+  const parts=[];
+  // style prefix
+  const prefix=UNI_STYLE_PROMPTS[uStyle]||UNI_STYLE_PROMPTS.realism;
+  const mood=UNI_MOODS[uMood]||UNI_MOODS.mysterious;
+  const comp=UNI_COMPOSITIONS[uComp]||UNI_COMPOSITIONS.emergence;
+  const subj=idea.trim()||"a mysterious figure in an unknown world";
+
+  // Core prompt
+  parts.push(`${prefix} of ${subj}.`);
+  parts.push(`Composition style: ${comp.desc}`);
+  parts.push(`Mood: ${mood.tone}. Color palette: ${mood.color}.`);
+
+  // Technical
+  const tech=[];
+  if(bg){const b=BACKGROUNDS.find(x=>x.id===bg);if(b)tech.push(b.p);}
+  if(light){const l=LIGHTING.find(x=>x.id===light);if(l)tech.push(l.p);}
+  if(lens){const l=LENSES.find(x=>x.mm===lens);if(l)tech.push(l.p);}
+  if(filmStock){const f=FILM_STOCKS.find(x=>x.id===filmStock);if(f)tech.push(f.p);}
+  if(colorGrade){const c=COLOR_GRADES.find(x=>x.id===colorGrade);if(c)tech.push(c.p);}
+  if(tech.length)parts.push(tech.join(". ")+".");
+
+  // Aspect ratio
+  if(aspectRatio)parts.push(`Output aspect ratio: ${aspectRatio}.`);
+
+  // Quality suffix per style
+  const suffixes={realism:"hyper-detailed, 8k resolution, ray tracing, subsurface scattering",anime:"clean line art, vivid colors, professional anime production quality","3d":"octane render, global illumination, PBR materials, cinematic depth of field","2d":"clean shapes, professional vector quality, balanced composition",pixel:"clean pixel grid, limited palette, retro aesthetic, detailed sprite work",oil:"visible brushwork, impasto technique, museum quality, rich pigments"};
+  parts.push(suffixes[uStyle]||suffixes.realism);
+
+  return parts.join("\n\n");
+}
+
+function UniversePage(){
+  const[idea,setIdea]=useState("");
+  const[uStyle,setUStyle]=useState("realism");
+  const[uMood,setUMood]=useState("mysterious");
+  const[uComp,setUComp]=useState("emergence");
+  const[light,setLight]=useState(null);
+  const[bg,setBg]=useState(null);
+  const[lens,setLens]=useState(null);
+  const[filmStock,setFilmStock]=useState(null);
+  const[colorGrade,setColorGrade]=useState(null);
+  const[aspectRatio,setAspectRatio]=useState("16:9");
+  const[custom,setCustom]=useState("");
+  const[toast,setToast]=useState("");
+  const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
+  const tog1=(setter,id)=>setter(p=>p===id?null:id);
+
+  // ── Conflict resolution ──
+  const conflictAR_fisheye=lens==="8mm";
+  const conflictAR_anamorphic=filmStock==="anamorphic";
+  const conflictAspectRatio=conflictAR_fisheye||conflictAR_anamorphic;
+  const effectiveAR=conflictAR_fisheye?"1:1":conflictAR_anamorphic?"2.39:1":aspectRatio;
+  const conflictColorGrade=filmStock==="ilford";
+
+  const prompt=idea.trim()?buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade:conflictColorGrade?null:colorGrade,aspectRatio:effectiveAR}):"";
+  const hasAny=!!prompt;
+
+  const randomize=()=>{
+    setUStyle(["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
+    setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);
+    setUComp(Object.keys(UNI_COMPOSITIONS)[~~(Math.random()*5)]);
+    setLight(LIGHT_SPRITES[~~(Math.random()*LIGHT_SPRITES.length)].id);
+    setBg(ENV_SPRITES[~~(Math.random()*ENV_SPRITES.length)].id);
+    setLens(LENS_SPRITES[~~(Math.random()*LENS_SPRITES.length)].mm);
+    setFilmStock(FILM_SPRITES[~~(Math.random()*FILM_SPRITES.length)].id);
+    setColorGrade(COLOR_SPRITES[~~(Math.random()*COLOR_SPRITES.length)].id);
+    setAspectRatio(["16:9","2.39:1","4:3","1:1","9:16"][~~(Math.random()*5)]);
+    if(!idea.trim()){const g=UNI_GALLERY[~~(Math.random()*UNI_GALLERY.length)];setIdea(g.idea);}
+    doToast("RANDOM CONFIGURATION");
+  };
+  const reset=()=>{setIdea("");setUStyle("realism");setUMood("mysterious");setUComp("emergence");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setCustom("");doToast("RESET");};
+  const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
+
+  return(
+    <div className="page">
+      <div className="ph">
+        <div className="pt">Scene <b>Universe</b></div>
+        <div className="ps">Free-form scene generator with full cinematic control. Describe any idea — the app adds lighting, lens, film stock, environment, and composition automatically.</div>
+      </div>
+
+      {/* ── Idea input ── */}
+      <div className="scene-field" style={{marginBottom:24}}>
+        <div className="sh"><span className="st">Your Scene Idea</span><span className="sb">REQUIRED</span></div>
+        <textarea rows={3} value={idea} onChange={e=>setIdea(e.target.value)} placeholder="e.g. 'A mystical wolf emerging from a smartphone screen' or 'A cyberpunk samurai overlooking Tokyo at night'" style={{fontSize:14}}/>
+        <div className="scene-hint">Describe a subject and action. Everything else — lighting, lens, atmosphere — is configured below with visual selectors.</div>
+      </div>
+
+      {/* ── Art Style (UNIVERSE_SPRITES) ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Art Style / Universe</span></div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          {UNIVERSE_SPRITES.map(r=>(
+            <div key={r.id} onClick={()=>setUStyle(r.id)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(uStyle===r.id?"#e8780a":"var(--bd)"),
+                boxShadow:uStyle===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:100}}>
+              <div style={{width:100,height:98,
+                backgroundImage:"url(/universe.png)",
+                backgroundSize:"600px 98px",
+                backgroundPosition:r.sx+"px 0px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                color:uStyle===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Mood + Composition ── */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+        <div className="av-sec">
+          <div className="sh" style={{marginBottom:12}}><span className="st">Mood</span></div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {Object.entries(UNI_MOODS).map(([k,v])=><button key={k} className={`ob${uMood===k?" sel":""}`} onClick={()=>setUMood(k)} style={{textTransform:"capitalize"}}>{k}</button>)}
+          </div>
+        </div>
+        <div className="av-sec">
+          <div className="sh" style={{marginBottom:12}}><span className="st">Composition</span></div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            {Object.entries(UNI_COMPOSITIONS).map(([k,v])=><button key={k} className={`ob${uComp===k?" sel":""}`} onClick={()=>setUComp(k)} title={v.desc}>{v.label}</button>)}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Lighting ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Lighting & Atmosphere</span>{light&&<span className="sb">ACTIVE</span>}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {LIGHT_SPRITES.map(r=>(
+            <div key={r.id} onClick={()=>tog1(setLight,r.id)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(light===r.id?"#e8780a":"var(--bd)"),
+                boxShadow:light===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:150}}>
+              <div style={{width:150,height:105,
+                backgroundImage:"url(/lighting.png)",
+                backgroundSize:"750px 315px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                color:light===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      {/* ── Environment ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Environment / Background</span>{bg&&<span className="sb">ACTIVE</span>}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {ENV_SPRITES.map(r=>(
+            <div key={r.id} onClick={()=>tog1(setBg,r.id)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(bg===r.id?"#e8780a":"var(--bd)"),
+                boxShadow:bg===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:133}}>
+              <div style={{width:133,height:112,
+                backgroundImage:"url(/environment.png)",
+                backgroundSize:"798px 336px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                color:bg===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      {/* ── Lens ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Lens / Focal Length</span>{lens&&<span className="sb">ACTIVE</span>}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+          {LENS_SPRITES.map(r=>(
+            <div key={r.mm} onClick={()=>tog1(setLens,r.mm)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+(lens===r.mm?"#e8780a":"var(--bd)"),
+                boxShadow:lens===r.mm?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:150}}>
+              <div style={{width:150,height:83,
+                backgroundImage:"url(/lens.png)",
+                backgroundSize:"600px 332px",
+                backgroundPosition:r.sx+"px "+r.sy+"px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                color:lens===r.mm?"#e8780a":"var(--t)"}}><span translate="no">{r.mm}</span></div>
+            </div>
+          ))}
+        </div>
+        {conflictAR_fisheye&&<div style={{marginTop:10,fontSize:11,color:"var(--acc)",lineHeight:1.6}}>⚠ Fisheye lens forces 1:1 aspect ratio — circular projection</div>}
+      </div>
+
+      <div className="divider"/>
+
+      {/* ── Film Stock & Color Grade ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Film Stock & Color Grade</span></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:"var(--t)",marginBottom:10}}>Film Stock</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+              {FILM_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>tog1(setFilmStock,r.id)}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                    border:"2px solid "+(filmStock===r.id?"#e8780a":"var(--bd)"),
+                    boxShadow:filmStock===r.id?"0 0 14px rgba(232,120,10,.4)":"none",
+                    transition:"all .15s",width:150}}>
+                  <div style={{width:150,height:167,
+                    backgroundImage:"url(/film.png)",
+                    backgroundSize:"600px 334px",
+                    backgroundPosition:r.sx+"px "+r.sy+"px",
+                    backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                    color:filmStock===r.id?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                </div>
+              ))}
+            </div>
+            {conflictAR_anamorphic&&<div style={{marginTop:10,fontSize:11,color:"var(--acc)",lineHeight:1.6}}>⚠ Anamorphic forces 2.39:1 widescreen aspect ratio</div>}
+          </div>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:conflictColorGrade?"var(--t4)":"var(--t)",marginBottom:10}}>Color Grade{conflictColorGrade?" — disabled by B&W film":""}</div>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",opacity:conflictColorGrade?.25:1,pointerEvents:conflictColorGrade?"none":"auto"}}>
+              {COLOR_SPRITES.map(r=>(
+                <div key={r.id} onClick={()=>tog1(setColorGrade,r.id)}
+                  style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                    border:"2px solid "+(colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--bd)"),
+                    boxShadow:colorGrade===r.id&&!conflictColorGrade?"0 0 14px rgba(232,120,10,.4)":"none",
+                    transition:"all .15s",width:150}}>
+                  <div style={{width:150,height:167,
+                    backgroundImage:"url(/color.png)",
+                    backgroundSize:"600px 334px",
+                    backgroundPosition:r.sx+"px "+r.sy+"px",
+                    backgroundRepeat:"no-repeat"}}/>
+                  <div style={{padding:"5px 4px 6px",textAlign:"center",fontSize:11,fontWeight:600,
+                    color:colorGrade===r.id&&!conflictColorGrade?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      {/* ── Aspect Ratio ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Aspect Ratio</span>{conflictAspectRatio&&<span className="sb">LOCKED BY LENS/FILM</span>}</div>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",opacity:conflictAspectRatio?.4:1,pointerEvents:conflictAspectRatio?"none":"auto"}}>
+          {FORMAT_SPRITES.map(r=>(
+            <div key={r.id} onClick={()=>setAspectRatio(r.id)}
+              style={{cursor:"pointer",borderRadius:8,overflow:"hidden",
+                border:"2px solid "+((conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--bd)"),
+                boxShadow:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"0 0 14px rgba(232,120,10,.4)":"none",
+                transition:"all .15s",width:r.fw,
+                display:"flex",flexDirection:"column",alignItems:"center",
+                paddingTop:10,background:"var(--s1)",gap:6}}>
+              <div style={{width:80,height:80,flexShrink:0,
+                backgroundImage:"url(/format.png)",
+                backgroundSize:"400px 80px",
+                backgroundPosition:r.sx+"px 0px",
+                backgroundRepeat:"no-repeat"}}/>
+              <div style={{paddingBottom:6,textAlign:"center",fontSize:11,fontWeight:600,
+                color:(conflictAspectRatio?effectiveAR===r.id:aspectRatio===r.id)?"#e8780a":"var(--t)"}}><span translate="no">{r.name}</span></div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="divider"/>
+
+      {/* ── Custom additions ── */}
+      <div className="scene-field">
+        <div className="sh"><span className="st">Custom Additions</span><span className="sb" translate="no">OPTIONAL</span></div>
+        <textarea rows={2} value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Additional notes, negative prompts, extra atmosphere details..."/>
+      </div>
+
+      {/* ── Output ── */}
+      <div className="sec">
+        <div className="sh"><span className="st">Scene Prompt</span>{hasAny&&<span className="sb" translate="no">LIVE</span>}</div>
+        <PromptOutputPanel
+          prompt={hasAny?(prompt+(custom.trim()?"\n\n"+custom.trim():"")):prompt}
+          custom={custom}
+          hasAny={hasAny}
+          onToast={doToast}
+          extraButtons={<>
+            <button className="btn" onClick={reset}>Reset</button>
+            <button className="btn" onClick={randomize}>Random</button>
+          </>}
+        />
+        {hasAny&&<GenWithLinks getPrompt={()=>prompt+(custom.trim()?"\n\n"+custom.trim():"")} onCopy={()=>doToast("SCENE PROMPT COPIED")}/>}
+      </div>
+
+      {/* ── Quick Ideas Gallery ── */}
+      <div className="divider" style={{margin:"40px 0"}}/>
+      <div className="sec">
+        <div className="sh"><span className="st">Quick Ideas Gallery</span></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(260px, 1fr))",gap:12}}>
+          {UNI_GALLERY.map((g,i)=>(
+            <div key={i} onClick={()=>loadGallery(g)} style={{background:"var(--s1)",border:"1px solid var(--bd)",borderRadius:"var(--r2)",padding:"16px 20px",cursor:"pointer",transition:"all .2s"}}>
+              <div style={{fontSize:14,fontWeight:700,color:"var(--acc)",marginBottom:6}}>{g.title}</div>
+              <div style={{fontSize:12,color:"var(--t)",lineHeight:1.6,opacity:.7,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{g.idea}</div>
+              <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>
+                {g.style&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.style}</span>}
+                {g.mood&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--t)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.mood}</span>}
+                {g.comp&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:"var(--s3)",color:"var(--acc)",border:"1px solid var(--bd)",textTransform:"capitalize"}}>{g.comp}</span>}
+              </div>
+              <div style={{marginTop:10,fontSize:11,color:"var(--acc)"}}>Click to load →</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {toast&&<div className="toast">{toast}</div>}
+    </div>
+  );
+}
 
 function MapPage(){
   const setPage=React.useContext(PageCtx);
   const[hovered,setHovered]=useState(null);
-  const[expanded,setExpanded]=useState(new Set(["root","char","multi","video","pet","common"]));
+  const[expanded,setExpanded]=useState(new Set(["root","char","multi","video","pet","univ","common"]));
 
   function countLeaves(node){
     if(!node.children||!node.children.length)return 1;
@@ -5385,6 +5757,7 @@ export default function App(){
             <button className={`nt${page==="angles"?" on":""}`} onClick={()=>setPage("angles")} translate="no">Multi-Shot</button>
             <button className={`nt${page==="video"?" on":""}`} onClick={()=>setPage("video")}>Video</button>
             <button className={`nt${page==="pet"?" on":""}`} onClick={()=>setPage("pet")}>Pet Studio</button>
+            <button className={`nt${page==="universe"?" on":""}`} onClick={()=>setPage("universe")}>Universe</button>
             <button className={`nt${page==="map"?" on":""}`} onClick={()=>setPage("map")}>Map</button>
             <button
               className="nt"
@@ -5402,7 +5775,7 @@ export default function App(){
             </button>
           </div>
         </nav>
-        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:page==="pet"?<PetPage/>:page==="map"?<MapPage/>:<VideoPromptPage/>}
+        {page==="how"?<HowItWorksPage/>:page==="angles"?<AnglesPage/>:page==="avatars"?<AvatarsPage/>:page==="pet"?<PetPage/>:page==="universe"?<UniversePage/>:page==="map"?<MapPage/>:<VideoPromptPage/>}
       </div>
       </PageCtx.Provider>
     </AuthCtx.Provider>
