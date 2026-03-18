@@ -3352,56 +3352,58 @@ function HowItWorksPage(){
       {/* ═══ EXAMPLE SCENARIOS ═══ */}
       <div style={{marginTop:56}}>
         <div style={{fontSize:11,fontWeight:700,letterSpacing:4,textTransform:"uppercase",color:"var(--t4)",marginBottom:16}}>EXAMPLE WORKFLOWS</div>
+        <div style={{fontSize:13,color:"var(--t)",opacity:.5,marginBottom:24,lineHeight:1.6}}>Real-world scenarios showing how the tools connect. Each step links to the relevant tool — click to jump there.</div>
 
-        {/* Scenario 1: Product Shoot */}
-        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid var(--bdh)",background:"var(--s2)",marginBottom:20}}>
+        {/* Scenario 1: Pet Product Shoot */}
+        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid #34d39944",background:"rgba(52,211,153,.04)",marginBottom:20}}>
           <div style={{fontSize:15,fontWeight:800,color:"var(--t)",marginBottom:4}}>
-            Scenario 1 — <span style={{color:"#34d399"}}>Pet Product Shoot</span>
+            Scenario 1 — <span style={{color:"#34d399"}}>Pet Product Marketing Shoot</span>
           </div>
           <div style={{fontSize:12,color:"var(--t)",opacity:.6,marginBottom:16,lineHeight:1.5,fontStyle:"italic"}}>
-            "I'm selling a dog harness and need cinematic marketing images with different breeds."
+            "I designed a premium leather dog harness. I need 4 cinematic marketing shots — a Golden Retriever wearing it at golden hour, shot from multiple angles, and a 5-second hero video clip for Instagram."
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
             {[
-              {step:"1",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Pick Dog → Golden Retriever. Toggle 'I have a product' → describe your harness. Set Accessories → check 'Harness (fitted)'. Choose companion mode, environment, lighting."},
-              {step:"2",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Select output: Product Showcase or 2×2 Grid. The prompt auto-builds with depth-plane product placement (pet wearing → mid-ground, hands presenting → foreground)."},
-              {step:"3",tool:"Generate",page:null,color:"#e8780a",text:"Copy prompt → open Grok Imagine or Gemini → attach your product photo → generate. Get a composite grid with your harness on the dog in cinematic lighting."},
-              {step:"4",tool:"Multi-Shot",page:"angles",color:"#4fa3e0",text:"Want more angles of the same shot? Open Multi-Shot, paste your scene, pick 3–4 camera angles, copy the grid prompt. Attach the Pet Studio result as reference."},
-              {step:"5",tool:"Video",page:"video",color:"#a78bfa",text:"Turn your best image into a video clip — open Video tab, set img2vid mode, describe the motion ('dog trots toward camera, harness catches golden light'), generate for Sora or Runway."},
+              {step:"1",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Open Pet Studio. Pick Dog → Golden Retriever (the breed selector shows you an actual sprite preview — you see the broad head and warm coat before you commit). Switch 'I have a product' on and describe your harness: 'premium Italian leather harness, burnished brass buckles, quilted padding, chestnut brown.' The tool now knows this product is the commercial hero of the shot."},
+              {step:"2",tool:"Pet Studio",page:"pet",color:"#34d399",text:"In Accessories, check 'Harness (fitted)' — the prompt builder assigns it to the mid-ground depth plane so the harness reads clearly against the dog's fur. Set environment to Dark Forest (the warm leather pops against green), lighting to Golden Hour (side-light rakes across the buckle texture), and 85mm lens (classic product-portrait compression). Mood: playful — the dog should look happy wearing it."},
+              {step:"3",tool:"Pet Studio",page:"pet",color:"#34d399",text:"Choose output: Product Showcase layout. This gives you 4 panels — front hero shot, side profile showing the full harness line, close-up on the brass hardware, and a 3/4 action shot of the dog mid-trot. The prompt auto-structures everything: character consistency rules, depth-plane product placement, photorealism requirements. Hit Copy."},
+              {step:"4",tool:"Generate → Grok / Gemini",page:null,color:"#e8780a",text:"Paste the prompt into Grok Imagine (or Gemini if you prefer). Attach your actual product photo — the AI uses it as the visual reference for the harness. You get back a single 2×2 composite grid: four cinematic shots, same dog, same harness, same golden hour light, four different compositions. The numbered panels make it easy to reference later."},
+              {step:"5",tool:"Multi-Shot → Expand",page:"angles",color:"#4fa3e0",text:"Happy with panel 3 (the close-up on the brass buckle)? Jump to Multi-Shot → Expand Panel to Full Shot. Select panel 3, attach your grid image as reference, copy the expansion prompt. Generate — the AI extracts that single panel and renders it at full resolution with all the detail preserved. Do the same for panel 1 (the hero shot). Now you have two high-res marketing images."},
+              {step:"6",tool:"Video",page:"video",color:"#a78bfa",text:"Take the hero shot into Video. Set img2vid mode. Describe the motion: 'Golden Retriever trots happily toward camera on a forest path, golden hour side-light catches the leather harness texture, buckle gleams, shallow depth of field, leaves drift in foreground.' Set Slow Motion pacing, 5s duration, Ambient Sound. Copy for Sora — you get a cinematic product clip ready for social media."},
             ].map(s=>(
               <div key={s.step} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                <div style={{width:24,height:24,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
+                <div style={{width:26,height:26,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
                 <div>
                   <span style={{fontSize:11,fontWeight:700,color:s.color,letterSpacing:.5,cursor:s.page?"pointer":"default"}} onClick={s.page?()=>setPage(s.page):undefined}>{s.tool}{s.page?" ↗":""}</span>
-                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.6,marginTop:2}}>{s.text}</div>
+                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.7,marginTop:3}}>{s.text}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Scenario 2: Concept Art */}
-        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid var(--bdh)",background:"var(--s2)"}}>
+        {/* Scenario 2: Concept Art Pipeline */}
+        <div style={{padding:"22px 24px",borderRadius:10,border:"1px solid #facc1544",background:"rgba(250,204,21,.03)"}}>
           <div style={{fontSize:15,fontWeight:800,color:"var(--t)",marginBottom:4}}>
-            Scenario 2 — <span style={{color:"#facc15"}}>Concept Art from Scratch</span>
+            Scenario 2 — <span style={{color:"#facc15"}}>Sci-Fi Concept Art for a Pitch Deck</span>
           </div>
           <div style={{fontSize:12,color:"var(--t)",opacity:.6,marginBottom:16,lineHeight:1.5,fontStyle:"italic"}}>
-            "I need a series of cinematic concept art shots of a cyberpunk detective for a pitch deck."
+            "I'm pitching a sci-fi animated series. I need a hero character — a cyberpunk detective with a prosthetic arm — shown in 5 different cinematic angles, plus a short mood video. No reference photo yet — starting from zero."
           </div>
-          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
             {[
-              {step:"1",tool:"Scene Universe",page:"universe",color:"#facc15",text:"Type your idea: 'a cyberpunk detective in a neon-lit rain-soaked alley, trenchcoat, cybernetic eye'. Pick Photorealism, Dramatic mood, Portrait composition. Set Neon Night lighting, Cyberpunk Alley environment, 85mm lens, Cinestill 800T."},
-              {step:"2",tool:"Generate",page:null,color:"#e8780a",text:"Copy the Scene Universe prompt → generate in Grok Imagine or Midjourney. This gives you the hero shot — single cinematic image establishing the character."},
-              {step:"3",tool:"Character Sheet",page:"avatars",color:"#e8780a",text:"Now systematize the character. Open Character Sheet, build the same detective with traits, cybernetic features, clothing. Use the generated image as reference photo for identity lock."},
-              {step:"4",tool:"Multi-Shot",page:"angles",color:"#4fa3e0",text:"Take the Character Sheet prompt into Multi-Shot. Pick 4 angles (wide establishing, low-angle hero, over-shoulder, extreme close-up on cybernetic eye). Attach your reference image. Generate a 2×2 grid."},
-              {step:"5",tool:"Multi-Shot → Expand",page:"angles",color:"#4fa3e0",text:"Expand each grid panel to full resolution. Panel 1 for the hero shot, Panel 5 close-up for detail. Each one preserves identity from the reference."},
-              {step:"6",tool:"Video",page:"video",color:"#a78bfa",text:"Pick the best expanded shot, switch to Video → img2vid. 'Camera slowly pushes in, neon reflections shimmer on wet pavement, detective turns, cybernetic eye glows.' Export for Sora."},
+              {step:"1",tool:"Scene Universe",page:"universe",color:"#facc15",text:"Start here because you don't have a character sheet yet — you have a vibe. Type: 'a world-weary cyberpunk detective in a long dark trenchcoat, left arm replaced with a glowing prosthetic, stubble, tired eyes, standing in a rain-soaked alley.' Pick Photorealism style, Dramatic mood, Portrait composition. For environment: Cyberpunk Alley. Lighting: Neon Night — those colored light spills sell the genre instantly. Lens: 85mm portrait. Film: Cinestill 800T (that halation glow around neon lights is pure cyberpunk). Color grade: Teal & Orange."},
+              {step:"2",tool:"Generate",page:null,color:"#e8780a",text:"Copy the Scene Universe prompt. Open Grok Imagine. No reference photo yet — that's fine, this is txt2img. Generate. You get back a single cinematic hero shot: your detective, rain-soaked, neon reflections on wet pavement, prosthetic arm glowing through trenchcoat sleeve. This is your anchor image — save it. It becomes the reference for everything that follows."},
+              {step:"3",tool:"Character Sheet",page:"avatars",color:"#e8780a",text:"Now lock down the identity. Open Character Sheet, build the same detective: male, mid-40s, weathered complexion, short dark hair with grey streaks, cybernetic left arm (use the Asymmetric limbs section — L arm: cybernetic / R arm: organic). Trenchcoat from Wardrobe. Switch to 'From Reference Photo' mode and attach the hero shot from step 2. The prompt now contains both the visual reference AND the explicit trait description — this is how you get identity consistency across all future generations."},
+              {step:"4",tool:"Multi-Shot",page:"angles",color:"#4fa3e0",text:"Paste the Character Sheet prompt into Multi-Shot's scene field. Now pick your 5 angles for the pitch deck: wide establishing shot (detective small in the vast alley), low-angle hero shot (looking up at him, powerful), over-the-shoulder (something he's looking at — mystery), profile silhouette (backlit by neon, iconic), extreme close-up (cybernetic eye detail). Set the same Neon Night + Cinestill 800T + 85mm. Attach the hero image as reference. Generate a 3×2 grid."},
+              {step:"5",tool:"Multi-Shot → Expand",page:"angles",color:"#4fa3e0",text:"The grid comes back with 5 numbered panels plus one empty slot. Each panel is the same detective, same alley, same rain — but from wildly different angles. The silhouette shot (panel 4) looks incredible for a title card. Expand it: click panel 4, copy the expansion prompt, attach the grid, generate in Grok. Full-resolution cinematic silhouette — this goes on slide 1 of your deck. Repeat for the close-up (panel 5) — that cybernetic eye detail goes on the character page."},
+              {step:"6",tool:"Video",page:"video",color:"#a78bfa",text:"For the pitch deck's opening, you want movement. Take the wide establishing shot (expanded panel 1) into Video. Set img2vid mode. Scene: 'Camera slowly pushes forward through rain-soaked alley, neon signs flicker, puddles reflect colored light, detective stands motionless at far end, smoke drifts, trenchcoat ripples slightly.' Pacing: Slow Cinematic. Duration: 8s. Camera: Slow Dolly Forward. Sound: Rain Ambience. Export for Runway or Sora. Embed the clip as the first thing your investors see."},
             ].map(s=>(
               <div key={s.step} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                <div style={{width:24,height:24,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
+                <div style={{width:26,height:26,borderRadius:"50%",background:`${s.color}22`,border:`1.5px solid ${s.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:s.color,flexShrink:0,marginTop:1}}>{s.step}</div>
                 <div>
                   <span style={{fontSize:11,fontWeight:700,color:s.color,letterSpacing:.5,cursor:s.page?"pointer":"default"}} onClick={s.page?()=>setPage(s.page):undefined}>{s.tool}{s.page?" ↗":""}</span>
-                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.6,marginTop:2}}>{s.text}</div>
+                  <div style={{fontSize:12,color:"var(--t)",opacity:.75,lineHeight:1.7,marginTop:3}}>{s.text}</div>
                 </div>
               </div>
             ))}
@@ -5274,7 +5276,7 @@ const MAP_DATA={
     {id:"univ",label:"Scene Universe",color:"#facc15",page:"universe",children:[
       {id:"uvi",label:"Scene Idea Input",color:"#facc15",children:[
         {id:"uvi1",label:"Free-text idea — describe any subject, scene, or concept"},
-        {id:"uvi2",label:"Quick Ideas Gallery — 6 preset scenes as inline pill buttons"},
+        {id:"uvi2",label:"Quick Ideas Gallery — 12 preset scenes as inline pill buttons (SF, fantasy, racing, nature, anime…)"},
         {id:"uvi3",label:"Click any idea → loads text + style + mood + composition"},
       ]},
       {id:"uvs",label:"Visual Controls",color:"#facc15",children:[
@@ -5321,12 +5323,18 @@ const UNI_COMPOSITIONS={
   closeup:{label:"Close-Up",desc:"Extreme detail focus — textures, materials, surface imperfections. Macro-level intimacy. Background fully dissolved into bokeh. Every pore, fiber, scale visible."},
 };
 const UNI_GALLERY=[
-  {title:"Mystical Wolf",idea:"a majestic wolf with intensely glowing sapphire-blue eyes, mid-stride, emerging from a giant smartphone screen",style:"realism",mood:"mysterious",comp:"emergence"},
-  {title:"Cyberpunk Samurai",idea:"a lone cyberpunk samurai standing on a neon-lit Tokyo rooftop at night, rain falling, katana drawn",style:"realism",mood:"dramatic",comp:"panoramic"},
-  {title:"Floating Library",idea:"a vast magical library with books floating mid-air, golden dust particles, infinite shelves spiraling upward",style:"oil",mood:"mysterious",comp:"panoramic"},
-  {title:"Deep Sea Leviathan",idea:"an ancient bioluminescent sea creature rising from the ocean depths, tentacles unfurling",style:"realism",mood:"ominous",comp:"emergence"},
-  {title:"Mech Pilot",idea:"a young mech pilot in a cockpit, holographic displays reflecting on her visor, ready for launch",style:"anime",mood:"energetic",comp:"closeup"},
-  {title:"Desert Caravan",idea:"a caravan of merchants crossing endless sand dunes at sunset, camels laden with silk and spices",style:"oil",mood:"serene",comp:"panoramic"},
+  {title:"Furry Frog Meadow",idea:"a tiny bright-green tree frog covered in soft white fur, sitting on a pink clover flower in a dreamy meadow full of floating dandelion seeds, morning dew drops on every petal",style:"realism",mood:"joyful",comp:"closeup"},
+  {title:"Le Mans Midnight",idea:"a 1966 Ford GT40 in Gulf livery blasting through a rain-soaked Le Mans straight at midnight, headlights cutting fog, tyre spray catching neon pit-lane glow, rival Ferraris visible in mirrors",style:"realism",mood:"energetic",comp:"action"},
+  {title:"Space Cathedral",idea:"a colossal derelict cathedral drifting through a nebula, stained-glass windows still glowing from unknown internal light, asteroid debris orbiting slowly around flying buttresses",style:"realism",mood:"mysterious",comp:"panoramic"},
+  {title:"Dragon vs. Mech",idea:"a scarred mountain dragon locked in combat with a humanoid battle mech, both mid-air above a burning medieval city, molten breath meeting plasma shield",style:"anime",mood:"energetic",comp:"action"},
+  {title:"Concorde Sunrise",idea:"a Concorde supersonic jet climbing through the stratosphere at Mach 2, shock diamonds visible behind engines, curvature of Earth below, thin blue atmosphere line, sun rising behind the delta wing",style:"realism",mood:"dramatic",comp:"panoramic"},
+  {title:"Samurai Tea Garden",idea:"an old samurai in worn armor kneeling for tea ceremony in a moonlit zen garden, cherry blossoms falling, katana resting on a stone, steam rising from a ceramic cup",style:"oil",mood:"serene",comp:"portrait"},
+  {title:"Cyberpunk Market",idea:"a crowded underground night market in a cyberpunk mega-city, stacked neon food stalls three levels high, holographic fish swimming above vendor carts, rain dripping through grated ceiling",style:"realism",mood:"energetic",comp:"panoramic"},
+  {title:"Steampunk Airship",idea:"a massive Victorian steampunk airship emerging from storm clouds above London, brass propellers spinning, lightning arcing between copper antenna arrays, tiny crew visible on observation deck",style:"realism",mood:"dramatic",comp:"emergence"},
+  {title:"Arctic Fox Kit",idea:"a fluffy white arctic fox kit peeking out from a snow den, aurora borealis reflecting in its dark eyes, snowflakes caught mid-fall, breath visible in freezing air",style:"realism",mood:"serene",comp:"portrait"},
+  {title:"F1 Monaco Chaos",idea:"a Formula 1 car drifting sideways through the Monaco tunnel exit into blinding daylight, sparks showering from titanium skid plate, yacht-filled harbor visible ahead, helicopter shadow on tarmac",style:"realism",mood:"energetic",comp:"action"},
+  {title:"Wizard's Study",idea:"an ancient wizard asleep at a desk piled with scrolls, a sentient quill still writing by itself, potion bottles bubbling, an owl perched on a floating astrolabe, moonlight through a circular window",style:"oil",mood:"mysterious",comp:"portrait"},
+  {title:"Pixel Dungeon",idea:"a retro 16-bit dungeon crawler scene, a knight facing a treasure chest in a torch-lit stone chamber, slimes in the shadows, health bar and inventory UI at screen edges",style:"pixel",mood:"mysterious",comp:"panoramic"},
 ];
 
 function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade,aspectRatio}){
