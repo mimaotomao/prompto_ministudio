@@ -297,10 +297,157 @@ function EnhancingIndicator(){
     </>
   );
 }
+// ─── EXPERT JSON ENGINE — ASTRONOMEROZGE1 ARCHITECTURE ──────────────────────
+// Onion layers: L5 Meta → L4 Layout → L3 Optics → L2 Identity → L1 Emotion → L0 Negatives
+// Anchor-Variation-Lock: identity never changes, expressions vary, constraints absorb errors
+// Semantic density: concrete → technical → abstract (never reversed)
+// 0.99 rule: identity lock leaves 1% for lighting adaptation
+
+const EXPERT_NEG={
+  anatomy:["extra fingers","missing fingers","deformed hands","broken wrists","warped face","asymmetrical eyes","melted features","disconnected limbs","unnatural spine","bad anatomy","duplicate limbs"],
+  technical:["low resolution","blur","noise","compression artifacts","oversaturated","plastic skin","uncanny valley","beauty retouch plastic skin"],
+  content:["text","watermark","logo","signature","brand names","frame border","duplicate people"],
+  style:["cartoon","anime","illustration","painting","3d render","cg look"]
+};
+
+function buildExpertJSON(cfg){
+  try{
+  // cfg: {taskType, inputMode, subject, scene, lighting, environment, lens, filmStock,
+  //       colorGrade, aspectRatio, grid, expressions, custom, style, mood, composition, extra}
+  const L=cfg.lighting?LIGHTING.find(x=>x.id===cfg.lighting):null;
+  const E=cfg.environment?BACKGROUNDS.find(x=>x.id===cfg.environment):null;
+  const Le=cfg.lens?LENSES.find(x=>x.mm===cfg.lens):null;
+  const F=cfg.filmStock?FILM_STOCKS.find(x=>x.id===cfg.filmStock):null;
+  const C=cfg.colorGrade?COLOR_GRADES.find(x=>x.id===cfg.colorGrade):null;
+
+  // ── L5: Meta-Context ──
+  const meta={
+    tool:"NanoBanana Pro",
+    task_type:cfg.taskType||"cinematic_generation",
+    language:"en",
+    priority:"highest",
+    version:`v1.0_${(cfg.taskType||"SCENE").toUpperCase().replace(/\s+/g,"_")}`
+  };
+
+  // ── Input (Anchor zone — identity) ──
+  const isImg=cfg.inputMode==="image_to_image";
+  const input={
+    mode:cfg.inputMode||"text_to_image",
+    ...(isImg?{
+      reference_image:"UPLOAD_REFERENCE (REQUIRED)",
+      reference_image_usage:"very_high",
+      preserve_identity:true,
+      preserve_facial_features:true,
+      preserve_hairstyle:true,
+      identity_lock_strength:0.99,
+      notes:"Use reference as primary anchor. Strict identity preservation across all panels. Natural skin texture, no beauty filters."
+    }:{
+      notes:"Generate from text description. Maintain strict consistency if multi-panel."
+    })
+  };
+
+  // ── Creative layer (markdown inside JSON — hybrid) ──
+  // Semantic density: concrete first, then technical, then abstract mood
+  const md=[];
+  if(cfg.subject)md.push(`**Subject**: ${cfg.subject}`);
+  if(cfg.scene)md.push(`**Scene**: ${cfg.scene}`);
+  if(E)md.push(`**Environment**: ${E.p}`);
+  if(L)md.push(`**Lighting**: ${L.p}`);
+  if(Le)md.push(`**Lens**: ${Le.p}`);
+  if(F)md.push(`**Film stock**: ${F.p}`);
+  if(C)md.push(`**Color grade**: ${C.p}`);
+  if(cfg.mood){const mt=typeof cfg.mood==="string"?cfg.mood:(cfg.mood&&cfg.mood.tone)||"";if(mt)md.push(`**Mood**: ${mt}`);}
+  if(cfg.composition){const cd=typeof cfg.composition==="string"?cfg.composition:(cfg.composition&&(cfg.composition.desc||cfg.composition.label))||"";if(cd)md.push(`**Composition**: ${cd}`);}
+  if(cfg.style){const sn=typeof cfg.style==="string"?cfg.style:(cfg.style&&(cfg.style.name||cfg.style.id))||"";if(sn)md.push(`**Style**: ${sn}`);}
+  if(cfg.custom)md.push(`**Additional direction**: ${cfg.custom}`);
+
+  // ── L3: Photography/Optics ──
+  const photography={
+    camera:{
+      lens:Le?`${Le.mm} — ${Le.name}`:(cfg.lens||"50mm standard"),
+      framing:cfg.grid?"mixed framing per panel":"medium shot",
+      focus:"sharp on subject, eyes critical in every panel",
+      depth_of_field:"natural separation"
+    },
+    lighting:{
+      setup:L?L.p:"natural ambient lighting",
+      skin_rendering:"realistic skin texture, visible pores, no plastic effect",
+      shadow_quality:"physically plausible, consistent directionality"
+    },
+    ...(F?{film_stock:{name:F.name,look:F.p}}:{}),
+    ...(C?{color_grade:{name:C.name,look:C.p}}:{})
+  };
+
+  // ── L4: Output/Layout ──
+  const output={
+    aspect_ratio:cfg.aspectRatio||"16:9",
+    resolution_target:"ultra_high_res",
+    num_images:1,
+    sharpness:"editorial_crisp",
+    grain:"subtle_film",
+    dynamic_range:"rich_natural",
+    ...(cfg.grid?{layout:{
+      type:"grid",
+      rows:cfg.grid.rows,
+      cols:cfg.grid.cols,
+      gutter:"thin",
+      panel_consistency:"very_high"
+    }}:{})
+  };
+
+  // ── L2: Subject/Identity (Anchor zone) ──
+  const subject={
+    description:cfg.subject||"as described in creative direction",
+    ...(cfg.grid?{consistency_rules:{
+      same_subject_all_panels:true,
+      wardrobe_continuity:true,
+      lighting_consistency:true,
+      identity_lock:isImg?"strict":"generate_consistent"
+    }}:{}),
+    anatomy_rules:"correct facial proportions, no warped eyes/mouth, realistic hand structure"
+  };
+
+  // ── L1: Expression/Variation zone ──
+  const expressions=cfg.expressions||null;
+
+  // ── L0: Constraints (Lock zone) ──
+  const quality={
+    identity_lock:isImg?"strict":"consistent",
+    hands_priority:"high",
+    anatomy_safeguards:{
+      hand_structure:"strict_5_per_hand",
+      facial_symmetry:"natural_not_perfect",
+      skin_texture:"realistic_pores_visible"
+    },
+    avoid:[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical.slice(0,4)]
+  };
+
+  const negatives=[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical,...EXPERT_NEG.content,...EXPERT_NEG.style];
+
+  // ── Assemble (onion order: meta→input→creative→scene→subject→photography→output→expressions→quality→negative) ──
+  const json={generation_request:{
+    meta_data:meta,
+    input:input,
+    creative_direction:{format:"markdown_enhanced",content:md.join("\n")},
+    scene:{environment:E?E.p:(cfg.scene||"contextual"),lighting:L?{style:L.name,description:L.p}:undefined,mood:cfg.mood?(typeof cfg.mood==="string"?cfg.mood:(cfg.mood.tone||undefined)):undefined},
+    subject:subject,
+    photography:photography,
+    output_settings:output,
+    ...(expressions?{expression_set:expressions}:{}),
+    quality_control:quality,
+    ...(cfg.extra||{}),
+    negative_prompt:negatives
+  }};
+
+  // Strip undefineds
+  return JSON.parse(JSON.stringify(json));
+  }catch(e){console.error("buildExpertJSON error:",e);return null;}
+}
+
 // ─── REUSABLE PROMPT OUTPUT PANEL ────────────────────────────────────────────
-// Tabs (Original green / AI Enhanced orange), buttons, disclaimer, auto-enhance after login.
-// Props: prompt (string), custom (string), hasAny (bool), extraButtons (jsx), onToast (fn)
-function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToast}){
+// Three tabs: Original (green) / Expert JSON (purple) / AI Enhanced (orange)
+// Props: prompt, custom, hasAny, extraButtons, onToast, expertJSON (object|null)
+function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToast,expertJSON=null}){
   const[enhanced,setEnhanced]=useState("");
   const[enhancing,setEnhancing]=useState(false);
   const[view,setView]=useState("base");
@@ -309,7 +456,6 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
   const{user}=React.useContext(AuthCtx);
   const toast=m=>{if(onToast)onToast(m);};
 
-  // auto-start enhance after login
   useEffect(()=>{
     if(user&&pending){
       setPending(false);
@@ -321,8 +467,7 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
     }
   },[user,pending]);
 
-  // reset enhanced when base prompt changes significantly
-  useEffect(()=>{ setEnhanced(""); setView("base"); },[prompt]);
+  useEffect(()=>{setEnhanced("");if(view==="enhanced")setView("base");},[prompt]);
 
   const doEnhance=()=>{
     if(!user){setPending(true);setShowAuth(true);return;}
@@ -333,14 +478,15 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
       .finally(()=>setEnhancing(false));
   };
 
-  const shown=(enhanced&&view==="enhanced")?enhanced:prompt;
+  const jsonStr=expertJSON?JSON.stringify(expertJSON,null,2):"";
+  const isExpert=view==="expert"&&expertJSON;
+  const shown=isExpert?jsonStr:(enhanced&&view==="enhanced")?enhanced:prompt;
 
   return(
     <>
-      <div style={{borderRadius:"var(--r2)",border:"1px solid "+(enhanced?"var(--bd2)":"var(--bd)"),overflow:"hidden",background:"var(--s2)",transition:"border-color .2s"}}>
-        {/* Tab strip — always visible */}
-        <div style={{display:"flex",borderBottom:"1px solid var(--bd)",background:"var(--s1)"}}>
-          {/* Original — always green */}
+      <div style={{borderRadius:"var(--r2)",border:"1px solid "+(isExpert?"rgba(168,85,247,.35)":enhanced&&view==="enhanced"?"var(--bd2)":"var(--bd)"),overflow:"hidden",background:"var(--s2)",transition:"border-color .2s"}}>
+        {/* Tab strip */}
+        <div style={{display:"flex",borderBottom:"1px solid var(--bd)",background:"var(--s1)",flexWrap:"wrap"}}>
           <button onClick={()=>setView("base")}
             style={{padding:"9px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",borderRight:"1px solid var(--bd)",
               background:view==="base"?"rgba(34,197,94,.12)":"transparent",
@@ -348,13 +494,21 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
               transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
             Original Prompt
           </button>
-          {/* AI Enhanced — greyed until ready, orange after */}
+          {expertJSON&&(
+            <button onClick={()=>setView("expert")}
+              style={{padding:"9px 18px",cursor:"pointer",fontSize:11,fontWeight:700,border:"none",borderRight:"1px solid var(--bd)",
+                background:isExpert?"rgba(168,85,247,.15)":"transparent",
+                color:isExpert?"#c4b5fd":"rgba(168,85,247,.35)",
+                transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
+              Expert JSON
+            </button>
+          )}
           <button onClick={()=>{if(enhanced)setView("enhanced");}}
             style={{padding:"9px 18px",cursor:enhanced?"pointer":"default",fontSize:11,fontWeight:700,border:"none",
               background:enhanced&&view==="enhanced"?"var(--acdim)":"transparent",
               color:enhanced?(view==="enhanced"?"var(--acc)":"rgba(255,255,255,.38)"):"rgba(255,255,255,.18)",
               transition:"all .15s",letterSpacing:.5,whiteSpace:"nowrap"}}>
-            {"\u2726"} AI Enhanced Prompt
+            {"\u2726"} AI Enhanced
           </button>
           {enhanced&&(
             <button onClick={()=>{setEnhanced("");setView("base");}}
@@ -364,47 +518,57 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
             </button>
           )}
         </div>
-        {/* Prompt text */}
-        <div style={{fontFamily:"var(--mono)",fontSize:12,lineHeight:1.9,color:"var(--t)",padding:"14px 16px",
-          whiteSpace:"pre-wrap",wordBreak:"break-word",userSelect:"text",cursor:"text",minHeight:120}}>
+        {/* Content */}
+        <div style={{fontFamily:"var(--mono)",fontSize:isExpert?11:12,lineHeight:isExpert?1.5:1.9,
+          color:isExpert?"#c4b5fd":"var(--t)",padding:"14px 16px",
+          whiteSpace:"pre-wrap",wordBreak:"break-word",userSelect:"text",cursor:"text",
+          minHeight:120,maxHeight:isExpert?480:"none",overflowY:isExpert?"auto":"visible"}}>
           {hasAny?shown:<span style={{color:"var(--t4)",fontStyle:"italic",fontSize:13,fontFamily:"var(--font)"}}>Fill fields above to generate your prompt in real time.</span>}
         </div>
+        {isExpert&&(
+          <div style={{padding:"6px 16px",borderTop:"1px solid rgba(168,85,247,.15)",background:"rgba(168,85,247,.05)",
+            fontSize:10,color:"rgba(168,85,247,.6)",letterSpacing:1,fontWeight:600,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span>NANOBANANA PRO — ASTRONOMEROZGE1 HYBRID JSON/MARKDOWN</span>
+            <span style={{opacity:.5}}>Anchor-Variation-Lock · identity 0.99 · semantic density</span>
+          </div>
+        )}
       </div>
 
-      {/* Button bar */}
-      <div className="pbar" translate="no" style={{flexWrap:"wrap",gap:8,alignItems:"flex-start"}}>
+      {/* Button row — all copy buttons side by side */}
+      <div className="pbar" translate="no" style={{flexWrap:"wrap",gap:8,alignItems:"center"}}>
         {extraButtons}
 
-        {/* Copy Original — always primary */}
-        <button className={`btn${hasAny?" pri":""}`} disabled={!hasAny}
-          onClick={async()=>{const ok=await copyText(prompt);toast(ok?"ORIGINAL PROMPT COPIED — ATTACH YOUR PHOTOS IN TARGET AI":"COPY FAILED");}}>
+        <button className={`btn${hasAny&&view==="base"?" pri":""}`} disabled={!hasAny}
+          onClick={async()=>{const ok=await copyText(prompt);toast(ok?"ORIGINAL PROMPT COPIED":"COPY FAILED");if(view!=="base")setView("base");}}>
           Copy Orig. Prompt
         </button>
 
-        {/* Enhance → Copy Enhanced after done */}
+        {expertJSON&&(
+          <button className={`btn${isExpert?" pri":""}`} disabled={!hasAny}
+            style={isExpert?{background:"#a855f7",borderColor:"#a855f7",color:"#000",boxShadow:"0 0 24px rgba(168,85,247,.25)"}
+              :{borderColor:"rgba(168,85,247,.4)",color:"rgba(168,85,247,.55)"}}
+            onClick={async()=>{const ok=await copyText(jsonStr);toast(ok?"EXPERT JSON COPIED":"COPY FAILED");if(view!=="expert")setView("expert");}}>
+            Copy Expert JSON
+          </button>
+        )}
+
         {!enhanced?(
-          <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-            <button className="btn" disabled={!hasAny||enhancing}
-              onClick={doEnhance}
-              style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)",flexShrink:0}}>
-              {enhancing?"ENHANCING\u2026":"\u2192 AI Prompt Enhance"}
-            </button>
-            <div style={{display:"flex",flexDirection:"column",gap:3,maxWidth:420}} translate="no">
-              <span style={{fontSize:11,color:"rgba(255,255,255,.6)",lineHeight:1.5,whiteSpace:"nowrap"}}>
-                <span style={{color:"var(--acc)",marginRight:5}}>▸</span>Generates artistic, narrative version — richer mood, more cinematic.
-              </span>
-              <span style={{fontSize:11,color:"rgba(255,255,255,.6)",lineHeight:1.5,whiteSpace:"nowrap"}}>
-                <span style={{color:"rgba(255,100,100,.7)",marginRight:5}}>▸</span>Some technical params (lens, lighting, ratio) may be rewritten. <span style={{color:"rgba(255,255,255,.75)",fontWeight:600}}>Requires Google sign-in.</span>
-              </span>
-            </div>
-          </div>
+          <button className="btn" disabled={!hasAny||enhancing}
+            onClick={doEnhance}
+            style={{borderColor:enhancing?"var(--bd)":"var(--acc)",color:enhancing?"rgba(255,255,255,.4)":"var(--acc)",background:"var(--acdim)",flexShrink:0}}>
+            {enhancing?"ENHANCING\u2026":"\u2192 AI Prompt Enhance"}
+          </button>
         ):(
           <button className="btn pri"
-            onClick={async()=>{const ok=await copyText(enhanced);toast(ok?"ENHANCED PROMPT COPIED":"COPY FAILED");}}>
+            onClick={async()=>{const ok=await copyText(enhanced);toast(ok?"ENHANCED PROMPT COPIED":"COPY FAILED");if(view!=="enhanced")setView("enhanced");}}>
             {"\u2726"} Copy Enhanced Prompt
           </button>
         )}
       </div>
+
+      {!enhanced&&<div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>
+        <span style={{color:"var(--acc)",marginRight:5}}>▸</span>AI Enhance generates artistic, narrative version. <span style={{color:"rgba(255,255,255,.6)",fontWeight:600}}>Requires Google sign-in.</span>
+      </div>}
 
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)}/>}
       {enhancing&&<EnhancingIndicator/>}
@@ -1284,6 +1448,17 @@ function AnglesPage(){
   const tog1=(setter,id)=>setter(p=>p===id?null:id);
   const prompt=buildPrompt({scene,selectedAngles:sel,lighting:light,bg,lens,cam,use3D,custom,filmStock,colorGrade,aspectRatio,batchSize,mode:mode1});
   const hasAny=!!(scene.trim()||sel.length||light||bg||lens||filmStock||colorGrade||use3D||custom.trim());
+  const n=sel.length;
+  const anglesEJ=hasAny?buildExpertJSON({
+    taskType:n>1?`multi_shot_${n}panel_grid`:"cinematic_single_shot",
+    inputMode:mode1==="photo"?"image_to_image":"text_to_image",
+    subject:scene.trim()||"subject from attached reference photo",
+    lighting:light,environment:bg,lens,filmStock,colorGrade,aspectRatio,
+    custom:custom.trim()||null,
+    grid:n>1?{rows:n<=3?1:n<=4?2:n<=6?2:3,cols:n<=1?1:n<=2?2:3}:null,
+    expressions:n>1?Object.fromEntries(sel.map((ai,i)=>[`panel_${String(i+1).padStart(2,"0")}`,{camera_angle:ANGLES[ai]?.name,description:ANGLES[ai]?.desc}])):null,
+    extra:{scene_config:{mode:mode1,use_3d_camera:use3D,batch_variants:batchSize}}
+  }):null;
 
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2500)};
   const copy=async()=>{
@@ -1605,6 +1780,7 @@ function AnglesPage(){
           custom={custom}
           hasAny={hasAny}
           onToast={doToast}
+          expertJSON={anglesEJ}
           extraButtons={
             <>
               <button className="btn" onClick={reset}>Reset</button>
@@ -2180,6 +2356,20 @@ function AvatarsPage(){
   };
 
   const prompt=buildAvPrompt();
+  const avatarEJ=buildExpertJSON({
+    taskType:c.avLayout==="Style Sheet"?"character_sheet_3panel":"character_"+c.avLayout.toLowerCase().replace(/\s+/g,"_"),
+    inputMode:mode==="photo"?"image_to_image":"text_to_image",
+    subject:`${c.race} ${c.gender}, ${c.age}, ${c.region} heritage. Body: ${c.bodyType}. Expression: ${c.expression}. Hair: ${c.hair}, ${c.eyeColor} eyes. Clothing: ${c.clothing}.`,
+    lighting:null,environment:null,lens:c.avLens||null,filmStock:null,colorGrade:null,
+    aspectRatio:c.avAspect||"16:9",custom:c.details||null,
+    style:c.universe,mood:null,composition:null,
+    grid:c.avLayout==="Style Sheet"?{rows:1,cols:3}:null,
+    extra:{character_traits:{
+      race:c.race,gender:c.gender,age:c.age,region:c.region,skin:{color:c.skinColor,traits:c.skinTraits},
+      face:{eyeColor:c.eyeColor,eyeType:c.eyeType,lips:c.lips,markings:c.markings,horns:c.horns},
+      body:{type:c.bodyType,lArm:c.lArm,rArm:c.rArm,lLeg:c.lLeg,rLeg:c.rLeg,wings:c.wings,tail:c.tail,ears:c.ears}
+    },scene_config:{lighting:c.avLight||"soft even professional studio lighting",environment:c.avEnv||"plain neutral grey studio background",layout:c.avLayout}}
+  });
   const doToast=m=>{setToast(m);setTimeout(()=>setToast(""),2200)};
   const surprise=()=>{
     try{
@@ -2820,6 +3010,7 @@ function AvatarsPage(){
           custom={c.details}
           hasAny={true}
           onToast={doToast}
+          expertJSON={avatarEJ}
           extraButtons={
             <>
               <button className="btn" onClick={()=>{setC(AV_DEF);setITab("universe");setFTab("hair");setBTab("bodyType");doToast("RESET");}}>Reset</button>
@@ -2973,6 +3164,15 @@ function VideoPromptPage(){
   const vparams={scene,firstFrame,lastFrame,camMove,pacing,duration,sound,lighting,colorGrade,lens,filmStock,style,custom,videoMode};
   const prompt=buildVideoPrompt(vparams);
   const hasAny=!!(scene.trim()||firstFrame.trim()||lastFrame.trim());
+  const videoEJ=hasAny?buildExpertJSON({
+    taskType:`video_${videoMode}`,
+    inputMode:videoMode==="img2vid"?"image_to_image":"text_to_image",
+    subject:scene.trim()||"as described in frame directions",
+    lighting,environment:null,lens,filmStock,colorGrade:null,aspectRatio:"16:9",
+    style:style,mood:null,composition:null,custom:custom.trim()||null,
+    extra:{video_config:{mode:videoMode,camera_movement:camMove,pacing,duration,sound_design:sound,
+      first_frame:firstFrame.trim()||null,last_frame:lastFrame.trim()||null}}
+  }):null;
 
   const copy=async()=>{const ok=await copyText(prompt);doToast(ok?"COPIED":"COPY FAILED");};
   const reset=()=>{setScene("");setFirstFrame("");setLastFrame("");setCamMove("Static");setPacing("Normal Flow");setDuration("8s");setSound("Ambient Sound");setStyle("Cinematic");setLighting(null);setColorGrade(null);setLens(null);setFilmStock(null);setCustom("");doToast("RESET");};
@@ -3155,6 +3355,7 @@ function VideoPromptPage(){
           custom={custom}
           hasAny={hasAny}
           onToast={doToast}
+          expertJSON={videoEJ}
           extraButtons={
             <>
               <button className="btn" onClick={reset}>Reset</button>
@@ -4269,6 +4470,26 @@ function PetPage(){
   };
 
   const prompt=buildPetPrompt();
+  const petEJ=buildExpertJSON({
+    taskType:`pet_studio_${vpIsFantasy?"fantasy":"real"}_${outputLayout}`,
+    inputMode:usePetPhoto?"image_to_image":"text_to_image",
+    subject:`${vpIsFantasy?"Fantasy creature":vpSpecies}${vpBreed?", breed: "+vpBreed:""}${vpEmpathy?". Mood: "+vpEmpathy:""}${vpFantasySize?". Size: "+vpFantasySize:""}`,
+    lighting:light,environment:bg,lens,filmStock,
+    colorGrade:filmStock==="ilford"?null:colorGrade,
+    aspectRatio:effectiveAspectRatio,
+    style:"photorealism",mood:vpEmpathy||null,composition:null,
+    custom:custom.trim()||null,
+    grid:outputLayout==="grid_1x3"?{rows:1,cols:3}:outputLayout==="grid_2x2"?{rows:2,cols:2}:outputLayout==="multi_custom"&&sel.length>1?{rows:sel.length<=3?1:2,cols:sel.length<=2?2:3}:null,
+    expressions:outputLayout==="multi_custom"&&sel.length>1?Object.fromEntries(sel.map((ai,i)=>[`panel_${String(i+1).padStart(2,"0")}`,{camera_angle:ANGLES[ai]?.name,description:ANGLES[ai]?.desc}])):null,
+    extra:{pet_config:{
+      species:vpSpecies,breed:vpBreed||null,is_fantasy:vpIsFantasy,
+      empathy:vpEmpathy||null,fantasy_size:vpFantasySize||null,
+      accessories:accSelected.length?accSelected:null,
+      companion:{mode:companionMode,species:companionSpecies||null},
+      input_sources:{pet_photo:usePetPhoto,human_photo:useMyPhoto,product:useProduct},
+      output_layout:outputLayout
+    }}
+  });
   const hasContent=true; // prompt always shown
 
   const copy=async()=>{
@@ -5143,6 +5364,7 @@ function PetPage(){
           custom={custom}
           hasAny={true}
           onToast={doToast}
+          expertJSON={petEJ}
           extraButtons={
             <>
               <button className="btn" onClick={()=>{setUseScratch(true);setUsePetPhoto(false);setUseMyPhoto(false);setUseProduct(false);setSceneDesc("");setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpEmpathy("");setVpFantasySize("");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setOutputLayout("single");setSel([]);setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");setProductFocus("hero");setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");setCompanionMode("alone");setCustom("");setPetEnhancements([]);setAccOpen(false);doToast("RESET COMPLETE");}}>Reset</button>
@@ -5381,6 +5603,18 @@ function UniversePage(){
   const conflictColorGrade=filmStock==="ilford";
   const prompt=idea.trim()?buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade:conflictColorGrade?null:colorGrade,aspectRatio:effectiveAR}):"";
   const hasAny=!!prompt;
+  const uniEJ=hasAny?buildExpertJSON({
+    taskType:`scene_universe_${uStyle}_${uComp}`,
+    inputMode:"text_to_image",
+    subject:idea.trim(),
+    lighting:light,environment:bg,lens,filmStock,
+    colorGrade:conflictColorGrade?null:colorGrade,
+    aspectRatio:effectiveAR,
+    style:{id:uStyle,name:UNIVERSE_SPRITES.find(s=>s.id===uStyle)?.name||uStyle},
+    mood:UNI_MOODS[uMood]||null,
+    composition:UNI_COMPOSITIONS[uComp]||null,
+    custom:custom.trim()||null
+  }):null;
   const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
   const randomize=()=>{
     setUStyle(["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
@@ -5553,6 +5787,7 @@ function UniversePage(){
       <div className="sec">
         <div className="sh"><span className="st">Scene Prompt</span>{hasAny&&<span className="sb" translate="no">LIVE</span>}</div>
         <PromptOutputPanel prompt={hasAny?(prompt+(custom.trim()?"\n\n"+custom.trim():"")):prompt} custom={custom} hasAny={hasAny} onToast={doToast}
+          expertJSON={uniEJ}
           extraButtons={<><button className="btn" onClick={reset}>Reset</button><button className="btn" onClick={randomize}>Random</button></>}/>
         {hasAny&&<GenWithLinks getPrompt={()=>prompt+(custom.trim()?"\n\n"+custom.trim():"")} onCopy={()=>doToast("SCENE PROMPT COPIED")}/>}
       </div>
