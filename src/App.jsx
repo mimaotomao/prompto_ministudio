@@ -485,11 +485,19 @@ function buildExpertJSON(cfg){
     anatomy:EXPERT_NEG.anatomy,
     technical:EXPERT_NEG.technical,
     content:EXPERT_NEG.content,
-    style_violations:EXPERT_NEG.style
+    style_violations:styleNeg
   };
 
+  const styleNeg=EXPERT_NEG.style.filter(s=>{
+    if(styleStr.includes("anime")&&(s==="anime"||s==="illustration"))return false;
+    if(styleStr.includes("oil")&&s==="painting")return false;
+    if((styleStr.includes("3d")||styleStr.includes("pixel"))&&(s==="3d render"||s==="cg look"||s==="illustration"))return false;
+    if(styleStr.includes("pixel")&&s==="cartoon")return false;
+    return true;
+  });
+
   // ── Flat negative_prompt array (for compatibility) ──
-  const negativesFlat=[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical,...EXPERT_NEG.content,...EXPERT_NEG.style];
+  const negativesFlat=[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical,...EXPERT_NEG.content,...styleNeg];
 
   // ── Assemble (onion: L5 meta → input → creative → scene → subject → photography → output → expressions → must_have → quality → negatives) ──
   const json={generation_request:{
@@ -601,6 +609,12 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
           </div>
         )}
       </div>
+
+      {isExpert&&(
+        <div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>
+          <span style={{color:"var(--acc)",marginRight:5}}>⚠</span>JSON Format Note: some free generators (Gemini, Bing Create, Craiyon) may not parse JSON directly — use <b style={{color:"rgba(255,255,255,.6)"}}>Original Prompt</b> or <b style={{color:"rgba(255,255,255,.6)"}}>AI Enhanced</b> for broader compatibility.
+        </div>
+      )}
 
       {/* Button row — all copy buttons side by side */}
       <div className="pbar" translate="no" style={{flexWrap:"wrap",gap:8,alignItems:"center"}}>
@@ -2161,7 +2175,7 @@ const LAYOUT_SPRITES=[
   {name:"Bust",sx:0,sy:-300,p:"Generate a single bust portrait — framed from the chest up, close and intimate, face and upper chest visible. Single panel output."},
   {name:"Full Body Walking",sx:-105,sy:-300,p:"Generate a single full-body dynamic walking pose — mid-stride, natural gait, full head-to-toe visible, slight forward motion implied. Single panel output."},
   {name:"Action Stance",sx:0,sy:-450,p:"Generate a single full-body action stance — wide combat-ready pose, knees slightly bent, arms engaged, dynamic energy. Single panel output."},
-  {name:"Side Seated",sx:-105,sy:-450,p:"Generate a single side-profile seated pose — 90-degree lateral view, character seated, full silhouette readable, composed posture. Single panel output."},
+  {name:"Side Seated",sx:-105,sy:-450,p:"Generate a single side-profile seated pose — 90-degree lateral view, full figure visible, relaxed natural posture, clean studio background. Single panel output."},
   {name:"Back View",sx:0,sy:-600,p:"Generate a single full-body rear view — character facing away from camera, complete back silhouette visible from head to toe, natural stance. Single panel output."},
   {name:"Face Close-up",sx:-105,sy:-600,p:"Generate a single extreme face close-up — tight framing on the face only, from chin to top of forehead, no shoulders visible, maximum facial detail. Single panel output."},
 ];
@@ -2398,7 +2412,7 @@ function AvatarsPage(){
     // 1. GOAL — what AI must produce, format first
     const goalPrefix=mode==="photo"
       ?"Use the attached reference photo as the identity base for this character. Extract and preserve the exact face structure, skin tone, and distinctive facial features from the photo. Apply the selected traits below as modifications or additions on top of this reference identity. Do not change the face — only apply the style, body, and trait modifications."
-      :"Generate a completely original character from scratch based only on the selections below.";
+      :"Generate a character defined entirely by the parameters below.";
     const layoutObj=LAYOUT_SPRITES.find(l=>l.name===c.avLayout)||LAYOUT_SPRITES[0];
     const consistencyText=isMultiPanel
       ?" All panels must depict the exact same character with identical anatomy, skin color, surface traits, facial structure, wardrobe, and physical proportions. Do not alter identity, age, gender, body type, costume details, or non-human features between panels. Maintain strict character consistency across all frames."
@@ -5707,7 +5721,7 @@ const MAP_DATA={
     {id:"univ",label:"Scene Universe",color:"#facc15",page:"universe",children:[
       {id:"uvi",label:"Scene Idea Input",color:"#facc15",children:[
         {id:"uvi1",label:"Free-text idea — describe any subject, scene, or concept"},
-        {id:"uvi2",label:"Quick Ideas Gallery — 12 preset scenes as inline pill buttons (SF, fantasy, racing, nature, anime…)"},
+        {id:"uvi2",label:"Quick Ideas Gallery — 23 preset scenes as inline pill buttons (SF, fantasy, racing, nature, anime, cyberpunk, retrofuture, cosmic battle…)"},
         {id:"uvi3",label:"Click any idea → loads text + style + mood + composition"},
       ]},
       {id:"uvs",label:"Visual Controls",color:"#facc15",children:[
@@ -5766,6 +5780,17 @@ const UNI_GALLERY=[
   {title:"F1 Monaco Chaos",idea:"a Formula 1 car drifting sideways through the Monaco tunnel exit into blinding daylight, sparks showering from titanium skid plate, yacht-filled harbor visible ahead, helicopter shadow on tarmac",style:"realism",mood:"energetic",comp:"action"},
   {title:"Wizard's Study",idea:"an ancient wizard asleep at a desk piled with scrolls, a sentient quill still writing by itself, potion bottles bubbling, an owl perched on a floating astrolabe, moonlight through a circular window",style:"oil",mood:"mysterious",comp:"portrait"},
   {title:"Pixel Dungeon",idea:"a retro 16-bit dungeon crawler scene, a knight facing a treasure chest in a torch-lit stone chamber, slimes in the shadows, health bar and inventory UI at screen edges",style:"pixel",mood:"mysterious",comp:"panoramic"},
+  {title:"Retrofuture Samurai Duel",idea:"two young women warriors locked in a tense sword combat stance, blonde in iridescent silver liquid-metal samurai armor, brunette in mirrored chrome tactical suit, both wielding gleaming katanas under neon holographic cherry blossoms, 1960s retrofuturistic Japanese bunker with glowing circuit-board walls, electric arcs between their blades",style:"anime",mood:"dramatic",comp:"action"},
+  {title:"Cosmic Fleet Battle",idea:"three enormous alien warships locked in brutal combat above a burning planet, plasma cannons unleashing torrents of energy, capital ships disintegrating into expanding debris clouds, smaller fighters weaving through explosions like fireflies, cosmic dust and radiation halos illuminating the chaos, Earth-like world glowing in background inferno",style:"realism",mood:"dramatic",comp:"panoramic"},
+  {title:"Fruit Consumption Moment",idea:"a striking woman in haute couture captured mid-bite of an enormous, impossibly juicy oversized tropical fruit dripping with golden nectar, pleasure and intensity in her expression, exotic fruit flesh glistening with juice spray suspended mid-air, opulent marble gallery setting with dramatic spotlight illumination, sensory intensity and luxury condensed into single moment",style:"realism",mood:"energetic",comp:"closeup"},
+  {title:"Ogre Unicorn Rider",idea:"a massive green ogre with scarred tusks gripping the mane of a shimmering iridescent unicorn, both charging through a crystalline enchanted forest, the unicorn's horn blazing with arcane light, flowers exploding into sparks as they gallop, ogre wielding a club carved from ancient bone, magic swirling around hooves and crown",style:"3d",mood:"energetic",comp:"action"},
+  {title:"Bioluminescent Deep Sea",idea:"a fearless diver in futuristic pressure suit descending into the abyss surrounded by colossal translucent jellyfish the size of buildings, their tentacles glowing with alien bioluminescence, deep-sea creatures with impossible anatomies drifting past, pressure-resistant submersible visible above with searchlight beaming down, darkness punctuated by floating organisms",style:"realism",mood:"mysterious",comp:"panoramic"},
+  {title:"Volcanic Fortress Siege",idea:"an apocalyptic battle raging at the gates of a massive obsidian fortress built inside an active volcano, lava flows cascading down black cliffs, siege weapons launching incendiary projectiles, armies clashing in slow-motion silhouettes against magma glow, fortress gates glowing red-hot from within, ash storms and fire tornadoes framing the carnage",style:"realism",mood:"ominous",comp:"panoramic"},
+  {title:"Ethereal Library Collapse",idea:"an infinite library of floating crystalline books mid-collapse, shelves disintegrating into pure light, ancient knowledge cascading through reality like luminous waterfalls, a hooded figure suspended in center of the chaos reaching toward vanishing tomes, reality fracturing into geometric shards, archival magic exploding outward in all directions",style:"3d",mood:"mysterious",comp:"emergence"},
+  {title:"Desert Dune Racer Crash",idea:"a sleek cyberpunk sand-skiff launching off an impossibly high dune at sunset, pilot visible in cockpit mid-stunt, desert floor far below spinning with crystalline sand particles catching golden light, vehicle trailing neon wake through thin atmosphere, mountains glowing like embers on horizon, adrenaline and danger frozen in frame",style:"realism",mood:"energetic",comp:"action"},
+  {title:"Void Creature Emergence",idea:"a massive incomprehensible entity materializing through a dimensional tear in space, its form shifting between states of matter, tentacles of dark matter writhing, eyes of distant nebulae studying Earth, reality warping visibly around its presence, military observers in hazmat suits frozen in terror, fabric of spacetime tearing open",style:"anime",mood:"ominous",comp:"emergence"},
+  {title:"Aurora Duelist Clash",idea:"two master swordsmen locked in explosive combat beneath the northern lights, blades creating waves of frozen energy with each clash, aurora reflecting off ice-armor, duelists performing impossible acrobatic moves against star-filled sky, frozen landscape of icebergs and glaciers framing mortal combat, magic-infused strikes leaving trails of green and purple light",style:"anime",mood:"dramatic",comp:"action"},
+  {title:"Interdimensional Rift",idea:"a massive swirling vortex tearing through a city street, pulling buildings and vehicles into alternate reality, silhouettes of impossible geometries visible within the portal, bystanders caught in the pull, energy arcs and gravitational distortion visible, multiple versions of the same location flickering in and out of existence simultaneously",style:"realism",mood:"ominous",comp:"emergence"},
 ];
 
 function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade,aspectRatio}){
@@ -5826,7 +5851,8 @@ function UniversePage(){
     composition:UNI_COMPOSITIONS[uComp]||null,
     custom:custom.trim()||null
   }):null;
-  const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
+  const RAND_STYLES=["realism","anime","3d","pixel","oil"];
+  const loadGallery=(g)=>{setIdea(g.idea);setUStyle(RAND_STYLES[~~(Math.random()*RAND_STYLES.length)]);setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);setUComp(Object.keys(UNI_COMPOSITIONS)[~~(Math.random()*5)]);window.scrollTo({top:0,behavior:"smooth"});};
   const randomize=()=>{
     setUStyle(["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
     setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);
