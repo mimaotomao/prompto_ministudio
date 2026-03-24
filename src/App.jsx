@@ -163,7 +163,7 @@ textarea::placeholder{color:var(--t4)}
 .user-chip img{width:20px;height:20px;border-radius:50%}
 .genwith{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px;padding-top:20px;border-top:1px solid var(--bdh)}
 .genwith-label{font-size:14px;font-weight:800;letter-spacing:1.5px;color:var(--t);text-transform:uppercase;white-space:nowrap}
-.genwith-note{font-size:12px;color:var(--acc);margin-left:4px;font-weight:600}
+.genwith-note{font-size:12px;color:var(--t);margin-left:4px;font-weight:500}
 .genwith-btn{display:flex;align-items:center;gap:7px;padding:10px 20px;border-radius:var(--r);border:1px solid var(--bd);background:var(--s2);color:var(--t);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;white-space:nowrap}
 .genwith-btn:hover{border-color:var(--acc);color:var(--acc);background:var(--acdim);transform:translateY(-1px)}
 .sprite-grid{display:flex;flex-wrap:wrap;gap:8px}
@@ -311,18 +311,49 @@ const EXPERT_NEG={
   style:["cartoon","anime","illustration","painting","3d render","cg look"]
 };
 
-// ── Shared quality suffix for ALL text prompt builders ──────────────────────
-const QUALITY_BLOCK=[
-  "=== QUALITY & ANATOMY REQUIREMENTS ===",
-  "Realistic skin texture with visible pores and subsurface scattering. No beauty filter, no plastic skin effect, no airbrushed look.",
-  "Hands: exactly 5 fingers per hand, no exceptions. Correct finger length proportions, natural joint bending, no fused or extra digits.",
-  "Facial structure: natural facial symmetry (not mathematically perfect), correct eye alignment, no warped or melted features.",
-  "Physically plausible lighting with correct directionality, intensity falloff, and color temperature. Subsurface scattering on skin and organic materials.",
-  "=== MUST NOT GENERATE ===",
-  "No extra fingers, no missing fingers, no deformed hands, no broken wrists, no warped face, no asymmetrical eyes, no melted features, no disconnected limbs, no duplicate limbs, no unnatural spine.",
-  "No plastic skin, no uncanny valley effect, no beauty retouch artifacts.",
-  "No text, watermarks, logos, signatures, captions, labels, UI elements, branding, or frame borders.",
-].join("\n");
+// ── Shared quality suffix for ALL text prompt builders — STYLE-AWARE ─────
+function getQualityBlock(style){
+  const s=(style||"realism").toLowerCase();
+  const isPhoto=s==="realism"||s==="photorealistic"||s==="photorealism"||s==="cinematic";
+  const isAnime=s==="anime";
+  const isPixel=s==="pixel";
+  const isOil=s==="oil";
+  const is2d=s==="2d"||s==="vector";
+  const is3d=s==="3d";
+
+  const lines=["=== QUALITY & ANATOMY REQUIREMENTS ==="];
+
+  if(isPhoto){
+    lines.push("Realistic skin texture with visible pores and subsurface scattering. No beauty filter, no plastic skin effect, no airbrushed look.");
+    lines.push("Hands: exactly 5 fingers per hand, no exceptions. Correct finger length proportions, natural joint bending, no fused or extra digits.");
+    lines.push("Facial structure: natural facial symmetry (not mathematically perfect), correct eye alignment, no warped or melted features.");
+    lines.push("Physically plausible lighting with correct directionality, intensity falloff, and color temperature. Subsurface scattering on skin and organic materials.");
+  } else if(isAnime){
+    lines.push("Clean, consistent line art. Correct character proportions matching anime/manga conventions. Hands: exactly 5 fingers per hand, correct anatomy even in stylized form.");
+    lines.push("Consistent shading style — no mixing cel-shading with photorealistic rendering. Colors vivid but harmonious.");
+  } else if(isPixel){
+    lines.push("Clean pixel grid with no anti-aliasing artifacts. Consistent pixel scale throughout — no mixed resolutions. Limited color palette, no photorealistic elements mixed in.");
+    lines.push("Readable silhouettes and clear sprite forms even at small size.");
+  } else if(isOil){
+    lines.push("Visible brushwork with consistent technique throughout. Rich pigment texture, impasto where appropriate. No photorealistic skin mixed with painted backgrounds.");
+    lines.push("Hands: correct anatomy with 5 fingers, rendered in the same painterly style as the rest.");
+  } else if(is2d){
+    lines.push("Clean vector shapes with consistent line weights. Balanced composition with clear visual hierarchy. No photorealistic textures mixed with flat design.");
+  } else if(is3d){
+    lines.push("Consistent PBR material rendering throughout. Correct anatomy and proportions. Hands: 5 fingers per hand. No mixed rendering styles.");
+    lines.push("Physically plausible lighting with global illumination. No flat or baked-looking surfaces mixed with ray-traced elements.");
+  } else {
+    // Fallback — generic
+    lines.push("Correct anatomy and proportions appropriate for the chosen style. Hands: exactly 5 fingers per hand. Consistent rendering technique throughout — no mixed styles.");
+  }
+
+  lines.push("=== MUST NOT GENERATE ===");
+  lines.push("No extra fingers, no missing fingers, no deformed hands, no broken wrists, no warped face, no asymmetrical eyes, no melted features, no disconnected limbs, no duplicate limbs, no unnatural spine.");
+  if(isPhoto)lines.push("No plastic skin, no uncanny valley effect, no beauty retouch artifacts.");
+  lines.push("No text, watermarks, logos, signatures, captions, labels, UI elements, branding, or frame borders.");
+
+  return lines.join("\n");
+}
 
 // ── Lock instructions prepended to AI Enhance calls ────────────────────────
 const ENHANCE_LOCK="IMPORTANT RULES FOR REWRITING:\n"+
@@ -480,24 +511,16 @@ function buildExpertJSON(cfg){
     avoid:[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical.slice(0,5)]
   };
 
-  const styleNeg=EXPERT_NEG.style.filter(s=>{
-    if(styleStr.includes("anime")&&(s==="anime"||s==="illustration"))return false;
-    if(styleStr.includes("oil")&&s==="painting")return false;
-    if((styleStr.includes("3d")||styleStr.includes("pixel"))&&(s==="3d render"||s==="cg look"||s==="illustration"))return false;
-    if(styleStr.includes("pixel")&&s==="cartoon")return false;
-    return true;
-  });
-
   // ── Negative constraints — CATEGORIZED (Astronomerozge1 pattern) ──
   const negativeConstraints={
     anatomy:EXPERT_NEG.anatomy,
     technical:EXPERT_NEG.technical,
     content:EXPERT_NEG.content,
-    style_violations:styleNeg
+    style_violations:EXPERT_NEG.style
   };
 
   // ── Flat negative_prompt array (for compatibility) ──
-  const negativesFlat=[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical,...EXPERT_NEG.content,...styleNeg];
+  const negativesFlat=[...EXPERT_NEG.anatomy,...EXPERT_NEG.technical,...EXPERT_NEG.content,...EXPERT_NEG.style];
 
   // ── Assemble (onion: L5 meta → input → creative → scene → subject → photography → output → expressions → must_have → quality → negatives) ──
   const json={generation_request:{
@@ -610,12 +633,6 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
         )}
       </div>
 
-      {isExpert&&(
-        <div style={{marginTop:8,fontSize:11,color:"var(--acc)",lineHeight:1.5}}>
-          <span style={{marginRight:5}}>⚠</span>JSON Format Note: some free generators (Gemini, Bing Create, Craiyon) may not parse JSON directly — use <b>Original Prompt</b> or <b>AI Enhanced</b> for broader compatibility.
-        </div>
-      )}
-
       {/* Button row — all copy buttons side by side */}
       <div className="pbar" translate="no" style={{flexWrap:"wrap",gap:8,alignItems:"center"}}>
         {extraButtons}
@@ -648,8 +665,8 @@ function PromptOutputPanel({prompt,custom="",hasAny=true,extraButtons=null,onToa
         )}
       </div>
 
-      {!enhanced&&<div style={{marginTop:8,fontSize:11,color:"var(--acc)",lineHeight:1.5}}>
-        <span style={{marginRight:5}}>▸</span>AI Enhance generates artistic, narrative version. <b>Requires Google sign-in.</b>
+      {!enhanced&&<div style={{marginTop:8,fontSize:11,color:"rgba(255,255,255,.45)",lineHeight:1.5}}>
+        <span style={{color:"var(--acc)",marginRight:5}}>▸</span>AI Enhance generates artistic, narrative version. <span style={{color:"rgba(255,255,255,.6)",fontWeight:600}}>Requires Google sign-in.</span>
       </div>}
 
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)}/>}
@@ -702,6 +719,7 @@ function GenWithLinks({getPrompt,onCopy,targets}){
 
 // ─── WORKFLOW PANEL (replaces GenWithLinks + RefPhotoHint + ExpandToFullShot) ──
 function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmStock, colorGrade, aspectRatio, mode, onToast, isPhoto}){
+  const targets = GEN_TARGETS.slice(0,5);
   const[expanded, setExpanded] = useState(false);
   const[showPhotoTip, setShowPhotoTip] = useState(false);
   const hasGrid = sel && sel.length >= 2;
@@ -713,7 +731,11 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
   };
 
   const handleGenerateClick = (url)=>{
-    if(isPhoto){ setShowPhotoTip(url); } else { handleGenerate(url); }
+    if(isPhoto){
+      setShowPhotoTip(url); // store url to open after confirm
+    } else {
+      handleGenerate(url);
+    }
   };
 
   const handleExpand = async(panelNum, angleIdx, url)=>{
@@ -722,6 +744,26 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
     onToast(`PANEL ${panelNum} PROMPT COPIED — ATTACH YOUR GRID IMAGE`);
     window.open(url, "_blank", "noopener,noreferrer");
   };
+
+  const stepStyle = {
+    borderRadius:8,
+    border:"1px solid var(--bdh)",
+    background:"var(--s2)",
+    overflow:"hidden",
+    marginTop:12
+  };
+  const stepHeadStyle = {
+    display:"flex", alignItems:"center", gap:10,
+    padding:"12px 16px",
+    borderBottom:"1px solid var(--bdh)"
+  };
+  const badgeStyle = (color)=>({
+    width:22, height:22, borderRadius:"50%",
+    background:color, color:"#000",
+    fontSize:11, fontWeight:800,
+    display:"flex", alignItems:"center", justifyContent:"center",
+    flexShrink:0
+  });
 
   return(
     <div style={{marginTop:8}}>
@@ -737,49 +779,63 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
               The prompt will use it as the identity base — without it, the AI generates a random character.
             </div>
             <div style={{display:"flex",gap:10,justifyContent:"center",marginTop:20,flexWrap:"wrap"}}>
-              <button onClick={()=>{handleGenerate(showPhotoTip);setShowPhotoTip(false);}}
-                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}>
-                Got it — open generator ↗
-              </button>
-              <button onClick={()=>setShowPhotoTip(false)}
-                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--bdh)",background:"transparent",color:"var(--t)",fontSize:13,cursor:"pointer"}}>
-                Cancel
-              </button>
+              <button
+                onClick={()=>{handleGenerate(showPhotoTip);setShowPhotoTip(false);}}
+                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontSize:13,fontWeight:700,cursor:"pointer"}}
+              >Got it — open generator ↗</button>
+              <button
+                onClick={()=>setShowPhotoTip(false)}
+                style={{padding:"10px 20px",borderRadius:8,border:"1px solid var(--bdh)",background:"transparent",color:"var(--t)",fontSize:13,cursor:"pointer"}}
+              >Cancel</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* STEP 3 — Generate */}
-      {isPhoto&&(
-        <div style={{marginBottom:8,padding:"8px 12px",borderRadius:6,border:"1px solid rgba(232,120,10,.3)",background:"rgba(232,120,10,.06)",fontSize:11,color:"var(--acc)",lineHeight:1.5}}>
-          📎 <b>Attach your reference photo</b> before generating — the AI uses it as identity base.
-        </div>
-      )}
-      <div className="genwith" translate="no">
-        <span className="genwith-label">Generate with</span>
-        {GEN_TARGETS.map(t=>(
-          <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
-            <button className="genwith-btn" onClick={()=>handleGenerateClick(t.url)}
-              title={t.note||t.warn||""}
-              style={t.hi?{borderColor:"var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontWeight:700}:{}}>
-              <span>{t.icon}</span>{t.label} ↗
-            </button>
-            {t.warn&&<span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7}}>⚠️</span>}
+      {/* STEP 1 */}
+      <div style={stepStyle}>
+        <div style={stepHeadStyle}>
+          <div style={badgeStyle("var(--acc)")}>1</div>
+          <div>
+            <div style={{fontSize:12,fontWeight:800,color:"var(--t)",letterSpacing:.5}} translate="no">
+              Generate the grid
+            </div>
+            <div style={{fontSize:11,color:"var(--t)",opacity:.6,marginTop:1}}>
+              {isPhoto
+                ? "📎 Attach your reference photo, then open a generator"
+                : "Open a generator and paste the prompt"}
+            </div>
           </div>
-        ))}
-        <span className="genwith-note">prompt copied to clipboard — just paste</span>
+        </div>
+        <div style={{padding:"12px 16px",display:"flex",flexWrap:"wrap",gap:8,alignItems:"center"}} translate="no">
+          {targets.map(t=>(
+            <div key={t.label} style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+              <button className="genwith-btn" onClick={()=>handleGenerateClick(t.url)}
+                title={t.note||t.warn||""}
+                style={t.hi?{borderColor:"var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontWeight:700}:{}}>
+                <span>{t.icon}</span>{t.label} ↗
+              </button>
+              {t.warn&&(
+                <span title={t.warn} style={{cursor:"help",fontSize:13,opacity:.7,lineHeight:1}}>⚠️</span>
+              )}
+            </div>
+          ))}
+          <span style={{fontSize:11,color:"var(--t)",opacity:.5,marginLeft:4}}>prompt copied to clipboard — just paste</span>
+        </div>
       </div>
 
-      {/* STEP 4 — Expand panel (only when grid) */}
+      {/* STEP 2 — only when grid has multiple panels */}
       {hasGrid&&(
-        <div style={{marginTop:12,borderRadius:8,border:"1px solid var(--bdh)",background:"var(--s2)",overflow:"hidden"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",cursor:"pointer",userSelect:"none",borderBottom:expanded?"1px solid var(--bd)":"none"}}
-            onClick={()=>setExpanded(v=>!v)}>
-            <div style={{width:22,height:22,borderRadius:"50%",background:"rgba(120,180,255,.2)",border:"1.5px solid rgba(120,180,255,.6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:"rgba(120,180,255,.9)",flexShrink:0}}>4</div>
+        <div style={stepStyle}>
+          <div style={{...stepHeadStyle,cursor:"pointer",userSelect:"none"}} onClick={()=>setExpanded(v=>!v)}>
+            <div style={badgeStyle("rgba(120,180,255,.8)")}>2</div>
             <div style={{flexGrow:1}}>
-              <div style={{fontSize:12,fontWeight:800,color:"var(--t)",letterSpacing:.5}}>Expand a panel to full resolution</div>
-              <div style={{fontSize:11,color:"var(--t)",opacity:.6,marginTop:1}}>Got your grid? Attach it and expand any panel to a single full-quality image</div>
+              <div style={{fontSize:12,fontWeight:800,color:"var(--t)",letterSpacing:.5}}>
+                Expand a panel to full shot
+              </div>
+              <div style={{fontSize:11,color:"var(--t)",opacity:.6,marginTop:1}}>
+                Got your grid? Attach it and expand any panel to a single full-quality image
+              </div>
             </div>
             <span style={{fontSize:14,color:"var(--t)",opacity:.5}}>{expanded?"▲":"▼"}</span>
           </div>
@@ -788,17 +844,27 @@ function WorkflowPanel({getPrompt, onCopy, sel, scene, lighting, bg, lens, filmS
               <div style={{fontSize:11,color:"var(--t)",opacity:.55,marginBottom:10}}>
                 Attach the grid image you just generated, then click a panel:
               </div>
-              {sel.map((angleIdx,idx)=>{
-                const panelNum=idx+1;
-                const angle=ANGLES[angleIdx];
+              {sel.map((angleIdx, idx)=>{
+                const panelNum = idx+1;
+                const angle = ANGLES[angleIdx];
                 return(
                   <div key={angleIdx} style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",padding:"6px 0",borderTop:idx>0?"1px solid var(--bd)":"none"}}>
-                    <div style={{width:24,height:24,borderRadius:5,background:"rgba(255,255,255,.07)",border:"1px solid var(--bdh)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:800,color:"var(--t)",flexShrink:0}}>{panelNum}</div>
-                    <div style={{fontSize:11,color:"var(--t)",opacity:.75,flexGrow:1,minWidth:100}}>{angle.name}</div>
+                    <div style={{
+                      width:24,height:24,borderRadius:5,
+                      background:"rgba(255,255,255,.07)",border:"1px solid var(--bdh)",
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:12,fontWeight:800,color:"var(--t)",flexShrink:0
+                    }}>{panelNum}</div>
+                    <div style={{fontSize:11,color:"var(--t)",opacity:.75,flexGrow:1,minWidth:100}}>
+                      {angle.name}
+                    </div>
                     <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                      {GEN_TARGETS.map(t=>(
-                        <button key={t.label} onClick={()=>handleExpand(panelNum,angleIdx,t.url)}
-                          className="genwith-btn" style={{fontSize:11,padding:"5px 10px"}}>
+                      {targets.slice(0,3).map(t=>(
+                        <button key={t.label}
+                          onClick={()=>handleExpand(panelNum, angleIdx, t.url)}
+                          className="genwith-btn"
+                          style={{fontSize:11,padding:"5px 10px"}}
+                        >
                           {t.icon} {t.label} ↗
                         </button>
                       ))}
@@ -1269,7 +1335,7 @@ function buildPrompt({scene,selectedAngles,lighting,bg,lens,cam,use3D,custom,fil
     parts.push(modePrefix);
     if(scene.trim())parts.push(scene.trim());
     if(techBlock)parts.push(techBlock);
-    parts.push(QUALITY_BLOCK);
+    parts.push(getQualityBlock("realism"));
     if(custom.trim())parts.push(custom.trim());
     return parts.join("\n\n");
   }
@@ -1287,7 +1353,7 @@ function buildPrompt({scene,selectedAngles,lighting,bg,lens,cam,use3D,custom,fil
       :("Camera angle: "+angleObj.name+" — "+angleObj.desc+".");
     parts.push(camBlock);
     parts.push("Output as a single cinematic image with sharp detail, physically plausible lighting, and no added characters.");
-    parts.push(QUALITY_BLOCK);
+    parts.push(getQualityBlock("realism"));
     if(custom.trim())parts.push(custom.trim());
     return parts.join("\n\n");
   }
@@ -1362,7 +1428,7 @@ function buildPrompt({scene,selectedAngles,lighting,bg,lens,cam,use3D,custom,fil
   );
 
   // 9. Quality & anatomy
-  parts.push(QUALITY_BLOCK);
+  parts.push(getQualityBlock("realism"));
 
   // 10. Custom additions (always last)
   if(custom.trim())parts.push(custom.trim());
@@ -1853,6 +1919,7 @@ function AnglesPage(){
           filmStock={filmStock} colorGrade={colorGrade} aspectRatio={aspectRatio}
           mode={mode1} onToast={doToast} isPhoto={mode1==="photo"}
         />}
+        {hasAny&&<GenWithLinks getPrompt={()=>prompt} onCopy={()=>doToast("PROMPT COPIED")}/>}
       </div>
 
       {toast&&<div className="toast">{toast}</div>}
@@ -2125,7 +2192,7 @@ const LAYOUT_SPRITES=[
   {name:"Bust",sx:0,sy:-300,p:"Generate a single bust portrait — framed from the chest up, close and intimate, face and upper chest visible. Single panel output."},
   {name:"Full Body Walking",sx:-105,sy:-300,p:"Generate a single full-body dynamic walking pose — mid-stride, natural gait, full head-to-toe visible, slight forward motion implied. Single panel output."},
   {name:"Action Stance",sx:0,sy:-450,p:"Generate a single full-body action stance — wide combat-ready pose, knees slightly bent, arms engaged, dynamic energy. Single panel output."},
-  {name:"Side Seated",sx:-105,sy:-450,p:"Generate a single side-profile seated pose — 90-degree lateral view, full figure visible, relaxed natural posture, clean studio background. Single panel output."},
+  {name:"Side Seated",sx:-105,sy:-450,p:"Generate a single side-profile seated pose — 90-degree lateral view, character seated, full silhouette readable, composed posture. Single panel output."},
   {name:"Back View",sx:0,sy:-600,p:"Generate a single full-body rear view — character facing away from camera, complete back silhouette visible from head to toe, natural stance. Single panel output."},
   {name:"Face Close-up",sx:-105,sy:-600,p:"Generate a single extreme face close-up — tight framing on the face only, from chin to top of forehead, no shoulders visible, maximum facial detail. Single panel output."},
 ];
@@ -2362,7 +2429,7 @@ function AvatarsPage(){
     // 1. GOAL — what AI must produce, format first
     const goalPrefix=mode==="photo"
       ?"Use the attached reference photo as the identity base for this character. Extract and preserve the exact face structure, skin tone, and distinctive facial features from the photo. Apply the selected traits below as modifications or additions on top of this reference identity. Do not change the face — only apply the style, body, and trait modifications."
-      :"Generate a character defined entirely by the parameters below.";
+      :"Generate a completely original character from scratch based only on the selections below.";
     const layoutObj=LAYOUT_SPRITES.find(l=>l.name===c.avLayout)||LAYOUT_SPRITES[0];
     const consistencyText=isMultiPanel
       ?" All panels must depict the exact same character with identical anatomy, skin color, surface traits, facial structure, wardrobe, and physical proportions. Do not alter identity, age, gender, body type, costume details, or non-human features between panels. Maintain strict character consistency across all frames."
@@ -2409,7 +2476,7 @@ function AvatarsPage(){
       "Output as a "+layoutSpec+". Ultra high resolution, sharp focus, physically accurate anatomy."
     );
 
-    parts.push(QUALITY_BLOCK);
+    parts.push(getQualityBlock(c.universe));
 
     return parts.join("\n\n");
   };
@@ -3084,17 +3151,7 @@ function AvatarsPage(){
           onCopy={()=>doToast("PROMPT COPIED — PASTE IN TARGET APP")}
           sel={[]} scene={""} onToast={doToast} isPhoto={mode==="photo"}
         />
-        <div style={{marginTop:14,padding:"14px 16px",borderRadius:8,border:"1px solid var(--bd)",background:"var(--s1)"}}>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
-            <span style={{fontSize:11,color:"rgba(255,255,255,.65)"}}>💡 Next step:</span>
-            <button onClick={()=>setPage("angles")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--acc)",background:"var(--acdim)",color:"var(--acc)",fontSize:11,fontWeight:700,cursor:"pointer"}}>
-              🎬 Multi-Shot
-            </button>
-            <button onClick={()=>setPage("video")} style={{padding:"7px 14px",borderRadius:6,border:"1px solid var(--bd)",background:"var(--s2)",color:"var(--t)",fontSize:11,fontWeight:600,cursor:"pointer"}}>
-              🎥 Video
-            </button>
-          </div>
-        </div>
+        <GenWithLinks getPrompt={()=>prompt} onCopy={()=>doToast("PROMPT COPIED")}/>
       </div>
 
       {toast&&<div className="toast">{toast}</div>}
@@ -3762,7 +3819,7 @@ function HowItWorksPage(){
           <div style={{padding:"16px 20px",borderRadius:10,border:"1px solid rgba(168,85,247,.25)",background:"rgba(168,85,247,.04)"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
               <span style={{fontSize:11,fontWeight:700,color:"#c4b5fd",letterSpacing:1,padding:"3px 10px",borderRadius:4,background:"rgba(168,85,247,.12)"}}>EXPERT JSON</span>
-              <span style={{fontSize:10,color:"var(--acc)",fontWeight:600}}>advanced</span>
+              <span style={{fontSize:10,color:"var(--t4)"}}>advanced</span>
             </div>
             <div style={{fontSize:13,color:"var(--t)",opacity:.8,lineHeight:1.7,marginBottom:10}}>
               Structured JSON with embedded markdown — the same data, but organized into layers: identity anchoring (0.99 lock strength), scene description, camera rig, lighting setup, quality controls, and negative prompts as categorized arrays. Based on the Astronomerozge1 architecture used in NanoBanana Pro prompts.
@@ -3779,7 +3836,7 @@ function HowItWorksPage(){
           <div style={{padding:"16px 20px",borderRadius:10,border:"1px solid rgba(232,120,10,.25)",background:"rgba(232,120,10,.04)"}}>
             <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
               <span style={{fontSize:11,fontWeight:700,color:"var(--acc)",letterSpacing:1,padding:"3px 10px",borderRadius:4,background:"var(--acdim)"}}>✦ AI ENHANCED</span>
-              <span style={{fontSize:10,color:"var(--acc)",fontWeight:600}}>requires Google sign-in</span>
+              <span style={{fontSize:10,color:"var(--t4)"}}>requires Google sign-in</span>
             </div>
             <div style={{fontSize:13,color:"var(--t)",opacity:.8,lineHeight:1.7}}>
               Gemini rewrites your Original Prompt as a richer, more narrative version — adding atmospheric details, cinematic language, and artistic flair. The meaning stays the same but the prose becomes more evocative. Some technical parameters (lens, lighting) may be rephrased. Free, no credit card — just a one-time Google sign-in.
@@ -4423,7 +4480,7 @@ function PetPage(){
     setPTab("species");
     setVpIsFantasy(false);setVpSpecies("dog");setVpBreed("Golden Retriever");setVpFantasySize("");
     setVpEmpathy("");setVpCoatType("long");setVpCoatPattern("solid");setVpCoatColors("golden");
-    setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");
+    setVpTail("long");setVpEars("floppy");setVpPose("sitting");setVpGaze("toward viewer");setVpJokeLegs(false);
     setAccMode("product");setAccSelected([]);setAccPrimary("");setAccProductMode("existing");
     setAccProductDesc("");setAccCreativeDesc("");setAccDepthHandler("virtual_hand");
     setCompanionMode("alone");setCompanionSpecies("cat");setCompanionInteraction("playing together");
@@ -5681,7 +5738,7 @@ const MAP_DATA={
     {id:"univ",label:"Scene Universe",color:"#facc15",page:"universe",children:[
       {id:"uvi",label:"Scene Idea Input",color:"#facc15",children:[
         {id:"uvi1",label:"Free-text idea — describe any subject, scene, or concept"},
-        {id:"uvi2",label:"Quick Ideas Gallery — 23 preset scenes as inline pill buttons (SF, fantasy, racing, nature, anime, cyberpunk, retrofuture, cosmic battle…)"},
+        {id:"uvi2",label:"Quick Ideas Gallery — 12 preset scenes as inline pill buttons (SF, fantasy, racing, nature, anime…)"},
         {id:"uvi3",label:"Click any idea → loads text + style + mood + composition"},
       ]},
       {id:"uvs",label:"Visual Controls",color:"#facc15",children:[
@@ -5740,17 +5797,6 @@ const UNI_GALLERY=[
   {title:"F1 Monaco Chaos",idea:"a Formula 1 car drifting sideways through the Monaco tunnel exit into blinding daylight, sparks showering from titanium skid plate, yacht-filled harbor visible ahead, helicopter shadow on tarmac",style:"realism",mood:"energetic",comp:"action"},
   {title:"Wizard's Study",idea:"an ancient wizard asleep at a desk piled with scrolls, a sentient quill still writing by itself, potion bottles bubbling, an owl perched on a floating astrolabe, moonlight through a circular window",style:"oil",mood:"mysterious",comp:"portrait"},
   {title:"Pixel Dungeon",idea:"a retro 16-bit dungeon crawler scene, a knight facing a treasure chest in a torch-lit stone chamber, slimes in the shadows, health bar and inventory UI at screen edges",style:"pixel",mood:"mysterious",comp:"panoramic"},
-  {title:"Retrofuture Samurai Duel",idea:"two young women warriors locked in a tense sword combat stance, blonde in iridescent silver liquid-metal samurai armor, brunette in mirrored chrome tactical suit, both wielding gleaming katanas under neon holographic cherry blossoms, 1960s retrofuturistic Japanese bunker with glowing circuit-board walls, electric arcs between their blades",style:"anime",mood:"dramatic",comp:"action"},
-  {title:"Cosmic Fleet Battle",idea:"three enormous alien warships locked in brutal combat above a burning planet, plasma cannons unleashing torrents of energy, capital ships disintegrating into expanding debris clouds, smaller fighters weaving through explosions like fireflies, cosmic dust and radiation halos illuminating the chaos, Earth-like world glowing in background inferno",style:"realism",mood:"dramatic",comp:"panoramic"},
-  {title:"Fruit Consumption Moment",idea:"a striking woman in haute couture captured mid-bite of an enormous, impossibly juicy oversized tropical fruit dripping with golden nectar, pleasure and intensity in her expression, exotic fruit flesh glistening with juice spray suspended mid-air, opulent marble gallery setting with dramatic spotlight illumination, sensory intensity and luxury condensed into single moment",style:"realism",mood:"energetic",comp:"closeup"},
-  {title:"Ogre Unicorn Rider",idea:"a massive green ogre with scarred tusks gripping the mane of a shimmering iridescent unicorn, both charging through a crystalline enchanted forest, the unicorn's horn blazing with arcane light, flowers exploding into sparks as they gallop, ogre wielding a club carved from ancient bone, magic swirling around hooves and crown",style:"3d",mood:"energetic",comp:"action"},
-  {title:"Bioluminescent Deep Sea",idea:"a fearless diver in futuristic pressure suit descending into the abyss surrounded by colossal translucent jellyfish the size of buildings, their tentacles glowing with alien bioluminescence, deep-sea creatures with impossible anatomies drifting past, pressure-resistant submersible visible above with searchlight beaming down, darkness punctuated by floating organisms",style:"realism",mood:"mysterious",comp:"panoramic"},
-  {title:"Volcanic Fortress Siege",idea:"an apocalyptic battle raging at the gates of a massive obsidian fortress built inside an active volcano, lava flows cascading down black cliffs, siege weapons launching incendiary projectiles, armies clashing in slow-motion silhouettes against magma glow, fortress gates glowing red-hot from within, ash storms and fire tornadoes framing the carnage",style:"realism",mood:"ominous",comp:"panoramic"},
-  {title:"Ethereal Library Collapse",idea:"an infinite library of floating crystalline books mid-collapse, shelves disintegrating into pure light, ancient knowledge cascading through reality like luminous waterfalls, a hooded figure suspended in center of the chaos reaching toward vanishing tomes, reality fracturing into geometric shards, archival magic exploding outward in all directions",style:"3d",mood:"mysterious",comp:"emergence"},
-  {title:"Desert Dune Racer Crash",idea:"a sleek cyberpunk sand-skiff launching off an impossibly high dune at sunset, pilot visible in cockpit mid-stunt, desert floor far below spinning with crystalline sand particles catching golden light, vehicle trailing neon wake through thin atmosphere, mountains glowing like embers on horizon, adrenaline and danger frozen in frame",style:"realism",mood:"energetic",comp:"action"},
-  {title:"Void Creature Emergence",idea:"a massive incomprehensible entity materializing through a dimensional tear in space, its form shifting between states of matter, tentacles of dark matter writhing, eyes of distant nebulae studying Earth, reality warping visibly around its presence, military observers in hazmat suits frozen in terror, fabric of spacetime tearing open",style:"anime",mood:"ominous",comp:"emergence"},
-  {title:"Aurora Duelist Clash",idea:"two master swordsmen locked in explosive combat beneath the northern lights, blades creating waves of frozen energy with each clash, aurora reflecting off ice-armor, duelists performing impossible acrobatic moves against star-filled sky, frozen landscape of icebergs and glaciers framing mortal combat, magic-infused strikes leaving trails of green and purple light",style:"anime",mood:"dramatic",comp:"action"},
-  {title:"Interdimensional Rift",idea:"a massive swirling vortex tearing through a city street, pulling buildings and vehicles into alternate reality, silhouettes of impossible geometries visible within the portal, bystanders caught in the pull, energy arcs and gravitational distortion visible, multiple versions of the same location flickering in and out of existence simultaneously",style:"realism",mood:"ominous",comp:"emergence"},
 ];
 
 function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,colorGrade,aspectRatio}){
@@ -5772,7 +5818,7 @@ function buildUniversePrompt({idea,uStyle,uMood,uComp,light,bg,lens,filmStock,co
   if(aspectRatio)parts.push(`Output aspect ratio: ${aspectRatio}.`);
   const suffixes={realism:"hyper-detailed, 8k resolution, ray tracing, subsurface scattering",anime:"clean line art, vivid colors, professional anime production quality","3d":"octane render, global illumination, PBR materials, cinematic depth of field","2d":"clean shapes, professional vector quality, balanced composition",pixel:"clean pixel grid, limited palette, retro aesthetic, detailed sprite work",oil:"visible brushwork, impasto technique, museum quality, rich pigments"};
   parts.push(suffixes[uStyle]||suffixes.realism);
-  parts.push(QUALITY_BLOCK);
+  parts.push(getQualityBlock(uStyle));
   return parts.join("\n\n");
 }
 
@@ -5811,19 +5857,19 @@ function UniversePage(){
     composition:UNI_COMPOSITIONS[uComp]||null,
     custom:custom.trim()||null
   }):null;
-  const RAND_STYLES=["realism","anime","3d","pixel","oil"];
-  const loadGallery=(g)=>{setIdea(g.idea);setUStyle(RAND_STYLES[~~(Math.random()*RAND_STYLES.length)]);setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);setUComp(Object.keys(UNI_COMPOSITIONS)[~~(Math.random()*5)]);window.scrollTo({top:0,behavior:"smooth"});};
+  const loadGallery=(g)=>{setIdea(g.idea);if(g.style)setUStyle(g.style);if(g.mood)setUMood(g.mood);if(g.comp)setUComp(g.comp);window.scrollTo({top:0,behavior:"smooth"});};
   const randomize=()=>{
-    setUStyle(["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
-    setUMood(Object.keys(UNI_MOODS)[~~(Math.random()*6)]);
-    setUComp(Object.keys(UNI_COMPOSITIONS)[~~(Math.random()*5)]);
+    const g=UNI_GALLERY[~~(Math.random()*UNI_GALLERY.length)];
+    setIdea(g.idea);
+    setUStyle(g.style||["realism","anime","3d","2d","pixel","oil"][~~(Math.random()*6)]);
+    setUMood(g.mood||Object.keys(UNI_MOODS)[~~(Math.random()*6)]);
+    setUComp(g.comp||Object.keys(UNI_COMPOSITIONS)[~~(Math.random()*5)]);
     setLight(LIGHT_SPRITES[~~(Math.random()*LIGHT_SPRITES.length)].id);
     setBg(ENV_SPRITES[~~(Math.random()*ENV_SPRITES.length)].id);
     setLens(LENS_SPRITES[~~(Math.random()*LENS_SPRITES.length)].mm);
     setFilmStock(FILM_SPRITES[~~(Math.random()*FILM_SPRITES.length)].id);
     setColorGrade(COLOR_SPRITES[~~(Math.random()*COLOR_SPRITES.length)].id);
     setAspectRatio(["16:9","2.39:1","4:3","1:1","9:16"][~~(Math.random()*5)]);
-    if(!idea.trim()){const g=UNI_GALLERY[~~(Math.random()*UNI_GALLERY.length)];setIdea(g.idea);}
     doToast("RANDOM CONFIGURATION");
   };
   const reset=()=>{setIdea("");setUStyle("realism");setUMood("mysterious");setUComp("emergence");setLight(null);setBg(null);setLens(null);setFilmStock(null);setColorGrade(null);setAspectRatio("16:9");setCustom("");doToast("RESET");};
